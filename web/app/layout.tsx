@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   title: "دليل المحلات والصيدليات",
   description: "دليل شامل للمحلات والصيدليات والأماكن التجارية والخدمات",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
   },
