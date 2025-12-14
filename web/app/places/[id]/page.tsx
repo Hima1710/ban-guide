@@ -12,21 +12,16 @@ import { showError, showSuccess } from '@/components/SweetAlert'
 import { AudioRecorder } from '@/lib/audio-recorder'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
-function ProductIdHandler({ onProductIdChange }: { onProductIdChange: (productId: string | null) => void }) {
+function ProductIdHandler({ children }: { children: (productId: string | null) => React.ReactNode }) {
   const searchParams = useSearchParams()
+  const productId = searchParams.get('product')
   
-  useEffect(() => {
-    const productId = searchParams.get('product')
-    onProductIdChange(productId)
-  }, [searchParams, onProductIdChange])
-  
-  return null
+  return <>{children(productId)}</>
 }
 
-function PlacePageContent() {
+function PlacePageContent({ productId }: { productId: string | null }) {
   const params = useParams()
   const placeId = params.id as string
-  const [productId, setProductId] = useState<string | null>(null)
 
   const [place, setPlace] = useState<Place | null>(null)
   const [products, setProducts] = useState<Product[]>([])
