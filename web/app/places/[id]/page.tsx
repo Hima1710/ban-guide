@@ -1179,9 +1179,8 @@ export default function PlacePage() {
                                   </div>
                                   <audio
                                     controls
-                                    className={`w-full max-w-xs ${sendingMessages.has(message.id) ? 'opacity-60' : ''}`}
+                                    className={`w-full max-w-xs ${sendingMessages.has(message.id) ? 'opacity-60 pointer-events-none' : ''}`}
                                     style={{ maxHeight: '40px' }}
-                                    disabled={sendingMessages.has(message.id)}
                                   >
                                     <source src={message.audio_url} type="audio/opus" />
                                     <source src={message.audio_url} type="audio/webm" />
