@@ -21,6 +21,7 @@ export interface UserProfile {
   avatar_url: string | null
   phone: string | null
   is_affiliate: boolean
+  is_admin: boolean
   affiliate_code: string | null
   created_at: string
   updated_at: string
