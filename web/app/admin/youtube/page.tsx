@@ -21,8 +21,10 @@ export default function AdminYouTubePage() {
 
   useEffect(() => {
     // Check for auth result after component mounts
-    const youtubeAuth = searchParams?.get('youtube_auth')
-    const error = searchParams?.get('error')
+    if (typeof window === 'undefined' || !searchParams) return
+    
+    const youtubeAuth = searchParams.get('youtube_auth')
+    const error = searchParams.get('error')
     
     if (youtubeAuth === 'success') {
       showSuccess('تم ربط حساب YouTube بنجاح!')
@@ -35,7 +37,8 @@ export default function AdminYouTubePage() {
       showError('فشل ربط حساب YouTube. يرجى المحاولة مرة أخرى.')
       router.replace('/admin/youtube')
     }
-  }, [searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const checkAdmin = async () => {
     try {
