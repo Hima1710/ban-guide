@@ -29,6 +29,21 @@ export default function Breadcrumbs() {
     'new': 'جديد',
   }
 
+  // Get place/product name from URL if it's a dynamic route
+  const getDynamicLabel = (segment: string, index: number) => {
+    // If it's a UUID or ID, try to get the actual name
+    // For now, we'll just show a generic label
+    if (segment.length > 20 && /^[a-f0-9-]+$/i.test(segment)) {
+      if (pathSegments[index - 1] === 'places') {
+        return 'تفاصيل المكان'
+      }
+      if (pathSegments[index - 1] === 'products') {
+        return 'تفاصيل المنتج'
+      }
+    }
+    return breadcrumbMap[segment] || segment
+  }
+
   const breadcrumbs = [
     { label: 'الرئيسية', href: '/' },
     ...pathSegments.map((segment, index) => {
