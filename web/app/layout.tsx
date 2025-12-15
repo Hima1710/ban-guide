@@ -20,11 +20,11 @@ export const metadata: Metadata = {
   description: "دليل شامل للمحلات والصيدليات والأماكن التجارية والخدمات",
   icons: {
     icon: [
-      { url: "/logo.png", sizes: "any" },
-      { url: "/logo.png", type: "image/png" },
+      { url: "/logo.webp", sizes: "any" },
+      { url: "/logo.webp", type: "image/webp" },
     ],
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    shortcut: "/logo.webp",
+    apple: "/logo.webp",
   },
 };
 
@@ -36,8 +36,8 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/png" href="/logo.png" />
-        <link rel="shortcut icon" type="image/png" href="/logo.png" />
+        <link rel="icon" type="image/webp" href="/logo.webp" />
+        <link rel="shortcut icon" type="image/webp" href="/logo.webp" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

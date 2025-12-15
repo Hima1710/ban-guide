@@ -76,9 +76,9 @@ export default function NavBar() {
         <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="relative w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
+            <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
               <Image
-                src="/logo.png"
+                src="/logo.webp"
                 alt="بان - دليل المحلات"
                 fill
                 className="object-contain"
