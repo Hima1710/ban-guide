@@ -38,16 +38,16 @@ export default function FeaturedPlaces({ places }: FeaturedPlacesProps) {
   if (places.length === 0) return null
 
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-bold mb-4 text-gray-900">الأماكن المميزة</h2>
+    <div className="mb-6 sm:mb-8">
+      <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900">الأماكن المميزة</h2>
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+        className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
         {places.map((place) => (
-          <div key={place.id} className="flex-shrink-0 w-80">
+          <div key={place.id} className="flex-shrink-0 w-[280px] sm:w-80">
             <PlaceCard place={place} cardStyle="premium" />
           </div>
         ))}

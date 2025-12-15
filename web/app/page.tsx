@@ -145,59 +145,61 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">دليل المحلات والصيدليات</h1>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Eye size={16} />
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">دليل المحلات والصيدليات</h1>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                <Eye size={14} className="sm:w-4 sm:h-4" />
                 <span>اليوم: {siteStats.today}</span>
-                <span className="mx-2">|</span>
-                <TrendingUp size={16} />
+                <span className="mx-1 sm:mx-2">|</span>
+                <TrendingUp size={14} className="sm:w-4 sm:h-4" />
                 <span>الإجمالي: {siteStats.total}</span>
               </div>
               {user ? (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                   <div className="flex items-center gap-2">
                     {userProfile?.avatar_url ? (
                       <img
                         src={userProfile.avatar_url}
                         alt={userProfile.full_name || user.email}
-                        className="w-8 h-8 rounded-full"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold">
                         {(userProfile?.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm text-gray-700">
+                    <span className="text-xs sm:text-sm text-gray-700 truncate max-w-[120px] sm:max-w-none">
                       {userProfile?.full_name || user.email}
                     </span>
                   </div>
-                  <Link
-                    href="/dashboard"
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
-                  >
-                    <User size={16} />
-                    لوحة التحكم
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
-                  >
-                    <LogOut size={16} />
-                    تسجيل الخروج
-                  </button>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Link
+                      href="/dashboard"
+                      className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm"
+                    >
+                      <User size={14} className="sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">لوحة التحكم</span>
+                      <span className="sm:hidden">لوحة</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 text-sm"
+                    >
+                      <LogOut size={14} className="sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">تسجيل الخروج</span>
+                      <span className="sm:hidden">خروج</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <>
-                  <Link
-                    href="/auth/login"
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    تسجيل الدخول
-                  </Link>
-                </>
+                <Link
+                  href="/auth/login"
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-center text-sm sm:text-base"
+                >
+                  تسجيل الدخول
+                </Link>
               )}
             </div>
           </div>
@@ -220,29 +222,29 @@ export default function HomePage() {
 
           {/* Search Results */}
           {searchQuery && (
-            <div className="mt-4 bg-white rounded-lg shadow-lg p-4 max-h-96 overflow-y-auto">
+            <div className="mt-3 sm:mt-4 bg-white rounded-lg shadow-lg p-3 sm:p-4 max-h-96 overflow-y-auto">
               {isSearching ? (
-                <div className="text-center py-4 text-gray-500">جاري البحث...</div>
+                <div className="text-center py-4 text-sm sm:text-base text-gray-500">جاري البحث...</div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-2">
                   {searchResults.map((product) => (
                     <Link
                       key={product.id}
                       href={`/places/${product.place_id}?product=${product.id}`}
-                      className="block p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      className="block p-2 sm:p-3 hover:bg-gray-50 rounded-lg transition-colors"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3 sm:gap-4">
                         {product.images && product.images.length > 0 && (
                           <img
                             src={product.images[0].image_url}
                             alt={product.name_ar}
-                            className="w-16 h-16 object-cover rounded"
+                            className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
                           />
                         )}
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{product.name_ar}</h3>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">{product.name_ar}</h3>
                           {product.price && (
-                            <p className="text-sm text-gray-600">
+                            <p className="text-xs sm:text-sm text-gray-600">
                               {product.price} {product.currency}
                             </p>
                           )}
@@ -252,7 +254,7 @@ export default function HomePage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-4 text-gray-500">لا توجد نتائج</div>
+                <div className="text-center py-4 text-sm sm:text-base text-gray-500">لا توجد نتائج</div>
               )}
             </div>
           )}
@@ -263,8 +265,8 @@ export default function HomePage() {
 
         {/* All Places */}
         <div>
-          <h2 className="text-2xl font-bold mb-6 text-gray-900">جميع الأماكن</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-900">جميع الأماكن</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {sortedPlaces.map((place) => (
               <PlaceCard key={place.id} place={place} cardStyle={place.is_featured ? 'premium' : 'default'} />
             ))}

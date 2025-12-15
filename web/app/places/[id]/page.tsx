@@ -562,37 +562,37 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Place Header */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-6">
+        <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
             {place.logo_url && (
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 mx-auto md:mx-0">
                 <img
                   src={place.logo_url}
                   alt={place.name_ar}
-                  className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 border-gray-200"
+                  className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 border-gray-200"
                 />
               </div>
             )}
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">{place.name_ar}</h1>
-              <p className="text-gray-600 mb-4">{place.description_ar}</p>
+            <div className="flex-1 text-center md:text-right">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{place.name_ar}</h1>
+              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">{place.description_ar}</p>
               
-              <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm justify-center md:justify-start">
                 <a
                   href={`tel:${place.phone_1}`}
-                  className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                  className="flex items-center justify-center md:justify-start gap-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
                 >
-                  <Phone size={18} />
+                  <Phone size={16} className="sm:w-[18px] sm:h-[18px]" />
                   <span>{place.phone_1}</span>
                 </a>
                 {place.phone_2 && (
                   <a
                     href={`tel:${place.phone_2}`}
-                    className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                    className="flex items-center justify-center md:justify-start gap-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
                   >
-                    <Phone size={18} />
+                    <Phone size={16} className="sm:w-[18px] sm:h-[18px]" />
                     <span>{place.phone_2}</span>
                   </a>
                 )}
@@ -600,10 +600,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   href={`https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                  className="flex items-center justify-center md:justify-start gap-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
                 >
-                  <MapPin size={18} />
-                  <span>{place.address || 'العنوان غير متاح'}</span>
+                  <MapPin size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  <span className="truncate max-w-[200px] sm:max-w-none">{place.address || 'العنوان غير متاح'}</span>
                 </a>
               </div>
             </div>
@@ -612,8 +612,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
         {/* Video */}
         {videoId && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">فيديو المكان</h2>
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-gray-900">فيديو المكان</h2>
             <div className="aspect-video rounded-lg overflow-hidden">
               <iframe
                 src={getYouTubeEmbedUrl(videoId)}
@@ -627,9 +627,9 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
         {/* Products */}
         {products.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">المنتجات والخدمات</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-gray-900">المنتجات والخدمات</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {products.map((product) => (
                 <div
                   key={product.id}
@@ -641,11 +641,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     <img
                       src={product.images[0].image_url}
                       alt={product.name_ar}
-                      className="w-full h-48 object-cover rounded-lg mb-3"
+                      className="w-full h-40 sm:h-48 object-cover rounded-lg mb-2 sm:mb-3"
                     />
                   )}
-                  <h3 className="font-bold text-lg mb-2 text-gray-900">{product.name_ar}</h3>
-                  <p className="text-gray-600 text-sm mb-2">{product.description_ar}</p>
+                  <h3 className="font-bold text-base sm:text-lg mb-1.5 sm:mb-2 text-gray-900">{product.name_ar}</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2">{product.description_ar}</p>
                   {product.price && (
                     <p className="text-blue-600 font-semibold">
                       {product.price} {product.currency}
@@ -673,25 +673,25 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         )}
 
         {/* Messages */}
-        <div className="bg-white rounded-lg shadow-lg p-4">
-          <h2 className="text-lg font-bold mb-3 text-gray-900 flex items-center gap-2">
-            <MessageCircle size={20} />
+        <div className="bg-white rounded-lg shadow-lg p-3 sm:p-4">
+          <h2 className="text-base sm:text-lg font-bold mb-3 text-gray-900 flex items-center gap-2">
+            <MessageCircle size={18} className="sm:w-5 sm:h-5" />
             {isOwner ? 'المحادثات' : 'إرسال رسالة'}
           </h2>
           
           {user ? (
             isOwner ? (
               // Owner View: Conversations List
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
                 {/* Conversations List */}
-                <div className="md:col-span-1 border rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 p-3 border-b">
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <Users size={18} />
+                <div className="lg:col-span-1 border rounded-lg overflow-hidden">
+                  <div className="bg-gray-50 p-2 sm:p-3 border-b">
+                    <h3 className="font-semibold text-sm sm:text-base text-gray-900 flex items-center gap-2">
+                      <Users size={16} className="sm:w-[18px] sm:h-[18px]" />
                       العملاء ({getConversations().length})
                     </h3>
                   </div>
-                  <div className="h-64 overflow-y-auto">
+                  <div className="h-48 sm:h-64 overflow-y-auto">
                     {getConversations().length > 0 ? (
                       <div className="divide-y">
                         {getConversations().map((conversation) => (
@@ -757,31 +757,31 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 </div>
 
                 {/* Messages Area */}
-                <div className="md:col-span-2 flex flex-col">
+                <div className="lg:col-span-2 flex flex-col">
                   {selectedConversation ? (
                     <>
                       {/* Conversation Header */}
-                      <div className="bg-gray-50 p-4 border-b rounded-t-lg">
+                      <div className="bg-gray-50 p-3 sm:p-4 border-b rounded-t-lg">
                         {(() => {
                           const conversation = getConversations().find((c) => c.senderId === selectedConversation)
                           return (
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3">
                               {conversation?.sender?.avatar_url ? (
                                 <img
                                   src={conversation.sender.avatar_url}
                                   alt={conversation.sender.full_name || conversation.sender.email || ''}
-                                  className="w-10 h-10 rounded-full"
+                                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
                                 />
                               ) : (
-                                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold flex-shrink-0">
                                   {(conversation?.sender?.full_name?.[0] || conversation?.sender?.email?.[0] || 'U').toUpperCase()}
                                 </div>
                               )}
-                              <div>
-                                <p className="font-semibold text-gray-900">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
                                   {conversation?.sender?.full_name || conversation?.sender?.email || 'مستخدم'}
                                 </p>
-                                <p className="text-xs text-gray-700">
+                                <p className="text-[10px] sm:text-xs text-gray-700">
                                   {conversation?.messageCount || 0} رسالة
                                 </p>
                               </div>
@@ -791,7 +791,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       </div>
 
                       {/* Messages */}
-                      <div className="flex-1 h-64 overflow-y-auto border-x border-b rounded-b-lg p-4 bg-gray-50">
+                      <div className="flex-1 h-48 sm:h-64 overflow-y-auto border-x border-b rounded-b-lg p-2 sm:p-4 bg-gray-50">
                         {getConversationMessages().length > 0 ? (
                           <div className="space-y-2">
                             {getConversationMessages().map((message) => (

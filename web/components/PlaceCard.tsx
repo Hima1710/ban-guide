@@ -27,9 +27,9 @@ export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardPro
   return (
     <Link href={`/places/${place.id}`}>
       <div
-        className={`rounded-lg overflow-hidden transition-all duration-300 hover:scale-105 cursor-pointer ${getCardClassName()}`}
+        className={`rounded-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105 cursor-pointer ${getCardClassName()}`}
       >
-        <div className="relative h-48 w-full bg-gray-200">
+        <div className="relative h-40 sm:h-48 w-full bg-gray-200">
           {place.logo_url ? (
             <div className="w-full h-full relative">
               <img
@@ -39,9 +39,9 @@ export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardPro
               />
               {place.video_url && (
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                  <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1">
-                    <Video size={12} />
-                    فيديو
+                  <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-red-600 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-0.5 sm:gap-1">
+                    <Video size={10} className="sm:w-3 sm:h-3" />
+                    <span className="hidden sm:inline">فيديو</span>
                   </div>
                 </div>
               )}
@@ -55,25 +55,25 @@ export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardPro
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <MapPin size={48} />
+              <MapPin size={36} className="sm:w-12 sm:h-12" />
             </div>
           )}
           {place.is_featured && (
-            <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold">
+            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-yellow-400 text-yellow-900 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold">
               مميز
             </div>
           )}
         </div>
-        <div className="p-4">
-          <h3 className="text-lg font-bold text-gray-900 mb-2">{place.name_ar}</h3>
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{place.description_ar}</p>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className="p-3 sm:p-4">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1.5 sm:mb-2 line-clamp-1">{place.name_ar}</h3>
+          <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 line-clamp-2">{place.description_ar}</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
             <div className="flex items-center gap-1">
-              <Phone size={16} />
-              <span>{place.phone_1}</span>
+              <Phone size={14} className="sm:w-4 sm:h-4" />
+              <span className="truncate">{place.phone_1}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Eye size={16} />
+              <Eye size={14} className="sm:w-4 sm:h-4" />
               <span>{place.today_views} اليوم</span>
             </div>
           </div>

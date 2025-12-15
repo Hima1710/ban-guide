@@ -112,31 +112,31 @@ export default function DashboardPage() {
       <Suspense fallback={null}>
         <YouTubeAuthHandler />
       </Suspense>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-900">لوحة التحكم</h1>
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-gray-900">لوحة التحكم</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center gap-4">
-              <PackageIcon className="text-blue-500" size={32} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <PackageIcon className="text-blue-500 flex-shrink-0" size={28} className="sm:w-8 sm:h-8" />
               <div>
-                <p className="text-gray-600">الأماكن</p>
-                <p className="text-2xl font-bold">{places.length}</p>
+                <p className="text-sm sm:text-base text-gray-600">الأماكن</p>
+                <p className="text-xl sm:text-2xl font-bold">{places.length}</p>
               </div>
             </div>
           </div>
           <Link
             href="#messages"
-            className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
           >
-            <div className="flex items-center gap-4">
-              <MessageSquare className="text-green-500" size={32} />
-              <div className="flex-1">
-                <p className="text-gray-600">الرسائل</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-2xl font-bold">{messages.length}</p>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <MessageSquare className="text-green-500 flex-shrink-0" size={28} className="sm:w-8 sm:h-8" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm sm:text-base text-gray-600">الرسائل</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-xl sm:text-2xl font-bold">{messages.length}</p>
                   {unreadCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    <span className="bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                       {unreadCount} غير مقروء
                     </span>
                   )}
@@ -144,12 +144,12 @@ export default function DashboardPage() {
               </div>
             </div>
           </Link>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center gap-4">
-              <TrendingUp className="text-yellow-500" size={32} />
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <TrendingUp className="text-yellow-500 flex-shrink-0" size={28} className="sm:w-8 sm:h-8" />
               <div>
-                <p className="text-gray-600">المشاهدات</p>
-                <p className="text-2xl font-bold">
+                <p className="text-sm sm:text-base text-gray-600">المشاهدات</p>
+                <p className="text-xl sm:text-2xl font-bold">
                   {places.reduce((sum, p) => sum + p.total_views, 0)}
                 </p>
               </div>
@@ -157,44 +157,45 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">أماكني</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl font-bold">أماكني</h2>
             <Link
               href="/dashboard/places/new"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm sm:text-base"
             >
-              <Plus size={20} />
-              إضافة مكان جديد
+              <Plus size={18} className="sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">إضافة مكان جديد</span>
+              <span className="sm:hidden">إضافة مكان</span>
             </Link>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {places.map((place) => (
               <Link
                 key={place.id}
                 href={`/dashboard/places/${place.id}`}
-                className="block p-4 border rounded-lg hover:bg-gray-50"
+                className="block p-3 sm:p-4 border rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <h3 className="font-bold text-gray-900">{place.name_ar}</h3>
-                <p className="text-sm text-gray-600">{place.category}</p>
-                <p className="text-xs text-gray-500 mt-2">
+                <h3 className="font-bold text-sm sm:text-base text-gray-900 mb-1">{place.name_ar}</h3>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">{place.category}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-1.5 sm:mt-2">
                   المشاهدات: {place.total_views} | اليوم: {place.today_views}
                 </p>
               </Link>
             ))}
             {places.length === 0 && (
-              <p className="text-center text-gray-500 py-8">لا توجد أماكن بعد</p>
+              <p className="text-center text-sm sm:text-base text-gray-500 py-6 sm:py-8">لا توجد أماكن بعد</p>
             )}
           </div>
         </div>
 
         {/* Messages Section */}
         {messages.length > 0 && (
-          <div id="messages" className="bg-white rounded-lg shadow p-6 mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">الرسائل الأخيرة</h2>
+          <div id="messages" className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900">الرسائل الأخيرة</h2>
               {unreadCount > 0 && (
-                <span className="bg-red-500 text-white text-xs px-3 py-1 rounded-full">
+                <span className="bg-red-500 text-white text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full">
                   {unreadCount} رسالة غير مقروءة
                 </span>
               )}
