@@ -522,6 +522,7 @@ export default function PlaceDetailsPage() {
                 onVideoUploaded={handleVideoUploaded}
                 maxVideos={1}
                 currentVideos={editData.video_url ? 1 : 0}
+                allowReplace={true}
               />
             </div>
           ) : (

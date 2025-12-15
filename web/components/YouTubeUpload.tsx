@@ -8,12 +8,14 @@ interface YouTubeUploadProps {
   onVideoUploaded: (videoUrl: string) => void
   maxVideos?: number
   currentVideos?: number
+  allowReplace?: boolean // السماح باستبدال الفيديو الموجود
 }
 
 export default function YouTubeUpload({
   onVideoUploaded,
   maxVideos = 1,
   currentVideos = 0,
+  allowReplace = false,
 }: YouTubeUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [title, setTitle] = useState('')
@@ -52,8 +54,9 @@ export default function YouTubeUpload({
       return
     }
 
-    if (currentVideos >= maxVideos) {
-      showError(`الحد الأقصى للفيديوهات هو ${maxVideos}`)
+    // السماح بالرفع إذا كان في وضع الاستبدال (التعديل)
+    if (!allowReplace && currentVideos >= maxVideos) {
+      showError(`تم الوصول للحد الأقصى من الفيديوهات (${maxVideos})`)
       return
     }
 
@@ -193,13 +196,13 @@ export default function YouTubeUpload({
 
       <button
         onClick={handleUpload}
-        disabled={!selectedFile || !title.trim() || uploading || currentVideos >= maxVideos}
+        disabled={!selectedFile || !title.trim() || uploading || (!allowReplace && currentVideos >= maxVideos)}
         className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
       >
-        {uploading ? 'جاري الرفع...' : 'رفع الفيديو إلى YouTube'}
+        {uploading ? 'جاري الرفع...' : allowReplace && currentVideos > 0 ? 'استبدال الفيديو' : 'رفع الفيديو إلى YouTube'}
       </button>
 
-      {currentVideos >= maxVideos && (
+      {!allowReplace && currentVideos >= maxVideos && (
         <p className="text-sm text-red-600 text-center">
           تم الوصول للحد الأقصى من الفيديوهات ({maxVideos})
         </p>
