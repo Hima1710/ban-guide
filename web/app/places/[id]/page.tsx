@@ -705,14 +705,31 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             <div className="flex items-center gap-3">
                               {/* Avatar */}
                               {conversation.sender?.avatar_url ? (
-                                <img
-                                  src={conversation.sender.avatar_url}
-                                  alt={conversation.sender.full_name || conversation.sender.email || ''}
-                                  className="w-12 h-12 rounded-full flex-shrink-0"
-                                />
+                                <div className="relative flex-shrink-0">
+                                  <img
+                                    src={conversation.sender.avatar_url}
+                                    alt={conversation.sender.full_name || conversation.sender.email || ''}
+                                    className="w-12 h-12 rounded-full border-2 border-gray-200 object-cover shadow-sm"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.style.display = 'none'
+                                      const parent = target.parentElement
+                                      if (parent) {
+                                        const fallback = document.createElement('div')
+                                        fallback.className = 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-base font-bold shadow-sm border-2 border-gray-200'
+                                        fallback.textContent = (conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()
+                                        parent.appendChild(fallback)
+                                      }
+                                    }}
+                                  />
+                                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                </div>
                               ) : (
-                                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold flex-shrink-0">
-                                  {(conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()}
+                                <div className="relative flex-shrink-0">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-base font-bold shadow-sm border-2 border-gray-200">
+                                    {(conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()}
+                                  </div>
+                                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                                 </div>
                               )}
                               
@@ -767,14 +784,31 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           return (
                             <div className="flex items-center gap-2 sm:gap-3">
                               {conversation?.sender?.avatar_url ? (
-                                <img
-                                  src={conversation.sender.avatar_url}
-                                  alt={conversation.sender.full_name || conversation.sender.email || ''}
-                                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
-                                />
+                                <div className="relative flex-shrink-0">
+                                  <img
+                                    src={conversation.sender.avatar_url}
+                                    alt={conversation.sender.full_name || conversation.sender.email || ''}
+                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200 object-cover shadow-sm"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.style.display = 'none'
+                                      const parent = target.parentElement
+                                      if (parent) {
+                                        const fallback = document.createElement('div')
+                                        fallback.className = 'w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm border-2 border-gray-200'
+                                        fallback.textContent = (conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()
+                                        parent.appendChild(fallback)
+                                      }
+                                    }}
+                                  />
+                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                </div>
                               ) : (
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold flex-shrink-0">
-                                  {(conversation?.sender?.full_name?.[0] || conversation?.sender?.email?.[0] || 'U').toUpperCase()}
+                                <div className="relative flex-shrink-0">
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm border-2 border-gray-200">
+                                    {(conversation?.sender?.full_name?.[0] || conversation?.sender?.email?.[0] || 'U').toUpperCase()}
+                                  </div>
+                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"></div>
                                 </div>
                               )}
                               <div className="min-w-0 flex-1">
@@ -803,14 +837,31 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                               >
                                 {/* Avatar */}
                                 {message.sender?.avatar_url ? (
-                                  <img
-                                    src={message.sender.avatar_url}
-                                    alt={message.sender.full_name || message.sender.email || ''}
-                                    className="w-8 h-8 rounded-full flex-shrink-0"
-                                  />
+                                  <div className="relative flex-shrink-0">
+                                    <img
+                                      src={message.sender.avatar_url}
+                                      alt={message.sender.full_name || message.sender.email || ''}
+                                      className="w-8 h-8 rounded-full border-2 border-gray-200 object-cover shadow-sm"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLImageElement
+                                        target.style.display = 'none'
+                                        const parent = target.parentElement
+                                        if (parent) {
+                                          const fallback = document.createElement('div')
+                                          fallback.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-gray-200'
+                                          fallback.textContent = (message.sender?.full_name?.[0] || message.sender?.email?.[0] || 'U').toUpperCase()
+                                          parent.appendChild(fallback)
+                                        }
+                                      }}
+                                    />
+                                    <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border-2 border-white rounded-full"></div>
+                                  </div>
                                 ) : (
-                                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                                    {message.sender?.full_name?.[0]?.toUpperCase() || message.sender?.email?.[0]?.toUpperCase() || 'U'}
+                                  <div className="relative flex-shrink-0">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-gray-200">
+                                      {message.sender?.full_name?.[0]?.toUpperCase() || message.sender?.email?.[0]?.toUpperCase() || 'U'}
+                                    </div>
+                                    <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border-2 border-white rounded-full"></div>
                                   </div>
                                 )}
                                 
@@ -997,21 +1048,22 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             </button>
                           </div>
                         ) : (
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-1.5 sm:gap-2">
                             <input
                               type="text"
                               value={newMessage}
                               onChange={(e) => setNewMessage(e.target.value)}
                               placeholder={replyingTo ? "اكتب ردك..." : "اكتب رسالتك..."}
-                              className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                              className="flex-1 min-w-[150px] px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                             />
                             <button
                               onClick={startRecording}
-                              className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+                              className="px-3 sm:px-4 py-2 sm:py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0"
                               title="تسجيل صوتي"
                             >
-                              <Mic size={20} />
+                              <Mic size={18} className="sm:w-5 sm:h-5" />
+                              <span className="hidden sm:inline">صوت</span>
                             </button>
                             <label className="cursor-pointer px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-100 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-1.5 sm:gap-2 transition-colors flex-shrink-0">
                               <ImageIcon size={18} className="sm:w-5 sm:h-5" />
@@ -1026,19 +1078,21 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             {isOwner && products.length > 0 && (
                               <button
                                 onClick={() => setShowProductPicker(!showProductPicker)}
-                                className="px-4 py-2.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2"
+                                className="px-3 sm:px-4 py-2 sm:py-2.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 flex-shrink-0"
                                 title="مشاركة منتج"
                               >
-                                <Package size={20} />
+                                <Package size={18} className="sm:w-5 sm:h-5" />
+                                <span className="hidden sm:inline">منتج</span>
                               </button>
                             )}
                             <button
                               onClick={sendMessage}
                               disabled={!newMessage.trim() && !selectedImage && !selectedProduct}
-                              className="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                              className="px-4 sm:px-6 py-2 sm:py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base flex-shrink-0"
                             >
-                              <Send size={20} />
-                              {replyingTo ? 'إرسال الرد' : 'إرسال'}
+                              <Send size={18} className="sm:w-5 sm:h-5" />
+                              <span className="hidden sm:inline">{replyingTo ? 'إرسال الرد' : 'إرسال'}</span>
+                              <span className="sm:hidden">إرسال</span>
                             </button>
                           </div>
                         )}
@@ -1114,14 +1168,31 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         >
                           {/* Avatar */}
                           {message.sender?.avatar_url ? (
-                            <img
-                              src={message.sender.avatar_url}
-                              alt={message.sender.full_name || message.sender.email || ''}
-                              className="w-8 h-8 rounded-full flex-shrink-0"
-                            />
+                            <div className="relative flex-shrink-0">
+                              <img
+                                src={message.sender.avatar_url}
+                                alt={message.sender.full_name || message.sender.email || ''}
+                                className="w-8 h-8 rounded-full border-2 border-gray-200 object-cover shadow-sm"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement
+                                  target.style.display = 'none'
+                                  const parent = target.parentElement
+                                  if (parent) {
+                                    const fallback = document.createElement('div')
+                                    fallback.className = 'w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-gray-200'
+                                    fallback.textContent = (message.sender?.full_name?.[0] || message.sender?.email?.[0] || 'U').toUpperCase()
+                                    parent.appendChild(fallback)
+                                  }
+                                }}
+                              />
+                              <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border-2 border-white rounded-full"></div>
+                            </div>
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                              {message.sender?.full_name?.[0]?.toUpperCase() || message.sender?.email?.[0]?.toUpperCase() || 'U'}
+                            <div className="relative flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-gray-200">
+                                {message.sender?.full_name?.[0]?.toUpperCase() || message.sender?.email?.[0]?.toUpperCase() || 'U'}
+                              </div>
+                              <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border-2 border-white rounded-full"></div>
                             </div>
                           )}
                           

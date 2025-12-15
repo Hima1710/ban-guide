@@ -164,14 +164,31 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       {userProfile.avatar_url ? (
-                        <img
-                          src={userProfile.avatar_url}
-                          alt={userProfile.full_name || userProfile.email || ''}
-                          className="w-10 h-10 rounded-full"
-                        />
+                        <div className="relative">
+                          <img
+                            src={userProfile.avatar_url}
+                            alt={userProfile.full_name || userProfile.email || ''}
+                            className="w-10 h-10 rounded-full border-2 border-gray-200 object-cover shadow-sm"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.style.display = 'none'
+                              const parent = target.parentElement
+                              if (parent) {
+                                const fallback = document.createElement('div')
+                                fallback.className = 'w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-gray-200'
+                                fallback.textContent = (userProfile.full_name?.[0] || userProfile.email?.[0] || 'U').toUpperCase()
+                                parent.appendChild(fallback)
+                              }
+                            }}
+                          />
+                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                        </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-                          {(userProfile.full_name?.[0] || userProfile.email?.[0] || 'U').toUpperCase()}
+                        <div className="relative">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 border-gray-200">
+                            {(userProfile.full_name?.[0] || userProfile.email?.[0] || 'U').toUpperCase()}
+                          </div>
+                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
                         </div>
                       )}
                       <div>
