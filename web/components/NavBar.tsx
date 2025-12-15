@@ -43,12 +43,18 @@ export default function NavBar() {
     return pathname.startsWith(path)
   }
 
-  const navLinks = [
+  // Links visible to everyone
+  const publicLinks = [
     { href: '/', label: 'الرئيسية', icon: Home },
-    { href: '/dashboard', label: 'لوحة التحكم', icon: Package, requireAuth: true },
-    { href: '/dashboard/packages', label: 'الباقات', icon: Package, requireAuth: true },
   ]
 
+  // Links visible to authenticated users
+  const authLinks = [
+    { href: '/dashboard', label: 'لوحة التحكم', icon: Package },
+    { href: '/dashboard/packages', label: 'الباقات', icon: Package },
+  ]
+
+  // Links visible to admins only
   const adminLinks = [
     { href: '/admin', label: 'لوحة الإدارة', icon: Settings },
     { href: '/admin/packages', label: 'إدارة الباقات', icon: Package },
@@ -56,8 +62,12 @@ export default function NavBar() {
     { href: '/admin/affiliates', label: 'المسوقين', icon: TrendingUp },
   ]
 
-  const visibleLinks = navLinks.filter(link => !link.requireAuth || user)
-  const visibleAdminLinks = userProfile?.is_admin ? adminLinks : []
+  // Combine visible links
+  const visibleLinks = [
+    ...publicLinks,
+    ...(user ? authLinks : []),
+    ...(userProfile?.is_admin ? adminLinks : []),
+  ]
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -66,7 +76,7 @@ export default function NavBar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-              <Package className="text-white" size={18} className="sm:w-5 sm:h-5" />
+              <Package className="text-white sm:w-5 sm:h-5" size={18} />
             </div>
             <span className="text-base sm:text-lg font-bold text-gray-900 hidden sm:inline">
               دليل المحلات
@@ -77,30 +87,16 @@ export default function NavBar() {
           <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {visibleLinks.map((link) => {
               const Icon = link.icon
+              const isAdminLink = adminLinks.some(al => al.href === link.href)
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
                     isActive(link.href)
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span>{link.label}</span>
-                </Link>
-              )
-            })}
-            {visibleAdminLinks.map((link) => {
-              const Icon = link.icon
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-                    isActive(link.href)
-                      ? 'bg-red-50 text-red-600'
+                      ? isAdminLink 
+                        ? 'bg-red-50 text-red-600'
+                        : 'bg-blue-50 text-blue-600'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
