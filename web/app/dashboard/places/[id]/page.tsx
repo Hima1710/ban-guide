@@ -479,7 +479,7 @@ export default function PlaceDetailsPage() {
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-xl font-bold mb-4 text-gray-900">الموقع على الخريطة</h2>
           {isEditing ? (
-            <div className="space-y-4">
+            <div className="h-96 rounded-lg overflow-hidden">
               <MapPicker
                 latitude={editData.latitude || place.latitude}
                 longitude={editData.longitude || place.longitude}
