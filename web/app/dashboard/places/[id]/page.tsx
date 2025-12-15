@@ -12,9 +12,9 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { uploadImageToImgBB, convertToWebP } from '@/lib/imgbb'
 import YouTubeUpload from '@/components/YouTubeUpload'
-import MapPicker from '@/components/MapPicker'
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false })
+const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false })
 
 export default function PlaceDetailsPage() {
   const params = useParams()
