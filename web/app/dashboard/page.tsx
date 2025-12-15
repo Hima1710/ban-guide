@@ -118,7 +118,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="flex items-center gap-3 sm:gap-4">
-              <PackageIcon className="text-blue-500 flex-shrink-0" size={28} className="sm:w-8 sm:h-8" />
+              <PackageIcon className="text-blue-500 flex-shrink-0 sm:w-8 sm:h-8" size={28} />
               <div>
                 <p className="text-sm sm:text-base text-gray-600">الأماكن</p>
                 <p className="text-xl sm:text-2xl font-bold">{places.length}</p>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
             className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex items-center gap-3 sm:gap-4">
-              <MessageSquare className="text-green-500 flex-shrink-0" size={28} className="sm:w-8 sm:h-8" />
+              <MessageSquare className="text-green-500 flex-shrink-0 sm:w-8 sm:h-8" size={28} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm sm:text-base text-gray-600">الرسائل</p>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -146,7 +146,7 @@ export default function DashboardPage() {
           </Link>
           <div className="bg-white rounded-lg shadow p-4 sm:p-6 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 sm:gap-4">
-              <TrendingUp className="text-yellow-500 flex-shrink-0" size={28} className="sm:w-8 sm:h-8" />
+              <TrendingUp className="text-yellow-500 flex-shrink-0 sm:w-8 sm:h-8" size={28} />
               <div>
                 <p className="text-sm sm:text-base text-gray-600">المشاهدات</p>
                 <p className="text-xl sm:text-2xl font-bold">

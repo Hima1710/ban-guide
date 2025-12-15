@@ -193,13 +193,32 @@ export default function AdminUsersPage() {
                       )}
                       <div>
                         <div className="font-medium">{userProfile.full_name || 'بدون اسم'}</div>
-                        <div className="text-sm text-gray-500">
-                          {userProfile.is_admin && (
-                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs mr-2">مدير</span>
-                          )}
-                          {userProfile.is_affiliate && (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">مسوق</span>
-                          )}
+                        <div className="text-sm text-gray-500 flex flex-wrap gap-1 mt-1">
+                          {(() => {
+                            const isAdmin = userProfile.is_admin || false
+                            const isAffiliate = userProfile.is_affiliate || false
+                            
+                            if (isAdmin && isAffiliate) {
+                              return (
+                                <>
+                                  <span className="px-2 py-0.5 bg-red-100 text-red-800 rounded text-xs font-medium">مدير</span>
+                                  <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">مسوق</span>
+                                </>
+                              )
+                            } else if (isAdmin) {
+                              return (
+                                <span className="px-2 py-0.5 bg-red-100 text-red-800 rounded text-xs font-medium">مدير</span>
+                              )
+                            } else if (isAffiliate) {
+                              return (
+                                <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">مسوق</span>
+                              )
+                            } else {
+                              return (
+                                <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">مستخدم</span>
+                              )
+                            }
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -212,14 +231,31 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col gap-1">
-                      {userProfile.is_admin ? (
-                        <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs w-fit">مدير</span>
-                      ) : (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs w-fit">مستخدم</span>
-                      )}
-                      {userProfile.is_affiliate && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs w-fit">مسوق</span>
-                      )}
+                      {(() => {
+                        const isAdmin = userProfile.is_admin || false
+                        const isAffiliate = userProfile.is_affiliate || false
+                        
+                        if (isAdmin && isAffiliate) {
+                          return (
+                            <>
+                              <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs w-fit">مدير</span>
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs w-fit">مسوق</span>
+                            </>
+                          )
+                        } else if (isAdmin) {
+                          return (
+                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs w-fit">مدير</span>
+                          )
+                        } else if (isAffiliate) {
+                          return (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs w-fit">مسوق</span>
+                          )
+                        } else {
+                          return (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs w-fit">مستخدم</span>
+                          )
+                        }
+                      })()}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
