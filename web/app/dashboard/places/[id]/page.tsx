@@ -208,12 +208,12 @@ export default function PlaceDetailsPage() {
     }
   }
 
-  const handleLocationChange = (lat: number, lng: number, address: string) => {
+  const handleLocationChange = (lat: number, lng: number, address?: string) => {
     setEditData({
       ...editData,
       latitude: lat,
       longitude: lng,
-      address: address,
+      address: address || editData.address,
     })
   }
 
