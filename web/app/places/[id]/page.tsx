@@ -672,34 +672,35 @@ function PlacePageContent({ productId }: { productId: string | null }) {
           </div>
         )}
 
-        {/* Messages */}
+        {/* Messages - Hidden for owners (they have sidebar), shown for clients */}
+        {!(user && isOwner) && (
         <div className="bg-white rounded-lg shadow-lg p-3 sm:p-4">
           <h2 className="text-base sm:text-lg font-bold mb-3 text-gray-900 flex items-center gap-2">
             <MessageCircle size={18} className="sm:w-5 sm:h-5" />
-            {isOwner ? 'المحادثات' : 'إرسال رسالة'}
+            إرسال رسالة
           </h2>
           
           {user ? (
-            isOwner ? (
-              // Owner View: Conversations List
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-                {/* Conversations List */}
-                <div className="lg:col-span-1 border rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 p-2 sm:p-3 border-b">
-                    <h3 className="font-semibold text-sm sm:text-base text-gray-900 flex items-center gap-2">
+            false ? (
+              // Owner View: Sidebar Layout for Desktop, Stacked for Mobile
+              <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 h-[600px] lg:h-[700px]">
+                {/* Conversations Sidebar - Visible on desktop, hidden/collapsible on mobile */}
+                <div className="lg:w-80 lg:flex-shrink-0 border rounded-lg overflow-hidden bg-white dark:bg-slate-800 dark:border-slate-700 flex flex-col">
+                  <div className="bg-gray-50 dark:bg-slate-900 p-2 sm:p-3 border-b dark:border-slate-700 flex-shrink-0">
+                    <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-slate-100 flex items-center gap-2">
                       <Users size={16} className="sm:w-[18px] sm:h-[18px]" />
                       العملاء ({getConversations().length})
                     </h3>
                   </div>
-                  <div className="h-48 sm:h-64 overflow-y-auto">
+                  <div className="flex-1 overflow-y-auto">
                     {getConversations().length > 0 ? (
-                      <div className="divide-y">
+                      <div className="divide-y divide-gray-200 dark:divide-slate-700">
                         {getConversations().map((conversation) => (
                           <button
                             key={conversation.senderId}
                             onClick={() => setSelectedConversation(conversation.senderId)}
-                            className={`w-full p-3 text-right hover:bg-gray-50 transition-colors ${
-                              selectedConversation === conversation.senderId ? 'bg-blue-50 border-r-4 border-blue-500' : ''
+                            className={`w-full p-3 text-right hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${
+                              selectedConversation === conversation.senderId ? 'bg-blue-50 dark:bg-blue-900/30 border-r-4 border-blue-500' : ''
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -709,33 +710,33 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                                   <img
                                     src={conversation.sender.avatar_url}
                                     alt={conversation.sender.full_name || conversation.sender.email || ''}
-                                    className="w-12 h-12 rounded-full border-2 border-gray-200 object-cover shadow-sm"
+                                    className="w-12 h-12 rounded-full border-2 border-gray-200 dark:border-slate-600 object-cover shadow-sm"
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement
                                       target.style.display = 'none'
                                       const parent = target.parentElement
                                       if (parent) {
                                         const fallback = document.createElement('div')
-                                        fallback.className = 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-base font-bold shadow-sm border-2 border-gray-200'
+                                        fallback.className = 'w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-base font-bold shadow-sm border-2 border-gray-200 dark:border-slate-600'
                                         fallback.textContent = (conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()
                                         parent.appendChild(fallback)
                                       }
                                     }}
                                   />
-                                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                                 </div>
                               ) : (
                                 <div className="relative flex-shrink-0">
-                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-base font-bold shadow-sm border-2 border-gray-200">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-base font-bold shadow-sm border-2 border-gray-200 dark:border-slate-600">
                                     {(conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()}
                                   </div>
-                                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                                 </div>
                               )}
                               
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
-                                  <p className="font-semibold text-gray-900 truncate">
+                                  <p className="font-semibold text-gray-900 dark:text-slate-100 truncate">
                                     {conversation.sender?.full_name || conversation.sender?.email || 'مستخدم'}
                                   </p>
                                   {conversation.unreadCount > 0 && (
@@ -745,12 +746,12 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                                   )}
                                 </div>
                                 {conversation.lastMessage && (
-                                  <p className="text-xs text-gray-700 truncate">
+                                  <p className="text-xs text-gray-700 dark:text-slate-300 truncate">
                                     {conversation.lastMessage.content || 'صورة'}
                                   </p>
                                 )}
                                 {conversation.lastMessage && (
-                                  <p className="text-xs text-gray-600 mt-1">
+                                  <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
                                     {new Date(conversation.lastMessage.created_at).toLocaleDateString('ar-EG', {
                                       month: 'short',
                                       day: 'numeric',
@@ -765,20 +766,20 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         ))}
                       </div>
                     ) : (
-                      <div className="p-8 text-center text-gray-700">
-                        <MessageCircle size={48} className="mx-auto mb-4 text-gray-600" />
+                      <div className="p-8 text-center text-gray-700 dark:text-slate-400">
+                        <MessageCircle size={48} className="mx-auto mb-4 text-gray-600 dark:text-slate-500" />
                         <p>لا توجد محادثات بعد</p>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Messages Area */}
-                <div className="lg:col-span-2 flex flex-col">
+                {/* Messages Area - Takes remaining space on desktop */}
+                <div className="flex-1 flex flex-col min-w-0">
                   {selectedConversation ? (
-                    <>
+                    <div className="border rounded-lg overflow-hidden bg-white dark:bg-slate-800 dark:border-slate-700 flex flex-col h-full">
                       {/* Conversation Header */}
-                      <div className="bg-gray-50 p-3 sm:p-4 border-b rounded-t-lg">
+                      <div className="bg-gray-50 dark:bg-slate-900 p-3 sm:p-4 border-b dark:border-slate-700 flex-shrink-0">
                         {(() => {
                           const conversation = getConversations().find((c) => c.senderId === selectedConversation)
                           return (
@@ -788,34 +789,34 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                                   <img
                                     src={conversation.sender.avatar_url}
                                     alt={conversation.sender.full_name || conversation.sender.email || ''}
-                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200 object-cover shadow-sm"
+                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200 dark:border-slate-600 object-cover shadow-sm"
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement
                                       target.style.display = 'none'
                                       const parent = target.parentElement
                                       if (parent) {
                                         const fallback = document.createElement('div')
-                                        fallback.className = 'w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm border-2 border-gray-200'
+                                        fallback.className = 'w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm border-2 border-gray-200 dark:border-slate-600'
                                         fallback.textContent = (conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()
                                         parent.appendChild(fallback)
                                       }
                                     }}
                                   />
-                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                                 </div>
                               ) : (
                                 <div className="relative flex-shrink-0">
-                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm border-2 border-gray-200">
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm border-2 border-gray-200 dark:border-slate-600">
                                     {(conversation?.sender?.full_name?.[0] || conversation?.sender?.email?.[0] || 'U').toUpperCase()}
                                   </div>
-                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                                 </div>
                               )}
                               <div className="min-w-0 flex-1">
-                                <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+                                <p className="font-semibold text-sm sm:text-base text-gray-900 dark:text-slate-100 truncate">
                                   {conversation?.sender?.full_name || conversation?.sender?.email || 'مستخدم'}
                                 </p>
-                                <p className="text-[10px] sm:text-xs text-gray-700">
+                                <p className="text-[10px] sm:text-xs text-gray-700 dark:text-slate-400">
                                   {conversation?.messageCount || 0} رسالة
                                 </p>
                               </div>
@@ -825,7 +826,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       </div>
 
                       {/* Messages */}
-                      <div className="flex-1 h-48 sm:h-64 overflow-y-auto border-x border-b rounded-b-lg p-2 sm:p-4 bg-gray-50">
+                      <div className="flex-1 overflow-y-auto p-2 sm:p-4 bg-gray-50 dark:bg-slate-900/50">
                         {getConversationMessages().length > 0 ? (
                           <div className="space-y-2">
                             {getConversationMessages().map((message) => (
@@ -1004,7 +1005,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       </div>
 
                       {/* Message Input */}
-                      <div className="flex flex-col gap-2 p-4 border-t bg-white rounded-b-lg">
+                      <div className="flex flex-col gap-2 p-4 border-t dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0">
                         {replyingTo && (
                           <div className="bg-blue-50 border-r-4 border-blue-500 p-3 rounded-lg">
                             <div className="flex items-start justify-between">
@@ -1141,11 +1142,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           </div>
                         </div>
                       )}
-                    </>
+                    </div>
                   ) : (
-                    <div className="flex-1 flex items-center justify-center border rounded-lg bg-gray-50">
-                      <div className="text-center text-gray-700">
-                        <MessageCircle size={48} className="mx-auto mb-4 text-gray-600" />
+                    <div className="border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 flex-1 flex items-center justify-center">
+                      <div className="text-center text-gray-700 dark:text-slate-400">
+                        <MessageCircle size={48} className="mx-auto mb-4 text-gray-600 dark:text-slate-500" />
                         <p>اختر محادثة لعرض الرسائل</p>
                       </div>
                     </div>
@@ -1445,6 +1446,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             </p>
           )}
         </div>
+        )}
       </div>
 
       {/* Image Enlargement Modal */}

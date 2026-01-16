@@ -81,8 +81,10 @@ export default function NavBar() {
                 src="/logo.webp"
                 alt="بان - دليل المحلات"
                 fill
+                sizes="56px"
                 className="object-contain"
                 priority
+                suppressHydrationWarning
               />
             </div>
             <span className="text-base sm:text-lg font-bold text-gray-900 hidden sm:inline">

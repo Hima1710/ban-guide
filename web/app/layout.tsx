@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ConversationsSidebar from "@/components/ConversationsSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,7 +53,10 @@ export default function RootLayout({
       >
         <NavBar />
         <Breadcrumbs />
-        {children}
+        <div className="lg:pr-96">
+          {children}
+        </div>
+        <ConversationsSidebar />
         <Script
           src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
           strategy="lazyOnload"
