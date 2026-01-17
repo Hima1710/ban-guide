@@ -22,6 +22,7 @@ function ProductIdHandler({ children }: { children: (productId: string | null) =
 function PlacePageContent({ productId }: { productId: string | null }) {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const placeId = params.id as string
 
   const [place, setPlace] = useState<Place | null>(null)
@@ -1030,7 +1031,12 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     )
                   )}
                   <button
-                    onClick={() => router.push(`/dashboard?openConversation=${placeId}`)}
+                    onClick={() => {
+                      // Add openConversation query parameter to current URL without navigating away
+                      const params = new URLSearchParams(searchParams.toString())
+                      params.set('openConversation', placeId)
+                      router.push(`/places/${placeId}?${params.toString()}`)
+                    }}
                     className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
                   >
                     <MessageCircle size={18} />
