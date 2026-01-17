@@ -90,6 +90,28 @@ export default function ConversationsSidebar() {
     }
   }, [selectedPlaceId])
 
+  // Check for openConversation query parameter and open the conversation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const openConversationPlaceId = params.get('openConversation')
+      
+      if (openConversationPlaceId && user && userPlaces.length > 0 && messages.length > 0) {
+        // Find conversation with this place
+        const conversations = getConversations()
+        const conversation = conversations.find(c => c.placeId === openConversationPlaceId)
+        
+        if (conversation) {
+          selectConversation(conversation.senderId, conversation.placeId)
+          // Remove query parameter from URL
+          params.delete('openConversation')
+          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '')
+          window.history.replaceState({}, '', newUrl)
+        }
+      }
+    }
+  }, [user, userPlaces, messages])
+
   // Update CSS variable for sidebar width when sidebar opens/closes on desktop
   useEffect(() => {
     if (typeof window !== 'undefined') {
