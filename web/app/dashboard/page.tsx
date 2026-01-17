@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { UserProfile, Place, Package, Message } from '@/lib/types'
 import Link from 'next/link'
-import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock } from 'lucide-react'
+import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown } from 'lucide-react'
 import { showSuccess, showError } from '@/components/SweetAlert'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
 
   useEffect(() => {
     checkUser()
@@ -273,13 +274,80 @@ export default function DashboardPage() {
 
         {profile?.is_admin && (
           <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">لوحة الإدارة</h2>
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-            >
-              الوصول إلى لوحة الإدارة
-            </Link>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">لوحة الإدارة</h2>
+              <div className="relative">
+                <button
+                  onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  <Settings size={18} />
+                  <span>لوحة الإدارة</span>
+                  <ChevronDown size={18} className={`transition-transform ${adminMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {adminMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10 overflow-hidden">
+                    <Link
+                      href="/admin"
+                      onClick={() => setAdminMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-900 border-b border-gray-100"
+                    >
+                      <Settings size={18} className="text-red-500" />
+                      <span>لوحة الإدارة الرئيسية</span>
+                    </Link>
+                    <Link
+                      href="/admin/packages"
+                      onClick={() => setAdminMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-900 border-b border-gray-100"
+                    >
+                      <PackageIcon size={18} className="text-blue-500" />
+                      <span>إدارة الباقات</span>
+                    </Link>
+                    <Link
+                      href="/admin/users"
+                      onClick={() => setAdminMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-900 border-b border-gray-100"
+                    >
+                      <Users size={18} className="text-green-500" />
+                      <span>المستخدمين</span>
+                    </Link>
+                    <Link
+                      href="/admin/affiliates"
+                      onClick={() => setAdminMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-900 border-b border-gray-100"
+                    >
+                      <TrendingUp size={18} className="text-yellow-500" />
+                      <span>المسوقين</span>
+                    </Link>
+                    <Link
+                      href="/admin/youtube"
+                      onClick={() => setAdminMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-900 border-b border-gray-100"
+                    >
+                      <MessageSquare size={18} className="text-purple-500" />
+                      <span>إعدادات YouTube</span>
+                    </Link>
+                    <Link
+                      href="/admin/discount-codes"
+                      onClick={() => setAdminMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-900 border-b border-gray-100"
+                    >
+                      <PackageIcon size={18} className="text-orange-500" />
+                      <span>كوبونات الخصم</span>
+                    </Link>
+                    <Link
+                      href="/admin/settings"
+                      onClick={() => setAdminMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-gray-900"
+                    >
+                      <Settings size={18} className="text-gray-500" />
+                      <span>الإعدادات</span>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

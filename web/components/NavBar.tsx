@@ -55,19 +55,10 @@ export default function NavBar() {
     { href: '/dashboard/packages', label: 'الباقات', icon: Package },
   ]
 
-  // Links visible to admins only
-  const adminLinks = [
-    { href: '/admin', label: 'لوحة الإدارة', icon: Settings },
-    { href: '/admin/packages', label: 'إدارة الباقات', icon: Package },
-    { href: '/admin/users', label: 'المستخدمين', icon: Users },
-    { href: '/admin/affiliates', label: 'المسوقين', icon: TrendingUp },
-  ]
-
-  // Combine visible links
+  // Combine visible links (admin links moved to dashboard dropdown)
   const visibleLinks = [
     ...publicLinks,
     ...(user ? authLinks : []),
-    ...(userProfile?.is_admin ? adminLinks : []),
   ]
 
   return (
@@ -96,16 +87,13 @@ export default function NavBar() {
           <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {visibleLinks.map((link) => {
               const Icon = link.icon
-              const isAdminLink = adminLinks.some(al => al.href === link.href)
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
                     isActive(link.href)
-                      ? isAdminLink 
-                        ? 'bg-red-50 text-red-600'
-                        : 'bg-blue-50 text-blue-600'
+                      ? 'bg-blue-50 text-blue-600'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -194,7 +182,6 @@ export default function NavBar() {
           <div className="md:hidden border-t border-gray-200 py-3 space-y-1">
             {visibleLinks.map((link) => {
               const Icon = link.icon
-              const isAdminLink = adminLinks.some(al => al.href === link.href)
               return (
                 <Link
                   key={link.href}
@@ -202,9 +189,7 @@ export default function NavBar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
                     isActive(link.href)
-                      ? isAdminLink
-                        ? 'bg-red-50 text-red-600 font-medium'
-                        : 'bg-blue-50 text-blue-600 font-medium'
+                      ? 'bg-blue-50 text-blue-600 font-medium'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
