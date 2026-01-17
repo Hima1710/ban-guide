@@ -1726,14 +1726,17 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           </div>
                         )}
                       </div>
-                      {selectedProduct && (
+                      {selectedProduct && (() => {
+                        const product = selectedProduct!
+                        const firstImage = product.images?.[0]
+                        return (
                         <div className="px-4 pb-4">
                           <div className="relative inline-block border-2 border-purple-300 rounded-lg p-2 bg-purple-50">
                             <div className="flex items-center gap-2">
-                              {selectedProduct!.images?.length && selectedProduct!.images.length > 0 && selectedProduct!.images[0] && (
+                              {firstImage && (
                                 <img
-                                  src={selectedProduct!.images[0]?.image_url || ''}
-                                  alt={selectedProduct!.name_ar}
+                                  src={firstImage.image_url || ''}
+                                  alt={product.name_ar}
                                   className="h-16 w-16 object-cover rounded"
                                 />
                               )}
