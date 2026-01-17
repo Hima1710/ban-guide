@@ -12,6 +12,7 @@ interface Message {
   id: string
   place_id: string
   sender_id: string
+  recipient_id?: string | null
   content?: string
   image_url?: string
   audio_url?: string
