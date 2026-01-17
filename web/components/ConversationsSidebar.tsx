@@ -1397,7 +1397,8 @@ export default function ConversationsSidebar() {
                     </button>
                   </div>
                 </div>
-              )}
+                )
+              })()}
               {selectedImage && (
                 <div className="relative inline-block">
                   <img
