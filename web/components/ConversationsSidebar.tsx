@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { AudioRecorder } from '@/lib/audio-recorder'
@@ -53,6 +53,7 @@ interface Conversation {
 export default function ConversationsSidebar() {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [user, setUser] = useState<any>(null)
   const [userPlaces, setUserPlaces] = useState<any[]>([])
   const [messages, setMessages] = useState<Message[]>([])
@@ -96,8 +97,7 @@ export default function ConversationsSidebar() {
   useEffect(() => {
     if (typeof window === 'undefined' || !user) return
     
-    const params = new URLSearchParams(window.location.search)
-    const openConversationPlaceId = params.get('openConversation')
+    const openConversationPlaceId = searchParams.get('openConversation')
     
     if (!openConversationPlaceId) return
     
@@ -112,8 +112,9 @@ export default function ConversationsSidebar() {
           console.log('✅ [OPEN CONVERSATION] Found existing conversation:', { senderId: conversation.senderId, placeId: conversation.placeId })
           selectConversation(conversation.senderId, conversation.placeId)
           // Remove query parameter from URL
-          params.delete('openConversation')
-          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '')
+          const currentParams = new URLSearchParams(window.location.search)
+          currentParams.delete('openConversation')
+          const newUrl = window.location.pathname + (currentParams.toString() ? '?' + currentParams.toString() : '')
           window.history.replaceState({}, '', newUrl)
           return
         }
@@ -127,8 +128,9 @@ export default function ConversationsSidebar() {
         console.log('✅ [OPEN CONVERSATION] User owns place, opening sidebar')
         setIsOpen(true)
         // Remove query parameter from URL
-        params.delete('openConversation')
-        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '')
+        const currentParams = new URLSearchParams(window.location.search)
+        currentParams.delete('openConversation')
+        const newUrl = window.location.pathname + (currentParams.toString() ? '?' + currentParams.toString() : '')
         window.history.replaceState({}, '', newUrl)
         return
       }
@@ -176,8 +178,9 @@ export default function ConversationsSidebar() {
           // Open conversation with place owner
           selectConversation(placeOwnerId, openConversationPlaceId)
           // Remove query parameter from URL
-          params.delete('openConversation')
-          const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '')
+          const currentParams = new URLSearchParams(window.location.search)
+          currentParams.delete('openConversation')
+          const newUrl = window.location.pathname + (currentParams.toString() ? '?' + currentParams.toString() : '')
           window.history.replaceState({}, '', newUrl)
         }
       } catch (error) {
@@ -191,7 +194,7 @@ export default function ConversationsSidebar() {
     }, 500)
     
     return () => clearTimeout(timer)
-  }, [user, userPlaces, messages, pathname])
+  }, [user, userPlaces, messages, pathname, searchParams.get('openConversation')])
 
   // Update CSS variable for sidebar width when sidebar opens/closes on desktop
   useEffect(() => {
