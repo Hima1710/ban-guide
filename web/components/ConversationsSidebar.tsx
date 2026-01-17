@@ -13,6 +13,7 @@ interface Message {
   place_id: string
   sender_id: string
   recipient_id?: string | null
+  employee_id?: string | null
   content?: string
   image_url?: string
   audio_url?: string
@@ -28,6 +29,10 @@ interface Message {
   }
   product?: any
   replied_message?: Message
+  place?: {
+    id: string
+    name_ar?: string
+  }
 }
 
 interface Conversation {
