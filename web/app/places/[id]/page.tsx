@@ -1409,7 +1409,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         {(() => {
                           const conversation = getConversations().find((c) => c.senderId === selectedConversation)
                           if (!conversation) return null
-                          const sender = conversation.sender
+                          const sender = conversation!.sender
                           return (
                             <div className="flex items-center gap-2 sm:gap-3">
                               {sender?.avatar_url ? (
