@@ -54,7 +54,7 @@ export default function NewPlacePage() {
       .select('*, package:packages(*)')
       .eq('user_id', user.id)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
 
     if (!subData) {
       showError('يجب الاشتراك في باقة أولاً')

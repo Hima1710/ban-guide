@@ -28,9 +28,9 @@ export default function AffiliateDashboardPage() {
         .from('affiliates')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
-      setAffiliate(affiliateData)
+      setAffiliate(affiliateData || null)
 
       // Load transactions
       if (affiliateData) {

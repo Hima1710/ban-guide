@@ -57,9 +57,9 @@ export default function DashboardPage() {
       .from('user_profiles')
       .select('*')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
 
-    setProfile(profileData)
+    setProfile(profileData || null)
 
     // Load user places
     const { data: placesData } = await supabase

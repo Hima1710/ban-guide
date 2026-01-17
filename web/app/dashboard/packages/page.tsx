@@ -38,9 +38,9 @@ export default function PackagesPage() {
       .select('*, package:packages(*)')
       .eq('user_id', user.id)
       .eq('is_active', true)
-      .single()
+      .maybeSingle()
 
-    setCurrentSubscription(subData)
+    setCurrentSubscription(subData || null)
   }
 
   const loadPackages = async () => {

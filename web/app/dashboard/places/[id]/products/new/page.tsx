@@ -39,7 +39,7 @@ export default function NewProductPage() {
       .from('places')
       .select('subscription_id, subscription:user_subscriptions(package:packages(*))')
       .eq('id', placeId)
-      .single()
+      .maybeSingle()
 
     if (placeData?.subscription) {
       setSubscription((placeData.subscription as any).package)
