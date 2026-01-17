@@ -1408,13 +1408,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       <div className="bg-gray-50 dark:bg-slate-900 p-3 sm:p-4 border-b dark:border-slate-700 flex-shrink-0">
                         {(() => {
                           const conversation = getConversations().find((c) => c.senderId === selectedConversation)
+                          if (!conversation) return null
                           return (
                             <div className="flex items-center gap-2 sm:gap-3">
-                              {conversation?.sender?.avatar_url ? (
+                              {conversation.sender?.avatar_url ? (
                                 <div className="relative flex-shrink-0">
                                   <img
                                     src={conversation.sender.avatar_url || ''}
-                                    alt={conversation.sender.full_name || conversation.sender.email || ''}
+                                    alt={conversation.sender?.full_name || conversation.sender?.email || ''}
                                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-200 dark:border-slate-600 object-cover shadow-sm"
                                     onError={(e) => {
                                       const target = e.target as HTMLImageElement
@@ -1433,14 +1434,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                               ) : (
                                 <div className="relative flex-shrink-0">
                                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-sm border-2 border-gray-200 dark:border-slate-600">
-                                    {(conversation?.sender?.full_name?.[0] || conversation?.sender?.email?.[0] || 'U').toUpperCase()}
+                                    {(conversation.sender?.full_name?.[0] || conversation.sender?.email?.[0] || 'U').toUpperCase()}
                                   </div>
                                   <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
                                 </div>
                               )}
                               <div className="min-w-0 flex-1">
                                 <p className="font-semibold text-sm sm:text-base text-gray-900 dark:text-slate-100 truncate">
-                                  {conversation?.sender?.full_name || conversation?.sender?.email || 'مستخدم'}
+                                  {conversation.sender?.full_name || conversation.sender?.email || 'مستخدم'}
                                 </p>
                                 <p className="text-[10px] sm:text-xs text-gray-700 dark:text-slate-400">
                                   {conversation?.messageCount || 0} رسالة
