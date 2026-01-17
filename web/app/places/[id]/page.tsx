@@ -1741,9 +1741,9 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                                 />
                               )}
                               <div className="flex-1">
-                                <p className="text-sm font-semibold text-gray-900">{selectedProduct!.name_ar}</p>
-                                {selectedProduct!.price && (
-                                  <p className="text-xs text-blue-600">{selectedProduct!.price} {selectedProduct!.currency}</p>
+                                <p className="text-sm font-semibold text-gray-900">{product.name_ar}</p>
+                                {product.price && (
+                                  <p className="text-xs text-blue-600">{product.price} {product.currency}</p>
                                 )}
                               </div>
                               <button
@@ -1755,7 +1755,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             </div>
                           </div>
                         </div>
-                      )}
+                        )
+                      })()}
                       {selectedImage && (
                         <div className="px-4 pb-4">
                           <div className="relative inline-block">
