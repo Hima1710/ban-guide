@@ -161,6 +161,34 @@ export default function PackagesPage() {
         return
       }
 
+      // Ensure user profile exists (required for foreign key constraint)
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (!existingProfile) {
+        // Create user profile if it doesn't exist
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .upsert({
+            id: user.id,
+            email: user.email || null,
+            full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+            avatar_url: user.user_metadata?.avatar_url || null,
+            is_admin: false,
+            is_affiliate: false,
+          }, {
+            onConflict: 'id',
+          })
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError)
+          throw new Error('فشل في إنشاء ملف المستخدم. يرجى المحاولة مرة أخرى.')
+        }
+      }
+
       // Create subscription
       const { data: subscriptionData, error: subError } = await supabase
         .from('user_subscriptions')
