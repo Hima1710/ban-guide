@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Package } from '@/lib/types'
 import { showError, showSuccess, showConfirm } from '@/components/SweetAlert'
-import { Check, Crown, Star } from 'lucide-react'
+import { Check, Crown, Star, Upload, X } from 'lucide-react'
+import { uploadImageToImgBB } from '@/lib/imgbb'
 import Link from 'next/link'
 
 export default function PackagesPage() {
@@ -18,6 +19,11 @@ export default function PackagesPage() {
   const [selectedDiscount, setSelectedDiscount] = useState<any>(null)
   const [discountType, setDiscountType] = useState<'affiliate' | 'code' | null>(null)
   const [showDiscountInput, setShowDiscountInput] = useState(false)
+  const [showReceiptModal, setShowReceiptModal] = useState(false)
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
+  const [uploadingReceipt, setUploadingReceipt] = useState(false)
 
   useEffect(() => {
     checkUser()
@@ -127,6 +133,28 @@ export default function PackagesPage() {
     }
   }
 
+  const handleSubscribeClick = (pkg: Package) => {
+    setSelectedPackage(pkg)
+    setShowReceiptModal(true)
+  }
+
+  const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setReceiptFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setReceiptPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleRemoveReceipt = () => {
+    setReceiptFile(null)
+    setReceiptPreview(null)
+  }
+
   const handleSubscribe = async (pkg: Package) => {
     // Validate discount code if provided
     let discount = null
@@ -161,6 +189,17 @@ export default function PackagesPage() {
         return
       }
 
+      // Check if receipt is uploaded
+      if (!receiptFile) {
+        showError('يرجى رفع صورة إيصال الدفع')
+        return
+      }
+
+      setUploadingReceipt(true)
+
+      // Upload receipt image
+      const receiptImageUrl = await uploadImageToImgBB(receiptFile)
+
       // Ensure user profile exists (required for foreign key constraint)
       const { data: existingProfile } = await supabase
         .from('user_profiles')
@@ -189,7 +228,7 @@ export default function PackagesPage() {
         }
       }
 
-      // Create subscription
+      // Create subscription with pending status
       const { data: subscriptionData, error: subError } = await supabase
         .from('user_subscriptions')
         .insert({
@@ -197,12 +236,16 @@ export default function PackagesPage() {
           package_id: pkg.id,
           amount_paid: finalPrice,
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-          is_active: true,
+          receipt_image_url: receiptImageUrl,
+          status: 'pending',
+          is_active: false, // Will be activated after admin approval
         })
         .select()
         .single()
 
       if (subError) throw subError
+
+      setUploadingReceipt(false)
 
       // Handle discount code usage
       if (discount && subscriptionData) {
@@ -234,9 +277,14 @@ export default function PackagesPage() {
         }
       }
 
-      showSuccess('تم الاشتراك في الباقة بنجاح!')
-      router.push('/dashboard')
+      showSuccess('تم إرسال طلب الاشتراك بنجاح! سيتم مراجعة الإيصال وتفعيل الاشتراك قريباً.')
+      setShowReceiptModal(false)
+      setReceiptFile(null)
+      setReceiptPreview(null)
+      setSelectedPackage(null)
+      checkUser() // Refresh subscription status
     } catch (error: any) {
+      setUploadingReceipt(false)
       showError(error.message || 'حدث خطأ في الاشتراك')
     }
   }
@@ -351,7 +399,7 @@ export default function PackagesPage() {
                 </div>
 
                 <button
-                  onClick={() => handleSubscribe(pkg)}
+                  onClick={() => handleSubscribeClick(pkg)}
                   disabled={isCurrentPackage || !!currentSubscription}
                   className={`w-full py-3 rounded-lg font-semibold transition-colors ${
                     isCurrentPackage
@@ -375,6 +423,90 @@ export default function PackagesPage() {
         {packages.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             لا توجد باقات متاحة حالياً
+          </div>
+        )}
+
+        {/* Receipt Upload Modal */}
+        {showReceiptModal && selectedPackage && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">رفع إيصال الدفع</h2>
+                <button
+                  onClick={() => {
+                    setShowReceiptModal(false)
+                    setReceiptFile(null)
+                    setReceiptPreview(null)
+                  }}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-gray-600 mb-2">الباقة: <span className="font-semibold">{selectedPackage.name_ar}</span></p>
+                <p className="text-gray-600">المبلغ: <span className="font-semibold">{selectedPackage.price} EGP</span></p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  رفع صورة إيصال الدفع *
+                </label>
+                {receiptPreview ? (
+                  <div className="relative">
+                    <img
+                      src={receiptPreview}
+                      alt="Receipt preview"
+                      className="w-full h-64 object-contain border border-gray-300 rounded-lg"
+                    />
+                    <button
+                      onClick={handleRemoveReceipt}
+                      className="absolute top-2 left-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload size={48} className="text-gray-400 mb-2" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">اضغط للرفع</span> أو اسحب الصورة هنا
+                      </p>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF (MAX. 10MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleReceiptChange}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowReceiptModal(false)
+                    setReceiptFile(null)
+                    setReceiptPreview(null)
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  disabled={uploadingReceipt}
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={() => handleSubscribe(selectedPackage)}
+                  disabled={!receiptFile || uploadingReceipt}
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  {uploadingReceipt ? 'جاري الرفع...' : 'إرسال الطلب'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
