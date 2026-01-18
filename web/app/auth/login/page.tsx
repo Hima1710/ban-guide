@@ -33,13 +33,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-center mb-6 text-gray-900">تسجيل الدخول</h1>
+    <div className="min-h-screen flex items-center justify-center app-bg-base">
+      <div className="app-card shadow-lg p-8 max-w-md w-full">
+        <h1 className="text-2xl font-bold text-center mb-6 app-text-main">تسجيل الدخول</h1>
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ background: 'var(--primary-color)' }}
+          onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '0.9')}
+          onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '1')}
         >
           <LogIn size={20} />
           {loading ? 'جاري التحميل...' : 'تسجيل الدخول بحساب Google'}
