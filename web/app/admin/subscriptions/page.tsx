@@ -205,6 +205,24 @@ export default function AdminSubscriptionsPage() {
 
                   {subscription.receipt_image_url && (
                     <div className="mb-4">
+                      <div className="mb-2">
+                        <p className="text-sm font-medium text-gray-700 mb-2">صورة الإيصال:</p>
+                        <div className="relative border border-gray-300 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => {
+                            setSelectedSubscription(subscription)
+                            setShowImageModal(true)
+                          }}
+                        >
+                          <img
+                            src={subscription.receipt_image_url}
+                            alt="Receipt"
+                            className="w-full h-32 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all flex items-center justify-center">
+                            <Eye size={24} className="text-white opacity-0 hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      </div>
                       <button
                         onClick={() => {
                           setSelectedSubscription(subscription)
@@ -213,7 +231,7 @@ export default function AdminSubscriptionsPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors w-full justify-center"
                       >
                         <Eye size={18} />
-                        <span>عرض صورة الإيصال</span>
+                        <span>عرض صورة الإيصال بالحجم الكامل</span>
                       </button>
                     </div>
                   )}
