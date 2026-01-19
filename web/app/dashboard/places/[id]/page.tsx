@@ -276,7 +276,7 @@ export default function PlaceDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
       </div>
     )
   }
@@ -284,7 +284,7 @@ export default function PlaceDetailsPage() {
   if (!place) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">المكان غير موجود</p>
+        <p className="app-text-muted">المكان غير موجود</p>
       </div>
     )
   }
@@ -292,13 +292,14 @@ export default function PlaceDetailsPage() {
   const videoId = place.video_url ? place.video_url.replace('watch?v=', 'embed/') : null
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8 app-bg-base">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-6 flex justify-between items-center">
           <Link
             href="/dashboard"
-            className="text-blue-500 hover:underline flex items-center gap-2"
+            className="hover:underline flex items-center gap-2"
+            style={{ color: 'var(--primary-color)' }}
           >
             ← العودة للوحة التحكم
           </Link>
@@ -307,28 +308,40 @@ export default function PlaceDetailsPage() {
               <>
                 <Link
                   href={`/dashboard/places/${placeId}/employees`}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ background: 'var(--accent)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <Users size={18} />
                   إدارة الموظفين
                 </Link>
                 <Link
                   href={`/dashboard/places/${placeId}/posts`}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ background: 'var(--secondary-color)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <FileText size={18} />
                   إدارة المنشورات
                 </Link>
                 <button
                   onClick={handleStartEdit}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ background: 'var(--primary-color)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <Edit size={18} />
                   تعديل المعلومات
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ background: 'var(--status-error)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <Trash2 size={18} />
                   حذف المكان
@@ -338,14 +351,20 @@ export default function PlaceDetailsPage() {
               <>
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ background: 'var(--secondary-color)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <Save size={18} />
                   حفظ التعديلات
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ background: 'var(--text-muted)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <X size={18} />
                   إلغاء
@@ -356,7 +375,7 @@ export default function PlaceDetailsPage() {
         </div>
 
         {/* Place Info */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="app-card shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Logo */}
             <div className="flex-shrink-0">
@@ -366,12 +385,16 @@ export default function PlaceDetailsPage() {
                     <img
                       src={editData.logo_url || place.logo_url || ''}
                       alt={editData.name_ar || place.name_ar}
-                      className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 border-gray-200"
+                      className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 app-border"
                     />
                   )}
-                  <label className="flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
-                    <Upload size={24} className="text-gray-400 mb-2" />
-                    <span className="text-xs text-gray-600 text-center px-2">رفع صورة</span>
+                  <label className="flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors app-border"
+                    style={{ borderColor: 'var(--border-color)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                  >
+                    <Upload size={24} className="mb-2" style={{ color: 'var(--text-muted)' }} />
+                    <span className="text-xs text-center px-2 app-text-muted">رفع صورة</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -386,7 +409,7 @@ export default function PlaceDetailsPage() {
                   <img
                     src={place.logo_url}
                     alt={place.name_ar}
-                    className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 border-gray-200"
+                    className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 app-border"
                   />
                 )
               )}
@@ -395,63 +418,78 @@ export default function PlaceDetailsPage() {
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-sm font-semibold app-text-main mb-2">
                       اسم المكان (عربي) *
                     </label>
                     <input
                       type="text"
                       value={editData.name_ar}
                       onChange={(e) => setEditData({ ...editData, name_ar: e.target.value })}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500"
+                      className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
+                      style={{ borderColor: 'var(--border-color)' }}
+                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
+                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                       placeholder="اسم المكان بالعربية"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-sm font-semibold app-text-main mb-2">
                       اسم المكان (إنجليزي)
                     </label>
                     <input
                       type="text"
                       value={editData.name_en}
                       onChange={(e) => setEditData({ ...editData, name_en: e.target.value })}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500"
+                      className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
+                      style={{ borderColor: 'var(--border-color)' }}
+                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
+                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                       placeholder="اسم المكان بالإنجليزية"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-sm font-semibold app-text-main mb-2">
                       الوصف
                     </label>
                     <textarea
                       value={editData.description_ar}
                       onChange={(e) => setEditData({ ...editData, description_ar: e.target.value })}
                       rows={4}
-                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500"
+                      className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
+                      style={{ borderColor: 'var(--border-color)' }}
+                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
+                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                       placeholder="وصف المكان"
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-sm font-semibold app-text-main mb-2">
                         رقم الهاتف الأول *
                       </label>
                       <input
                         type="tel"
                         value={editData.phone_1}
                         onChange={(e) => setEditData({ ...editData, phone_1: e.target.value })}
-                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500"
+                        className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
+                      style={{ borderColor: 'var(--border-color)' }}
+                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
+                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                         placeholder="رقم الهاتف الأول"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-sm font-semibold app-text-main mb-2">
                         رقم الهاتف الثاني
                       </label>
                       <input
                         type="tel"
                         value={editData.phone_2}
                         onChange={(e) => setEditData({ ...editData, phone_2: e.target.value })}
-                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500"
+                        className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
+                      style={{ borderColor: 'var(--border-color)' }}
+                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
+                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                         placeholder="رقم الهاتف الثاني (اختياري)"
                       />
                     </div>
@@ -459,18 +497,18 @@ export default function PlaceDetailsPage() {
                 </div>
               ) : (
                 <>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">{place.name_ar}</h1>
+                  <h1 className="text-3xl font-bold app-text-main mb-4">{place.name_ar}</h1>
                   {place.name_en && (
-                    <p className="text-lg text-gray-600 mb-2">{place.name_en}</p>
+                    <p className="text-lg app-text-muted mb-2">{place.name_en}</p>
                   )}
                   {place.description_ar && (
-                    <p className="text-gray-600 mb-4">{place.description_ar}</p>
+                    <p className="app-text-muted mb-4">{place.description_ar}</p>
                   )}
                 </>
               )}
               
               {!isEditing && (
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
+                <div className="flex flex-wrap gap-4 text-sm app-text-muted mb-4">
                   <div className="flex items-center gap-2">
                     <Phone size={18} />
                     <span>{place.phone_1}</span>
@@ -493,19 +531,21 @@ export default function PlaceDetailsPage() {
               )}
 
               <div className="flex gap-2">
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  place.is_active 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
+                <span className="px-3 py-1 rounded-full text-sm" style={place.is_active ? {
+                  background: 'var(--status-green-bg)',
+                  color: 'var(--secondary-color)'
+                } : {
+                  background: 'var(--status-red-bg)',
+                  color: 'var(--status-error)'
+                }}>
                   {place.is_active ? 'نشط' : 'غير نشط'}
                 </span>
                 {place.is_featured && (
-                  <span className="px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
+                  <span className="px-3 py-1 rounded-full text-sm" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>
                     مميز
                   </span>
                 )}
-                <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                <span className="px-3 py-1 rounded-full text-sm" style={{ background: 'var(--status-blue-bg)', color: 'var(--primary-color)' }}>
                   {place.category}
                 </span>
               </div>
@@ -514,8 +554,8 @@ export default function PlaceDetailsPage() {
         </div>
 
         {/* Map */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">الموقع على الخريطة</h2>
+        <div className="app-card shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4 app-text-main">الموقع على الخريطة</h2>
           {isEditing ? (
             <div className="h-96 rounded-lg overflow-hidden">
               <MapPicker
@@ -536,12 +576,12 @@ export default function PlaceDetailsPage() {
         </div>
 
         {/* Video */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-900">فيديو المكان</h2>
+        <div className="app-card shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold mb-4 app-text-main">فيديو المكان</h2>
           {isEditing ? (
             <div className="space-y-4">
               {(editData.video_url || place.video_url) && (
-                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
+                <div className="aspect-video rounded-lg overflow-hidden app-bg-surface">
                   {(() => {
                     const currentVideoUrl = editData.video_url || place.video_url || ''
                     const currentVideoId = currentVideoUrl ? currentVideoUrl.replace('watch?v=', 'embed/') : null
@@ -578,9 +618,9 @@ export default function PlaceDetailsPage() {
         </div>
 
         {/* Products */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="app-card shadow-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-900">المنتجات والخدمات ({products.length})</h2>
+            <h2 className="text-xl font-bold app-text-main">المنتجات والخدمات ({products.length})</h2>
             <Link
               href={`/dashboard/places/${placeId}/products/new`}
               className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -595,7 +635,7 @@ export default function PlaceDetailsPage() {
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow app-border"
                 >
                   {product.images && product.images.length > 0 && (
                     <img
@@ -604,16 +644,16 @@ export default function PlaceDetailsPage() {
                       className="w-full h-48 object-cover rounded-lg mb-3"
                     />
                   )}
-                  <h3 className="font-bold text-lg mb-2 text-gray-900">{product.name_ar}</h3>
+                  <h3 className="font-bold text-lg mb-2 app-text-main">{product.name_ar}</h3>
                   {product.description_ar && (
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{product.description_ar}</p>
+                    <p className="text-sm app-text-muted mb-2 line-clamp-2">{product.description_ar}</p>
                   )}
                   {product.price && (
-                    <p className="text-lg font-semibold text-blue-600 mb-2">
+                    <p className="text-lg font-semibold mb-2" style={{ color: 'var(--primary-color)' }}>
                       {product.price} {product.currency}
                     </p>
                   )}
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs app-text-muted">
                     {product.videos && product.videos.length > 0 && (
                       <div className="flex items-center gap-1">
                         <Video size={14} />
@@ -631,12 +671,13 @@ export default function PlaceDetailsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Package size={48} className="mx-auto mb-4 text-gray-400" />
+            <div className="text-center py-8 app-text-muted">
+              <Package size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
               <p>لا توجد منتجات بعد</p>
               <Link
                 href={`/dashboard/places/${placeId}/products/new`}
-                className="inline-block mt-4 text-blue-500 hover:underline"
+                className="inline-block mt-4 hover:underline"
+                style={{ color: 'var(--primary-color)' }}
               >
                 إضافة منتج جديد
               </Link>
