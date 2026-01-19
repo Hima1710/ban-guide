@@ -337,6 +337,17 @@ export default function AdminSubscriptionsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm app-text-muted">
                         {new Date(subscription.created_at).toLocaleDateString('ar-EG')}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm app-text-muted">
+                        {subscription.expires_at ? (
+                          new Date(subscription.expires_at).toLocaleDateString('ar-EG', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })
+                        ) : (
+                          <span className="app-text-subtle">غير محدد</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {subscription.receipt_image_url ? (
                           <button
