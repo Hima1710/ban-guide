@@ -95,18 +95,23 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
 
     setLoadingLocation(true)
     
-    // Try with high accuracy first, then fallback to lower accuracy
-    const tryGetLocation = (options: PositionOptions, attempt: number = 1) => {
+    // Try with GPS first (high accuracy), then fallback to WiFi/Network (lower accuracy)
+    const tryGetLocation = (options: PositionOptions, attempt: number = 1, method: 'GPS' | 'WiFi' = 'GPS') => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude
           const lng = position.coords.longitude
+          const accuracy = position.coords.accuracy // Accuracy in meters
+          
           setMarkerPosition([lat, lng])
           
           // Center map on new location
           if (mapRef) {
             mapRef.setView([lat, lng], 15)
           }
+          
+          // Log success with method used
+          console.log(`✅ Location found using ${method} (accuracy: ${Math.round(accuracy)}m)`)
           
           // Get location info and update parent
           getLocationInfo(lat, lng).then((info) => {
@@ -123,24 +128,15 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
           })
         },
         (error) => {
-          // Only log error if it's not a timeout that we're going to retry
-          const isRetryableTimeout = error.code === error.TIMEOUT && attempt === 1 && options.enableHighAccuracy
-          
-          if (!isRetryableTimeout) {
-            // Only log unexpected errors, not expected timeouts that we handle
-            if (error.code !== error.TIMEOUT || attempt > 1) {
-              console.warn('Geolocation error:', error.message)
-            }
-          }
-          
-          // If timeout and we haven't tried with lower accuracy, try again
-          if (isRetryableTimeout) {
-            // Retry with lower accuracy and longer timeout
+          // If GPS failed and we haven't tried WiFi yet, try WiFi/Network
+          if (attempt === 1 && options.enableHighAccuracy) {
+            console.log('⚠️ GPS failed, trying WiFi/Network location...')
+            // Retry with WiFi/Network (lower accuracy, faster)
             tryGetLocation({
-              enableHighAccuracy: false,
-              timeout: 20000, // Increased to 20 seconds for retry
+              enableHighAccuracy: false, // Use WiFi/Network instead of GPS
+              timeout: 15000, // 15 seconds for WiFi attempt
               maximumAge: 60000, // Accept cached position up to 1 minute old
-            }, 2)
+            }, 2, 'WiFi')
             return
           }
           
@@ -165,12 +161,13 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
       )
     }
     
-    // Start with high accuracy and reasonable timeout
+    // Start with GPS (high accuracy) - tries GPS first, then falls back to WiFi/Network
+    console.log('📍 Attempting to get location using GPS...')
     tryGetLocation({
-      enableHighAccuracy: true,
-      timeout: 10000, // 10 seconds for first attempt
+      enableHighAccuracy: true, // Try GPS first
+      timeout: 12000, // 12 seconds for GPS attempt
       maximumAge: 0, // Don't use cached position for first attempt
-    })
+    }, 1, 'GPS')
   }
 
   const handleMarkerDrag = async (e: any) => {
