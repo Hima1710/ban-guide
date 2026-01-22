@@ -250,7 +250,7 @@ export default function AdminDiscountCodesPage() {
                   <td className="px-6 py-5">
                     <div className="flex gap-3">
                       <Button
-                        variant="outline"
+                        variant="outlined"
                         size="sm"
                         onClick={() => handleEdit(code)}
                         className="!p-2"

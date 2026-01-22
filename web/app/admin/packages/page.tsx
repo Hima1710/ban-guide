@@ -307,7 +307,7 @@ export default function AdminPackagesPage() {
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="flex gap-3">
                       <Button
-                        variant="outline"
+                        variant="outlined"
                         size="sm"
                         onClick={() => handleEdit(pkg)}
                         className="!p-2"
