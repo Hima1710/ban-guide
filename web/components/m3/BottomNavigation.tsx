@@ -62,7 +62,7 @@ export default function BottomNavigation() {
                     filter: isActive ? `drop-shadow(0 2px 4px rgba(${colors.primaryRgb}, 0.3))` : 'none',
                   }}
                 />
-                {badge && badge > 0 && (
+                {badge && Number(badge) > 0 && (
                   <div
                     className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold rounded-full px-1"
                     style={{
@@ -71,7 +71,7 @@ export default function BottomNavigation() {
                       boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
                     }}
                   >
-                    {badge > 9 ? '9+' : badge}
+                    {Number(badge) > 9 ? '9+' : badge}
                   </div>
                 )}
               </div>
