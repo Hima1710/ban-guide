@@ -38,9 +38,10 @@ export default function MessagesPage() {
   // Filter conversations
   const filteredConversations = (conversations || []).filter(conv => {
     // Search filter
+    const lastMessageText = typeof conv.lastMessage === 'string' ? conv.lastMessage : ''
     const matchesSearch = searchQuery.trim() === '' || 
       conv.placeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conv.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase())
+      lastMessageText.toLowerCase().includes(searchQuery.toLowerCase())
 
     // Type filter
     let matchesType = true
