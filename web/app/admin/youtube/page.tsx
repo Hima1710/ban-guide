@@ -156,24 +156,49 @@ export default function AdminYouTubePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: colors.background }}
+      >
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-b-2"
+          style={{ borderColor: colors.primary }}
+        ></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen py-8 app-bg-base">
+    <div 
+      className="min-h-screen py-8"
+      style={{ backgroundColor: colors.background }}
+    >
       <Suspense fallback={null}>
         <YouTubeAuthHandler onAuthCheck={checkYouTubeAuth} />
       </Suspense>
       <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6 app-text-main">إعدادات YouTube</h1>
+        <h1 
+          className="text-3xl font-bold mb-6"
+          style={{ color: colors.onSurface }}
+        >
+          إعدادات YouTube
+        </h1>
 
-        <div className="app-card shadow-lg p-6 space-y-6">
+        <div 
+          className="shadow-lg p-6 space-y-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface }}
+        >
           <div>
-            <h2 className="text-xl font-bold mb-4 app-text-main">حساب YouTube للموقع</h2>
-            <p className="app-text-muted mb-4">
+            <h2 
+              className="text-xl font-bold mb-4"
+              style={{ color: colors.onSurface }}
+            >
+              حساب YouTube للموقع
+            </h2>
+            <p 
+              className="mb-4"
+              style={{ color: colors.onSurfaceVariant }}
+            >
               جميع الفيديوهات التي يرفعها المستخدمون ستُرفع على حساب YouTube الخاص بك.
               يجب ربط حساب YouTube مرة واحدة فقط.
             </p>
@@ -181,21 +206,35 @@ export default function AdminYouTubePage() {
 
           {isAuthenticated ? (
             <>
-              <div className="p-4 border rounded-lg app-border bg-green-50 dark:bg-green-900/20">
+              <div 
+                className="p-4 border rounded-xl"
+                style={{
+                  backgroundColor: `${colors.success}15`,
+                  borderColor: colors.success,
+                }}
+              >
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="text-green-600 mt-1" size={24} />
+                  <CheckCircle style={{ color: colors.success }} className="mt-1" size={24} />
                   <div className="flex-1">
-                    <p className="font-semibold mb-2 icon-secondary">
+                    <p 
+                      className="font-semibold mb-2"
+                      style={{ color: colors.success }}
+                    >
                       حساب YouTube مربوط بنجاح
                     </p>
-                    <p className="text-sm mb-3 icon-secondary opacity-80">
+                    <p 
+                      className="text-sm mb-3 opacity-80"
+                      style={{ color: colors.success }}
+                    >
                       يمكن للمستخدمين الآن رفع الفيديوهات على حسابك في YouTube.
                     </p>
                     <button
                       onClick={authenticateYouTube}
-                      className="px-6 py-3 text-white rounded-full transition-colors font-semibold badge-primary"
-                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                      className="px-6 py-3 rounded-full transition-all font-semibold hover:scale-105 active:scale-95"
+                      style={{
+                        backgroundColor: colors.primary,
+                        color: colors.onPrimary,
+                      }}
                     >
                       إعادة ربط الحساب
                     </button>
@@ -203,30 +242,59 @@ export default function AdminYouTubePage() {
                 </div>
               </div>
 
-              <div className="border-t pt-6">
+              <div 
+                className="border-t pt-6"
+                style={{ borderColor: colors.outline }}
+              >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold app-text-main">Credentials للتخزين في .env.local (اختياري)</h3>
+                  <h3 
+                    className="font-semibold"
+                    style={{ color: colors.onSurface }}
+                  >
+                    Credentials للتخزين في .env.local (اختياري)
+                  </h3>
                   <button
                     onClick={() => setShowTokens(!showTokens)}
-                    className="text-sm font-medium app-hover-bg icon-primary"
+                    className="text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+                    style={{
+                      backgroundColor: colors.surfaceContainer,
+                      color: colors.primary,
+                    }}
                   >
                     {showTokens ? 'إخفاء' : 'عرض'}
                   </button>
                 </div>
 
                 {showTokens && profile && (
-                  <div className="space-y-4 app-bg-surface p-4 rounded-lg">
+                  <div 
+                    className="space-y-4 p-4 rounded-lg"
+                    style={{ backgroundColor: colors.surfaceVariant }}
+                  >
                     <div>
-                      <label className="block text-sm font-medium mb-2 app-text-main">
+                      <label 
+                        className="block text-sm font-medium mb-2"
+                        style={{ color: colors.onSurface }}
+                      >
                         YOUTUBE_ACCESS_TOKEN
                       </label>
                       <div className="flex gap-2">
-                        <code className="flex-1 p-3 rounded border text-sm break-all app-card app-border">
+                        <code 
+                          className="flex-1 p-3 rounded border text-sm break-all"
+                          style={{
+                            backgroundColor: colors.surface,
+                            borderColor: colors.outline,
+                            color: colors.onSurface,
+                          }}
+                        >
                           {profile.youtube_access_token || 'غير متاح'}
                         </code>
                         <button
                           onClick={() => copyToClipboard(`YOUTUBE_ACCESS_TOKEN=${profile.youtube_access_token}`)}
-                          className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg app-surface"
+                          className="px-3 py-2 rounded flex items-center gap-2 transition-colors"
+                          style={{
+                            backgroundColor: colors.surfaceContainer,
+                            color: colors.onSurface,
+                          }}
                           title="نسخ"
                         >
                           <Copy size={16} />
@@ -235,16 +303,30 @@ export default function AdminYouTubePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2 app-text-main">
+                      <label 
+                        className="block text-sm font-medium mb-2"
+                        style={{ color: colors.onSurface }}
+                      >
                         YOUTUBE_REFRESH_TOKEN
                       </label>
                       <div className="flex gap-2">
-                        <code className="flex-1 p-3 rounded border text-sm break-all app-card app-border">
+                        <code 
+                          className="flex-1 p-3 rounded border text-sm break-all"
+                          style={{
+                            backgroundColor: colors.surface,
+                            borderColor: colors.outline,
+                            color: colors.onSurface,
+                          }}
+                        >
                           {profile.youtube_refresh_token || 'غير متاح'}
                         </code>
                         <button
                           onClick={() => copyToClipboard(`YOUTUBE_REFRESH_TOKEN=${profile.youtube_refresh_token}`)}
-                          className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg app-surface"
+                          className="px-3 py-2 rounded flex items-center gap-2 transition-colors"
+                          style={{
+                            backgroundColor: colors.surfaceContainer,
+                            color: colors.onSurface,
+                          }}
                           title="نسخ"
                         >
                           <Copy size={16} />
@@ -254,16 +336,30 @@ export default function AdminYouTubePage() {
 
                     {profile.youtube_token_expiry && (
                       <div>
-                        <label className="block text-sm font-medium mb-2 app-text-main">
+                        <label 
+                          className="block text-sm font-medium mb-2"
+                          style={{ color: colors.onSurface }}
+                        >
                           YOUTUBE_TOKEN_EXPIRY
                         </label>
                         <div className="flex gap-2">
-                          <code className="flex-1 p-3 rounded border text-sm app-card app-border">
+                          <code 
+                            className="flex-1 p-3 rounded border text-sm"
+                            style={{
+                              backgroundColor: colors.surface,
+                              borderColor: colors.outline,
+                              color: colors.onSurface,
+                            }}
+                          >
                             {profile.youtube_token_expiry}
                           </code>
                           <button
                             onClick={() => copyToClipboard(`YOUTUBE_TOKEN_EXPIRY=${profile.youtube_token_expiry}`)}
-                            className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg app-surface"
+                            className="px-3 py-2 rounded flex items-center gap-2 transition-colors"
+                            style={{
+                              backgroundColor: colors.surfaceContainer,
+                              color: colors.onSurface,
+                            }}
                             title="نسخ"
                           >
                             <Copy size={16} />
@@ -272,9 +368,24 @@ export default function AdminYouTubePage() {
                       </div>
                     )}
 
-                    <div className="mt-4 p-3 rounded border app-border bg-blue-50 dark:bg-blue-900/20">
-                      <p className="text-sm icon-primary">
-                        <strong>ملاحظة:</strong> انسخ هذه القيم وأضفها في ملف <code className="px-2 py-1 rounded app-card">.env.local</code> في مجلد <code className="px-2 py-1 rounded app-card">web</code>
+                    <div 
+                      className="mt-4 p-3 rounded border"
+                      style={{
+                        backgroundColor: `${colors.info}15`,
+                        borderColor: colors.info,
+                      }}
+                    >
+                      <p 
+                        className="text-sm"
+                        style={{ color: colors.info }}
+                      >
+                        <strong>ملاحظة:</strong> انسخ هذه القيم وأضفها في ملف <code 
+                          className="px-2 py-1 rounded"
+                          style={{ backgroundColor: colors.surface }}
+                        >.env.local</code> في مجلد <code 
+                          className="px-2 py-1 rounded"
+                          style={{ backgroundColor: colors.surface }}
+                        >web</code>
                       </p>
                     </div>
                   </div>
@@ -282,19 +393,35 @@ export default function AdminYouTubePage() {
               </div>
             </>
           ) : (
-            <div className="p-4 border rounded-lg app-border bg-yellow-50 dark:bg-yellow-900/20">
+            <div 
+              className="p-4 border rounded-xl"
+              style={{
+                backgroundColor: `${colors.warning}15`,
+                borderColor: colors.warning,
+              }}
+            >
               <div className="flex items-start gap-3">
-                <AlertCircle className="mt-1 icon-warning" size={24} />
+                <AlertCircle style={{ color: colors.warning }} className="mt-1" size={24} />
                 <div className="flex-1">
-                  <p className="font-semibold mb-2 icon-warning">
+                  <p 
+                    className="font-semibold mb-2"
+                    style={{ color: colors.warning }}
+                  >
                     يجب ربط حساب YouTube أولاً
                   </p>
-                  <p className="text-sm mb-3 icon-warning opacity-80">
+                  <p 
+                    className="text-sm mb-3 opacity-80"
+                    style={{ color: colors.warning }}
+                  >
                     لرفع الفيديوهات إلى YouTube، يجب السماح للتطبيق بالوصول إلى قناة YouTube الخاصة بك.
                   </p>
                   <button
                     onClick={authenticateYouTube}
-                    className="px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
+                    className="px-6 py-3 rounded-full transition-all font-semibold flex items-center gap-2 hover:scale-105 active:scale-95"
+                    style={{
+                      backgroundColor: colors.error,
+                      color: colors.onPrimary,
+                    }}
                   >
                     <ExternalLink size={18} />
                     ربط حساب YouTube
@@ -304,14 +431,28 @@ export default function AdminYouTubePage() {
             </div>
           )}
 
-          <div className="border-t pt-6">
-            <h3 className="font-semibold mb-2 app-text-main">معلومات مهمة:</h3>
-            <ul className="list-disc list-inside space-y-2 text-sm app-text-muted">
+          <div 
+            className="border-t pt-6"
+            style={{ borderColor: colors.outline }}
+          >
+            <h3 
+              className="font-semibold mb-2"
+              style={{ color: colors.onSurface }}
+            >
+              معلومات مهمة:
+            </h3>
+            <ul 
+              className="list-disc list-inside space-y-2 text-sm"
+              style={{ color: colors.onSurfaceVariant }}
+            >
               <li>جميع الفيديوهات تُرفع على حسابك في YouTube</li>
               <li>يمكنك اختيار حالة الخصوصية لكل فيديو (خاص/غير مدرج/عام)</li>
               <li>لا يحتاج المستخدمون لربط حسابات YouTube الخاصة بهم</li>
               <li>يمكنك إدارة جميع الفيديوهات من قناة YouTube الخاصة بك</li>
-              <li>يمكن حفظ credentials في <code className="px-1 rounded app-bg-surface">.env.local</code> لتجنب الاعتماد على قاعدة البيانات</li>
+              <li>يمكن حفظ credentials في <code 
+                className="px-1 rounded"
+                style={{ backgroundColor: colors.surfaceVariant }}
+              >.env.local</code> لتجنب الاعتماد على قاعدة البيانات</li>
             </ul>
           </div>
         </div>
