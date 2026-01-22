@@ -1485,7 +1485,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                                   setSelectedVideoFile(null)
                                   setVideoTitle('')
                                 }}
-                                className="text-red-600 hover:text-red-700"
+                                className="transition-colors hover:opacity-70"
+                                style={{ color: colors.error }}
                               >
                                 <X size={16} />
                               </button>
