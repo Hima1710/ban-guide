@@ -46,9 +46,20 @@ export default function Button({
   className = '',
   disabled,
   style = {},
-  ...props
+  ...restProps
 }: ButtonProps) {
   const { colors } = useTheme()
+  
+  // Filter out custom props that shouldn't be passed to DOM
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    'app-card': _appCard,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    'app-text-main': _appTextMain,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    'app-text-muted': _appTextMuted,
+    ...domProps
+  } = restProps as any
 
   // Size styles (M3 recommended)
   const sizeStyles = {
@@ -133,7 +144,7 @@ export default function Button({
         ...style,
       }}
       disabled={disabled || loading}
-      {...props}
+      {...domProps}
     >
       {loading && (
         <Loader2 

@@ -47,9 +47,20 @@ export default function Card({
   clickable = false,
   className = '',
   style = {},
-  ...props
+  ...restProps
 }: CardProps) {
   const { colors } = useTheme()
+  
+  // Filter out custom props that shouldn't be passed to DOM
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    'app-card': _appCard,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    'app-text-main': _appTextMain,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    'app-text-muted': _appTextMuted,
+    ...domProps
+  } = restProps as any
 
   // Padding styles
   const paddingStyles = {
@@ -125,7 +136,7 @@ export default function Card({
         color: colors.onSurface,
         ...style,
       }}
-      {...props}
+      {...domProps}
     >
       {children}
     </div>

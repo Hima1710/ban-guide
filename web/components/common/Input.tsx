@@ -40,9 +40,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     shape = 'large',
     className = '', 
     style = {},
-    ...props 
+    ...restProps 
   }, ref) => {
     const { colors } = useTheme()
+    
+    // Filter out custom props that shouldn't be passed to DOM
+    const {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      'app-card': _appCard,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      'app-text-main': _appTextMain,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      'app-text-muted': _appTextMuted,
+      ...domProps
+    } = restProps as any
 
     // Shape styles (M3 border radius)
     const shapeStyles = {
@@ -109,7 +120,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             // Reset border on blur
             e.currentTarget.style.borderColor = error ? colors.error : colors.outline
           }}
-          {...props}
+          {...domProps}
         />
         
         {error && (
