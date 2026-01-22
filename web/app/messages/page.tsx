@@ -71,7 +71,7 @@ export default function MessagesPage() {
           <MessageCircle 
             size={64} 
             className="mx-auto mb-4" 
-            style={{ color: colors.onSurfaceVariant, opacity: 0.3 }} 
+            style={{ color: colors.onSurface, opacity: 0.3 }} 
           />
           <h3 
             className="text-xl font-bold mb-2"
@@ -81,7 +81,7 @@ export default function MessagesPage() {
           </h3>
           <p 
             className="mb-4"
-            style={{ color: colors.onSurfaceVariant }}
+            style={{ color: colors.onSurface }}
           >
             قم بتسجيل الدخول لعرض رسائلك
           </p>
@@ -115,7 +115,7 @@ export default function MessagesPage() {
             <MessageCircle size={32} style={{ color: colors.primary }} />
             الرسائل
           </h1>
-          <p style={{ color: colors.onSurfaceVariant }}>
+          <p style={{ color: colors.onSurface }}>
             {unreadCounts?.total > 0 
               ? `لديك ${unreadCounts.total} رسالة غير مقروءة`
               : 'جميع رسائلك'
@@ -132,7 +132,7 @@ export default function MessagesPage() {
               borderColor: colors.outline
             }}
           >
-            <Search size={20} style={{ color: colors.onSurfaceVariant }} />
+            <Search size={20} style={{ color: colors.onSurface }} />
             <input
               type="text"
               placeholder="ابحث في الرسائل..."
@@ -162,7 +162,7 @@ export default function MessagesPage() {
                   : colors.surfaceVariant,
                 color: filterType === tab.id 
                   ? colors.onPrimaryContainer 
-                  : colors.onSurfaceVariant
+                  : colors.onSurface
               }}
             >
               {tab.label}
@@ -193,7 +193,7 @@ export default function MessagesPage() {
               className="animate-spin mb-4" 
               style={{ color: colors.primary }} 
             />
-            <p style={{ color: colors.onSurfaceVariant }}>جاري التحميل...</p>
+            <p style={{ color: colors.onSurface }}>جاري التحميل...</p>
           </div>
         ) : filteredConversations.length === 0 ? (
           <div 
@@ -203,7 +203,7 @@ export default function MessagesPage() {
             <MessageCircle 
               size={64} 
               className="mx-auto mb-4" 
-              style={{ color: colors.onSurfaceVariant, opacity: 0.3 }} 
+              style={{ color: colors.onSurface, opacity: 0.3 }} 
             />
             <h3 
               className="text-xl font-bold mb-2"
@@ -213,7 +213,7 @@ export default function MessagesPage() {
                 ? 'لا توجد نتائج' 
                 : 'لا توجد رسائل بعد'}
             </h3>
-            <p style={{ color: colors.onSurfaceVariant }}>
+            <p style={{ color: colors.onSurface }}>
               {searchQuery || filterType !== 'all'
                 ? 'جرب البحث بكلمات مختلفة أو غيّر الفلتر'
                 : 'ابدأ محادثة مع أحد الأماكن'}
@@ -262,7 +262,7 @@ export default function MessagesPage() {
                           <span 
                             className="text-xs whitespace-nowrap flex-shrink-0"
                             style={{ 
-                              color: hasUnread ? colors.onPrimaryContainer : colors.onSurfaceVariant 
+                              color: hasUnread ? colors.onPrimaryContainer : colors.onSurface 
                             }}
                           >
                             {formatDistanceToNow(new Date(conv.lastMessageAt), { 
@@ -276,7 +276,7 @@ export default function MessagesPage() {
                       <p 
                         className="text-sm mb-1"
                         style={{ 
-                          color: hasUnread ? colors.onPrimaryContainer : colors.onSurfaceVariant 
+                          color: hasUnread ? colors.onPrimaryContainer : colors.onSurface 
                         }}
                       >
                         {getConversationSubtitle(conv)}
@@ -287,7 +287,7 @@ export default function MessagesPage() {
                           <p 
                             className="text-sm truncate"
                             style={{ 
-                              color: hasUnread ? colors.onPrimaryContainer : colors.onSurfaceVariant,
+                              color: hasUnread ? colors.onPrimaryContainer : colors.onSurface,
                               fontWeight: hasUnread ? 600 : 400
                             }}
                           >

@@ -206,11 +206,11 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                   className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
                   style={{ backgroundColor: colors.surfaceVariant }}
                 >
-                  <Bell size={28} style={{ color: colors.onSurfaceVariant }} />
+                  <Bell size={28} style={{ color: colors.onSurface }} />
                 </div>
                 <p 
                   className="text-sm font-medium"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   لا توجد إشعارات
                 </p>
@@ -270,14 +270,14 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                           </div>
                           <p 
                             className="text-xs line-clamp-2 mb-1"
-                            style={{ color: colors.onSurfaceVariant }}
+                            style={{ color: colors.onSurface }}
                           >
                             {notification.message_ar}
                           </p>
                           <div className="flex items-center gap-2">
                             <span 
                               className="text-[10px] font-medium"
-                              style={{ color: colors.onSurfaceVariant }}
+                              style={{ color: colors.onSurface }}
                             >
                               {timeAgo(notification.created_at)}
                             </span>

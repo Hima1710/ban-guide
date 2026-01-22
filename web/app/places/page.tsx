@@ -40,7 +40,7 @@ export default function PlacesPage() {
             <MapPin size={32} style={{ color: colors.primary }} />
             الأماكن
           </h1>
-          <p style={{ color: colors.onSurfaceVariant }}>
+          <p style={{ color: colors.onSurface }}>
             اكتشف المحلات والصيدليات والأماكن القريبة منك
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function PlacesPage() {
               borderColor: colors.outline
             }}
           >
-            <Search size={20} style={{ color: colors.onSurfaceVariant }} />
+            <Search size={20} style={{ color: colors.onSurface }} />
             <input
               type="text"
               placeholder="ابحث عن مكان..."
@@ -68,7 +68,7 @@ export default function PlacesPage() {
 
           {/* Category Filter */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
-            <Filter size={20} style={{ color: colors.onSurfaceVariant }} />
+            <Filter size={20} style={{ color: colors.onSurface }} />
             {categories.map((category) => (
               <button
                 key={category}
@@ -80,7 +80,7 @@ export default function PlacesPage() {
                     : colors.surfaceVariant,
                   color: selectedCategory === category 
                     ? colors.onPrimaryContainer 
-                    : colors.onSurfaceVariant
+                    : colors.onSurface
                 }}
               >
                 {category === 'all' ? 'الكل' : category}
@@ -97,7 +97,7 @@ export default function PlacesPage() {
               className="animate-spin mb-4" 
               style={{ color: colors.primary }} 
             />
-            <p style={{ color: colors.onSurfaceVariant }}>جاري التحميل...</p>
+            <p style={{ color: colors.onSurface }}>جاري التحميل...</p>
           </div>
         ) : filteredPlaces.length === 0 ? (
           <div 
@@ -107,7 +107,7 @@ export default function PlacesPage() {
             <MapPin 
               size={64} 
               className="mx-auto mb-4" 
-              style={{ color: colors.onSurfaceVariant, opacity: 0.3 }} 
+              style={{ color: colors.onSurface, opacity: 0.3 }} 
             />
             <h3 
               className="text-xl font-bold mb-2"
@@ -117,7 +117,7 @@ export default function PlacesPage() {
                 ? 'لا توجد نتائج' 
                 : 'لا توجد أماكن بعد'}
             </h3>
-            <p style={{ color: colors.onSurfaceVariant }}>
+            <p style={{ color: colors.onSurface }}>
               {searchQuery || selectedCategory !== 'all'
                 ? 'جرب البحث بكلمات مختلفة أو غيّر الفئة'
                 : 'سيتم إضافة الأماكن قريباً'}
@@ -129,7 +129,7 @@ export default function PlacesPage() {
             <div className="mb-4">
               <p 
                 className="text-sm"
-                style={{ color: colors.onSurfaceVariant }}
+                style={{ color: colors.onSurface }}
               >
                 {filteredPlaces.length} {filteredPlaces.length === 1 ? 'مكان' : 'أماكن'}
               </p>

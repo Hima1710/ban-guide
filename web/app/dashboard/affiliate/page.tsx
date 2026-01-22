@@ -117,7 +117,7 @@ export default function AffiliateDashboardPage() {
           </h2>
           <p 
             className="mb-6"
-            style={{ color: colors.onSurfaceVariant }}
+            style={{ color: colors.onSurface }}
           >
             للحصول على حساب مسوق، يرجى التواصل مع الإدارة
           </p>
@@ -152,7 +152,7 @@ export default function AffiliateDashboardPage() {
           >
             لوحة المسوق 💰
           </h1>
-          <p style={{ color: colors.onSurfaceVariant }}>
+          <p style={{ color: colors.onSurface }}>
             إدارة أرباحك وأماكنك من مكان واحد
           </p>
         </div>
@@ -164,7 +164,7 @@ export default function AffiliateDashboardPage() {
             className="px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap"
             style={{
               backgroundColor: activeTab === 'earnings' ? colors.primaryContainer : colors.surfaceVariant,
-              color: activeTab === 'earnings' ? colors.onPrimaryContainer : colors.onSurfaceVariant
+              color: activeTab === 'earnings' ? colors.onPrimaryContainer : colors.onSurface
             }}
           >
             💰 أرباحي
@@ -174,7 +174,7 @@ export default function AffiliateDashboardPage() {
             className="px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap"
             style={{
               backgroundColor: activeTab === 'places' ? colors.primaryContainer : colors.surfaceVariant,
-              color: activeTab === 'places' ? colors.onPrimaryContainer : colors.onSurfaceVariant
+              color: activeTab === 'places' ? colors.onPrimaryContainer : colors.onSurface
             }}
           >
             🏪 أماكني
@@ -218,7 +218,7 @@ export default function AffiliateDashboardPage() {
                 </div>
                 <p 
                   className="text-sm mb-1"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   الرصيد المتاح
                 </p>
@@ -247,7 +247,7 @@ export default function AffiliateDashboardPage() {
                 </div>
                 <p 
                   className="text-sm mb-1"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   إجمالي الأرباح
                 </p>
@@ -276,7 +276,7 @@ export default function AffiliateDashboardPage() {
                 </div>
                 <p 
                   className="text-sm mb-1"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   المستخدمين المسجلين
                 </p>
@@ -305,7 +305,7 @@ export default function AffiliateDashboardPage() {
                 </div>
                 <p 
                   className="text-sm mb-1"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   الاشتراكات النشطة
                 </p>
@@ -360,7 +360,7 @@ export default function AffiliateDashboardPage() {
               <div className="mt-4 flex flex-wrap gap-4">
                 <p 
                   className="text-sm"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   نسبة الخصم: <span className="font-bold" style={{ color: colors.onSurface }}>{affiliate.discount_percentage}%</span>
                 </p>
@@ -390,9 +390,9 @@ export default function AffiliateDashboardPage() {
                     <CreditCard 
                       size={48} 
                       className="mx-auto mb-4" 
-                      style={{ color: colors.onSurfaceVariant, opacity: 0.5 }} 
+                      style={{ color: colors.onSurface, opacity: 0.5 }} 
                     />
-                    <p style={{ color: colors.onSurfaceVariant }}>
+                    <p style={{ color: colors.onSurface }}>
                       لا توجد معاملات بعد
                     </p>
                   </div>
@@ -402,25 +402,25 @@ export default function AffiliateDashboardPage() {
                       <tr>
                         <th 
                           className="px-6 py-4 text-right text-xs font-medium uppercase"
-                          style={{ color: colors.onSurfaceVariant }}
+                          style={{ color: colors.onSurface }}
                         >
                           النوع
                         </th>
                         <th 
                           className="px-6 py-4 text-right text-xs font-medium uppercase"
-                          style={{ color: colors.onSurfaceVariant }}
+                          style={{ color: colors.onSurface }}
                         >
                           المبلغ
                         </th>
                         <th 
                           className="px-6 py-4 text-right text-xs font-medium uppercase"
-                          style={{ color: colors.onSurfaceVariant }}
+                          style={{ color: colors.onSurface }}
                         >
                           الحالة
                         </th>
                         <th 
                           className="px-6 py-4 text-right text-xs font-medium uppercase"
-                          style={{ color: colors.onSurfaceVariant }}
+                          style={{ color: colors.onSurface }}
                         >
                           التاريخ
                         </th>
@@ -483,7 +483,7 @@ export default function AffiliateDashboardPage() {
                             </td>
                             <td 
                               className="px-6 py-4 text-sm"
-                              style={{ color: colors.onSurfaceVariant }}
+                              style={{ color: colors.onSurface }}
                             >
                               {formatDate(transaction.created_at)}
                             </td>
@@ -522,7 +522,7 @@ export default function AffiliateDashboardPage() {
               </h3>
               <p 
                 className="mb-6"
-                style={{ color: colors.onSurfaceVariant }}
+                style={{ color: colors.onSurface }}
               >
                 إدارة الصيدليات والمحلات والأماكن الخاصة بك
               </p>
@@ -566,7 +566,7 @@ export default function AffiliateDashboardPage() {
               </h3>
               <p 
                 className="text-sm mb-4"
-                style={{ color: colors.onSurfaceVariant }}
+                style={{ color: colors.onSurface }}
               >
                 الرصيد المتاح: <span className="font-bold">{stats.pendingBalance.toFixed(2)} جنيه</span>
               </p>
