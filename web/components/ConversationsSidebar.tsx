@@ -8,9 +8,11 @@ import { useConversationsManager } from '@/hooks/useConversationsManager'
 import { MessageCircle, X, Users, Package, Loader2 } from 'lucide-react'
 import MessageItem from './MessageItem'
 import ChatInput from './ChatInput'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function ConversationsSidebar() {
   const { user } = useAuthContext()
+  const { colors } = useTheme()
   const { places: userPlaces } = usePlaces({ userId: user?.id, autoLoad: !!user })
   const [isOpen, setIsOpen] = useState(true) // Local UI state only
   const [isMounted, setIsMounted] = useState(false)
@@ -187,7 +189,13 @@ export default function ConversationsSidebar() {
                               {conv.partnerName}
                             </p>
                             {conv.unreadCount > 0 && (
-                              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                              <span 
+                                className="text-xs px-2 py-0.5 rounded-full"
+                                style={{
+                                  backgroundColor: colors.error,
+                                  color: colors.onPrimary,
+                                }}
+                              >
                                 {conv.unreadCount}
                               </span>
                             )}

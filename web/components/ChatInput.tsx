@@ -2,6 +2,7 @@
 
 import { Send, ImageIcon, Mic, Square, Package, X } from 'lucide-react'
 import { ChatInputProps } from '@/types'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function ChatInput({
   value,
@@ -19,6 +20,7 @@ export default function ChatInput({
   disabled = false,
   placeholder = 'اكتب رسالة...',
 }: ChatInputProps) {
+  const { colors } = useTheme()
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -74,7 +76,11 @@ export default function ChatInput({
           />
           <button
             onClick={() => onImageSelect(null as any)}
-            className="absolute top-1 left-1 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+            className="absolute top-1 left-1 p-1 rounded-full transition-all hover:scale-110"
+            style={{
+              backgroundColor: colors.error,
+              color: colors.onPrimary,
+            }}
           >
             <X size={12} />
           </button>

@@ -4,8 +4,10 @@ import { Place, PlaceCardProps } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 import { MapPin, Phone, Eye, Video } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardProps) {
+  const { colors } = useTheme()
   const getCardStyle = (): React.CSSProperties => {
     switch (cardStyle) {
       case 'premium':
@@ -51,7 +53,13 @@ export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardPro
               />
               {place.video_url && (
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                  <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-red-600 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-0.5 sm:gap-1">
+                  <div 
+                    className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-0.5 sm:gap-1"
+                    style={{
+                      backgroundColor: colors.error,
+                      color: colors.onPrimary,
+                    }}
+                  >
                     <Video size={10} className="sm:w-3 sm:h-3" />
                     <span className="hidden sm:inline">فيديو</span>
                   </div>
