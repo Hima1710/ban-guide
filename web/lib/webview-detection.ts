@@ -164,13 +164,13 @@ export function applyWebViewOptimizations() {
 
   // Disable text selection (better mobile UX)
   document.body.style.userSelect = 'none'
-  document.body.style.webkitUserSelect = 'none'
+  ;(document.body.style as any).webkitUserSelect = 'none'
 
   // Disable tap highlight
-  document.body.style.webkitTapHighlightColor = 'transparent'
+  ;(document.body.style as any).webkitTapHighlightColor = 'transparent'
 
   // Enable momentum scrolling on iOS
-  document.body.style.webkitOverflowScrolling = 'touch'
+  ;(document.body.style as any).webkitOverflowScrolling = 'touch'
 
   // Prevent pull-to-refresh on Android
   document.body.style.overscrollBehavior = 'none'
