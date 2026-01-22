@@ -340,7 +340,9 @@ export default function ConversationsSidebar() {
                         )}
                         <div className="flex-1">
                           <p className="text-sm font-semibold app-text-main">{product.name_ar}</p>
-                          <p className="text-xs app-text-muted">{product.price_range}</p>
+                          <p className="text-xs app-text-muted">
+                            {product.price ? `${product.price} ${product.currency || 'IQD'}` : 'السعر غير محدد'}
+                          </p>
                         </div>
                       </div>
                     </div>
