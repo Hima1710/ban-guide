@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useTheme } from '@/contexts/ThemeContext'
 import { showError, showSuccess, showConfirm, showLoading, closeLoading } from '@/components/SweetAlert'
-import { Check, X, Eye, User, Package as PackageIcon, Calendar, DollarSign, Clock } from 'lucide-react'
-import Image from 'next/image'
+import { Check, X, Eye } from 'lucide-react'
 
 export default function AdminSubscriptionsPage() {
   const router = useRouter()
+  const { colors, isDark } = useTheme()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [subscriptions, setSubscriptions] = useState<any[]>([])
@@ -17,6 +18,7 @@ export default function AdminSubscriptionsPage() {
 
   useEffect(() => {
     checkAdmin()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -69,15 +71,7 @@ export default function AdminSubscriptionsPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      console.log('📋 [SUBSCRIPTIONS] Loaded subscriptions:', data?.map(s => ({ 
-        id: s.id, 
-        status: s.status, 
-        receipt_image_url: s.receipt_image_url,
-        has_receipt: !!s.receipt_image_url,
-        user: s.user?.email,
-        package: s.package?.name_ar
-      })))
-      console.log('📋 [SUBSCRIPTIONS] Full subscription data:', data)
+      
       setSubscriptions(data || [])
     } catch (error: any) {
       console.error('Error loading subscriptions:', error)
@@ -94,21 +88,18 @@ export default function AdminSubscriptionsPage() {
 
     showLoading('جاري الموافقة على الاشتراك...')
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('user_subscriptions')
         .update({
           status: 'approved',
           is_active: true,
         })
         .eq('id', subscription.id)
-        .select()
 
       if (error) {
         console.error('❌ [APPROVE ERROR]', error)
         throw error
       }
-
-      console.log('✅ [APPROVE SUCCESS]', data)
 
       closeLoading()
       showSuccess('تم الموافقة على الاشتراك بنجاح!')
@@ -132,21 +123,18 @@ export default function AdminSubscriptionsPage() {
 
     showLoading('جاري رفض الاشتراك...')
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('user_subscriptions')
         .update({
           status: 'rejected',
           is_active: false,
         })
         .eq('id', subscription.id)
-        .select()
 
       if (error) {
         console.error('❌ [REJECT ERROR]', error)
         throw error
       }
-
-      console.log('✅ [REJECT SUCCESS]', data)
 
       closeLoading()
       showSuccess('تم رفض الاشتراك بنجاح!')
@@ -164,20 +152,20 @@ export default function AdminSubscriptionsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>قيد المراجعة</span>
+        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-warning">قيد المراجعة</span>
       case 'approved':
-        return <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ background: 'var(--status-green-bg)', color: 'var(--secondary-color)' }}>موافق عليه</span>
+        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-success">موافق عليه</span>
       case 'rejected':
-        return <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ background: 'var(--status-red-bg)', color: 'var(--status-error)' }}>مرفوض</span>
+        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-danger">مرفوض</span>
       default:
-        return <span className="px-3 py-1 rounded-full text-sm font-medium" style={{ background: 'var(--surface-color)', color: 'var(--text-color)' }}>غير معروف</span>
+        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-muted">غير معروف</span>
     }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" className="border-primary"></div>
       </div>
     )
   }
@@ -195,9 +183,9 @@ export default function AdminSubscriptionsPage() {
           <h2 className="text-xl font-bold mb-4 app-text-main">جميع الاشتراكات ({subscriptions.length})</h2>
           <div className="app-card shadow overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full" style={{ borderColor: 'var(--border-color)' }}>
+              <table className="min-w-full" >
                 <thead className="app-bg-surface">
-                  <tr style={{ borderColor: 'var(--border-color)' }}>
+                  <tr >
                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">المستخدم</th>
                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">الباقة</th>
                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">المبلغ</th>
@@ -207,9 +195,9 @@ export default function AdminSubscriptionsPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">الإيصال</th>
                   </tr>
                 </thead>
-                <tbody style={{ borderColor: 'var(--border-color)' }}>
+                <tbody >
                   {subscriptions.map((subscription) => (
-                    <tr key={subscription.id} className="app-hover-bg" style={{ borderColor: 'var(--border-color)' }}>
+                    <tr key={subscription.id} className="app-hover-bg" >
                       <td className="px-6 py-4 whitespace-nowrap text-sm app-text-main">
                         {subscription.user?.full_name || subscription.user?.email || 'مستخدم'}
                       </td>
@@ -244,7 +232,7 @@ export default function AdminSubscriptionsPage() {
                               setShowImageModal(true)
                             }}
                             className="flex items-center gap-1"
-                            style={{ color: 'var(--primary-color)' }}
+                            className="icon-primary"
                             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
                             onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                           >
@@ -271,7 +259,7 @@ export default function AdminSubscriptionsPage() {
         {/* Image Modal */}
         {showImageModal && selectedSubscription && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="app-card shadow-xl max-w-4xl w-full p-6">
+            <div className="app-card shadow-xl rounded-3xl max-w-4xl w-full p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold app-text-main">صورة إيصال الدفع</h3>
                 <button
@@ -279,7 +267,7 @@ export default function AdminSubscriptionsPage() {
                     setShowImageModal(false)
                     setSelectedSubscription(null)
                   }}
-                  className="app-text-muted app-hover-bg"
+                  className="app-text-muted app-hover-bg rounded-full p-2"
                 >
                   <X size={24} />
                 </button>
@@ -305,7 +293,7 @@ export default function AdminSubscriptionsPage() {
                 )}
               </div>
               {selectedSubscription.receipt_image_url && (
-                <div className="border rounded-lg overflow-hidden app-border">
+                <div className="border rounded-3xl overflow-hidden app-border">
                   <img
                     src={selectedSubscription.receipt_image_url}
                     alt="Receipt"
@@ -322,7 +310,7 @@ export default function AdminSubscriptionsPage() {
                       setSelectedSubscription(null)
                     }}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                    style={{ background: 'var(--secondary-color)' }}
+                    className="bg-secondary"
                     onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                     onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
@@ -336,7 +324,7 @@ export default function AdminSubscriptionsPage() {
                       setSelectedSubscription(null)
                     }}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                    style={{ background: 'var(--status-error)' }}
+                    className="badge-error"
                     onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                     onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >

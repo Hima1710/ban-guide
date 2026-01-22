@@ -85,7 +85,7 @@ export default function HomePage() {
               <Eye size={14} className="sm:w-4 sm:h-4" />
               <span>اليوم: <strong className="app-text-main">{siteStats.today}</strong></span>
             </div>
-            <span style={{ color: 'var(--border-color)' }}>|</span>
+            <span className="opacity-30">|</span>
             <div className="flex items-center gap-1.5">
               <TrendingUp size={14} className="sm:w-4 sm:h-4" />
               <span>الإجمالي: <strong className="app-text-main">{siteStats.total}</strong></span>
@@ -98,16 +98,13 @@ export default function HomePage() {
         {/* Search Bar */}
         <div className="mb-8">
           <div className="relative">
-            <Search className="absolute right-4 top-1/2 transform -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
+            <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 app-text-muted" size={20} />
             <input
               type="text"
               placeholder="ابحث عن منتج أو خدمة..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="app-input w-full pr-12 pl-4 py-3 rounded-lg focus:outline-none"
-              style={{ borderColor: 'var(--border-color)' }}
-              onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-              onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+              className="app-input w-full pr-12 pl-4 py-3 rounded-lg focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 

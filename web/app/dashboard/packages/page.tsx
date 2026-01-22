@@ -4,15 +4,17 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Package } from '@/lib/types'
+import { useAuth } from '@/hooks'
 import { showError, showSuccess, showConfirm } from '@/components/SweetAlert'
 import { Check, Crown, Star, Upload, X } from 'lucide-react'
+import { Input, LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
 
 export default function PackagesPage() {
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth(true)
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
   const [currentSubscription, setCurrentSubscription] = useState<any>(null)
   const [discountCode, setDiscountCode] = useState('')
   const [selectedDiscount, setSelectedDiscount] = useState<any>(null)
@@ -25,17 +27,14 @@ export default function PackagesPage() {
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
 
   useEffect(() => {
-    checkUser()
-    loadPackages()
-  }, [])
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/auth/login')
-      return
+    if (user) {
+      loadCurrentSubscription()
     }
-    setUser(user)
+    loadPackages()
+  }, [user])
+
+  const loadCurrentSubscription = async () => {
+    if (!user) return
 
     // Load current subscription
     const { data: subData } = await supabase
@@ -295,7 +294,7 @@ export default function PackagesPage() {
       setReceiptFile(null)
       setReceiptPreview(null)
       setSelectedPackage(null)
-      checkUser() // Refresh subscription status
+      loadCurrentSubscription() // Refresh subscription status
     } catch (error: any) {
       setUploadingReceipt(false)
       showError(error.message || 'حدث خطأ في الاشتراك')
@@ -327,10 +326,10 @@ export default function PackagesPage() {
     }
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
   }
@@ -342,7 +341,7 @@ export default function PackagesPage() {
           <Link
             href="/dashboard"
             className="mb-4 inline-block"
-            style={{ color: 'var(--primary-color)' }}
+            className="icon-primary"
           >
             ← العودة للوحة التحكم
           </Link>
@@ -354,7 +353,7 @@ export default function PackagesPage() {
           <div className="rounded-lg p-4 mb-6 border" style={{ background: 'var(--status-blue-bg)', borderColor: 'var(--primary-color)' }}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold" style={{ color: 'var(--primary-color)' }}>
+                <p className="font-semibold icon-primary">
                   اشتراكك الحالي: {(currentSubscription.package as Package)?.name_ar}
                 </p>
                 <p className="text-sm" style={{ color: 'var(--primary-color)', opacity: 0.8 }}>
@@ -374,13 +373,13 @@ export default function PackagesPage() {
             <label className="text-sm font-semibold app-text-main whitespace-nowrap">
               كود الخصم:
             </label>
-            <input
+            <Input
               type="text"
               value={discountCode}
               onChange={(e) => handleDiscountCodeChange(e.target.value)}
               placeholder="أدخل كود الخصم (اختياري)"
               className="app-input flex-1 px-4 py-2 rounded-lg focus:outline-none"
-              style={{ borderColor: 'var(--border-color)' }}
+              
               onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
               onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
             />
@@ -417,15 +416,15 @@ export default function PackagesPage() {
                       <div className="text-2xl font-bold line-through mb-1 app-text-subtle">
                         {pkg.price} <span className="text-sm">EGP</span>
                       </div>
-                      <div className="text-4xl font-bold mb-2" style={{ color: 'var(--secondary-color)' }}>
+                      <div className="text-4xl font-bold mb-2 icon-secondary">
                         {(pkg.price - (pkg.price * selectedDiscount.discount_percentage) / 100).toFixed(2)} <span className="text-lg">EGP</span>
                       </div>
-                      <div className="text-sm font-semibold" style={{ color: 'var(--secondary-color)' }}>
+                      <div className="text-sm font-semibold icon-secondary">
                         خصم {selectedDiscount.discount_percentage}%
                       </div>
                     </div>
                   ) : (
-                    <div className="text-4xl font-bold mb-2" style={{ color: 'var(--primary-color)' }}>
+                    <div className="text-4xl font-bold mb-2 icon-primary">
                       {pkg.price} <span className="text-lg">EGP</span>
                     </div>
                   )}
@@ -433,24 +432,24 @@ export default function PackagesPage() {
 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center gap-2">
-                    <Check size={18} style={{ color: 'var(--secondary-color)' }} />
+                    <Check size={18} className="icon-secondary" />
                     <span className="text-sm app-text-main">{pkg.max_places} مكان/خدمة</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check size={18} style={{ color: 'var(--secondary-color)' }} />
+                    <Check size={18} className="icon-secondary" />
                     <span className="text-sm">{pkg.max_product_images} صورة لكل منتج</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check size={18} style={{ color: 'var(--secondary-color)' }} />
+                    <Check size={18} className="icon-secondary" />
                     <span className="text-sm">{pkg.max_product_videos} فيديو لكل منتج</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check size={18} style={{ color: 'var(--secondary-color)' }} />
+                    <Check size={18} className="icon-secondary" />
                     <span className="text-sm">{pkg.max_place_videos} فيديو للمكان</span>
                   </div>
                   {pkg.is_featured && (
                     <div className="flex items-center gap-2">
-                      <Crown size={18} style={{ color: 'var(--status-warning)' }} />
+                      <Crown size={18} className="icon-warning" />
                       <span className="text-sm">ظهور مميز في الصفحة الرئيسية</span>
                     </div>
                   )}
@@ -520,7 +519,7 @@ export default function PackagesPage() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium app-text-main mb-2">
-                  رفع صورة إيصال الدفع <span style={{ color: 'var(--status-error)' }}>*</span>
+                  رفع صورة إيصال الدفع <span className="icon-error">*</span>
                   <span className="block text-xs app-text-muted mt-1">(إلزامي - مطلوب للموافقة على الاشتراك)</span>
                 </label>
                 {receiptPreview ? (
@@ -533,7 +532,7 @@ export default function PackagesPage() {
                     <button
                       onClick={handleRemoveReceipt}
                       className="absolute top-2 left-2 text-white p-2 rounded-full"
-                      style={{ background: 'var(--status-error)' }}
+                      className="badge-error"
                       onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                       onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
@@ -543,7 +542,7 @@ export default function PackagesPage() {
                 ) : (
                   <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer app-hover-bg" style={{ borderColor: 'var(--border-color)', background: 'var(--surface-color)' }}>
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload size={48} className="mb-2" style={{ color: 'var(--text-muted)' }} />
+                      <Upload size={48} className="mb-2 icon-muted" />
                       <p className="mb-2 text-sm app-text-muted">
                         <span className="font-semibold">اضغط للرفع</span> أو اسحب الصورة هنا
                       </p>

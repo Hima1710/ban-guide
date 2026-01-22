@@ -25,6 +25,43 @@ export async function GET(request: NextRequest) {
         if (profileError) {
           console.error('Error creating/updating profile:', profileError)
         }
+
+        // Send welcome notification
+        try {
+          // Check if user has any notifications (to determine if this is first login)
+          const { data: existingNotifications } = await supabase
+            .from('notifications')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1)
+          
+          // Send welcome notification if no previous notifications (first login)
+          if (!existingNotifications || existingNotifications.length === 0) {
+            await supabase.rpc('send_notification', {
+              p_user_id: user.id,
+              p_title_ar: 'مرحباً بك في بان! 🎉',
+              p_title_en: 'Welcome to BAN! 🎉',
+              p_message_ar: 'نحن سعداء بانضمامك إلينا. استكشف المحلات والصيدليات القريبة منك الآن!',
+              p_message_en: 'We are happy to have you join us. Explore nearby stores and pharmacies now!',
+              p_type: 'system',
+              p_link: '/dashboard'
+            })
+          } else {
+            // Send login notification for returning users
+            await supabase.rpc('send_notification', {
+              p_user_id: user.id,
+              p_title_ar: 'مرحباً بعودتك! 👋',
+              p_title_en: 'Welcome back! 👋',
+              p_message_ar: 'سعداء برؤيتك مجدداً. تحقق من التحديثات الجديدة!',
+              p_message_en: 'Happy to see you again. Check out the new updates!',
+              p_type: 'system',
+              p_link: '/dashboard'
+            })
+          }
+        } catch (error) {
+          console.error('Error sending welcome notification:', error)
+          // Don't fail the login if notification fails
+        }
       }
     }
   }

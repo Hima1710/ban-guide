@@ -1,290 +1,146 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { UserProfile } from '@/lib/types'
-import { showError, showSuccess, showConfirm } from '@/components/SweetAlert'
-import { UserCheck, UserX, Crown, TrendingUp } from 'lucide-react'
+import { useAdminManager } from '@/hooks'
+import { showError, showConfirm } from '@/components/SweetAlert'
+import { LoadingSpinner, Card } from '@/components/common'
+import { Crown, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
 export default function AdminUsersPage() {
   const router = useRouter()
-  const [users, setUsers] = useState<UserProfile[]>([])
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const { colors, isDark } = useTheme()
+  const {
+    isAdmin,
+    loading: adminLoading,
+    users,
+    usersLoading,
+    updateUserAdminStatus,
+    updateUserAffiliateStatus,
+  } = useAdminManager({ autoLoadUsers: true })
 
+  // Redirect non-admin users
   useEffect(() => {
-    checkAdmin()
-    loadUsers()
-  }, [])
-
-  const checkAdmin = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.is_admin) {
+    if (!adminLoading && !isAdmin) {
       showError('ليس لديك صلاحيات للوصول إلى هذه الصفحة')
       router.push('/dashboard')
-      return
     }
+  }, [isAdmin, adminLoading, router])
 
-    setUser(user)
-  }
-
-  const loadUsers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setUsers(data || [])
-    } catch (error: any) {
-      showError(error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const toggleAdmin = async (userId: string, currentStatus: boolean) => {
-    const action = currentStatus ? 'إلغاء صلاحيات المدير' : 'تعيين كمدير'
-    const confirmed = await showConfirm(
-      `هل تريد ${action} لهذا المستخدم؟`
-    )
+  const handleToggleAdmin = async (user: any) => {
+    const action = user.is_admin ? 'إلغاء صلاحيات المدير' : 'تعيين كمدير'
+    const confirmed = await showConfirm(`هل تريد ${action} لهذا المستخدم؟`)
 
     if (!confirmed.isConfirmed) return
 
-    try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ is_admin: !currentStatus })
-        .eq('id', userId)
-
-      if (error) throw error
-      showSuccess(`تم ${action} بنجاح`)
-      loadUsers()
-    } catch (error: any) {
-      showError(error.message)
-    }
+    await updateUserAdminStatus(user.id, !user.is_admin)
   }
 
-  const toggleAffiliate = async (userId: string, currentStatus: boolean) => {
-    try {
-      if (currentStatus) {
-        // Remove affiliate
-        const { error: affiliateError } = await supabase
-          .from('affiliates')
-          .delete()
-          .eq('user_id', userId)
+  const handleToggleAffiliate = async (user: any) => {
+    const action = user.is_affiliate ? 'إلغاء صلاحيات المسوق' : 'تعيين كمسوق'
+    const confirmed = await showConfirm(`هل تريد ${action} لهذا المستخدم؟`)
 
-        if (affiliateError) throw affiliateError
+    if (!confirmed.isConfirmed) return
 
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .update({ is_affiliate: false, affiliate_code: null })
-          .eq('id', userId)
-
-        if (profileError) throw profileError
-        showSuccess('تم إلغاء صلاحيات المسوق بنجاح')
-      } else {
-        // Create affiliate
-        const affiliateCode = `AFF${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-        
-        const { error: affiliateError } = await supabase
-          .from('affiliates')
-          .insert({
-            user_id: userId,
-            code: affiliateCode,
-            discount_percentage: 10,
-            is_active: true,
-          })
-
-        if (affiliateError) throw affiliateError
-
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .update({ is_affiliate: true, affiliate_code: affiliateCode })
-          .eq('id', userId)
-
-        if (profileError) throw profileError
-        showSuccess('تم تعيين المستخدم كمسوق بنجاح')
-      }
-
-      loadUsers()
-    } catch (error: any) {
-      showError(error.message)
-    }
+    await updateUserAffiliateStatus(user.id, !user.is_affiliate)
   }
 
-  if (loading) {
+  if (adminLoading || usersLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
   }
 
+  if (!isAdmin) {
+    return null // Redirecting...
+  }
+
   return (
-    <div className="min-h-screen py-8 app-bg-base">
+    <div className="min-h-screen app-bg-base py-8">
       <div className="container mx-auto px-4">
         <div className="mb-6">
           <Link
             href="/admin"
-            className="mb-4 inline-block"
-            style={{ color: 'var(--primary-color)' }}
+            className="mb-4 inline-block hover:underline"
+            className="icon-primary"
           >
             ← العودة للوحة الإدارة
           </Link>
           <h1 className="text-3xl font-bold app-text-main">إدارة المستخدمين</h1>
+          <p className="app-text-muted mt-2">عدد المستخدمين: {users.length}</p>
         </div>
 
-        <div className="app-card shadow-lg overflow-hidden">
+        <Card className="shadow-lg overflow-hidden" padding="none">
           <table className="w-full">
             <thead className="app-bg-surface">
-              <tr style={{ borderColor: 'var(--border-color)' }}>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase app-text-muted">المستخدم</th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase app-text-muted">البريد</th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase app-text-muted">الحالة</th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase app-text-muted">الإجراءات</th>
+              <tr >
+                <th className="px-6 py-4 text-right text-base font-bold app-text-main">المستخدم</th>
+                <th className="px-6 py-4 text-right text-base font-bold app-text-main">البريد الإلكتروني</th>
+                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الهاتف</th>
+                <th className="px-6 py-4 text-right text-base font-bold app-text-main">تاريخ التسجيل</th>
+                <th className="px-6 py-4 text-center text-base font-bold app-text-main">الصلاحيات</th>
               </tr>
             </thead>
-            <tbody style={{ borderColor: 'var(--border-color)' }}>
-              {users.map((userProfile) => (
-                <tr key={userProfile.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      {userProfile.avatar_url ? (
-                        <div className="relative">
-                          <img
-                            src={userProfile.avatar_url}
-                            alt={userProfile.full_name || userProfile.email || ''}
-                            className="w-10 h-10 rounded-full border-2 object-cover shadow-sm app-border"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = 'none'
-                              const parent = target.parentElement
-                              if (parent) {
-                                const fallback = document.createElement('div')
-                                fallback.className = 'w-10 h-10 rounded-full bg-gradient-to-br flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 app-border'
-                                fallback.style.background = 'linear-gradient(to bottom right, var(--primary-color), var(--primary-dark))'
-                                fallback.textContent = (userProfile.full_name?.[0] || userProfile.email?.[0] || 'U').toUpperCase()
-                                parent.appendChild(fallback)
-                              }
-                            }}
-                          />
-                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm border-2 app-border" style={{ background: 'linear-gradient(to bottom right, var(--primary-color), var(--primary-dark))' }}>
-                            {(userProfile.full_name?.[0] || userProfile.email?.[0] || 'U').toUpperCase()}
-                          </div>
-                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-medium">{userProfile.full_name || 'بدون اسم'}</div>
-                        <div className="text-sm app-text-muted flex flex-wrap gap-1 mt-1">
-                          {(() => {
-                            const isAdmin = userProfile.is_admin || false
-                            const isAffiliate = userProfile.is_affiliate || false
-                            
-                            if (isAdmin && isAffiliate) {
-                              return (
-                                <>
-                                  <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'var(--status-red-bg)', color: 'var(--status-error)' }}>مدير</span>
-                                  <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>مسوق</span>
-                                </>
-                              )
-                            } else if (isAdmin) {
-                              return (
-                                <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'var(--status-red-bg)', color: 'var(--status-error)' }}>مدير</span>
-                              )
-                            } else if (isAffiliate) {
-                              return (
-                                <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>مسوق</span>
-                              )
-                            } else {
-                              return (
-                                <span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: 'var(--surface-color)', color: 'var(--text-color)' }}>مستخدم</span>
-                              )
-                            }
-                          })()}
-                        </div>
-                      </div>
+            <tbody >
+              {users.map((user) => (
+                <tr key={user.id} className="app-hover-bg transition-colors" >
+                  <td className="px-6 py-5">
+                    <div className="font-semibold text-base app-text-main">
+                      {user.full_name || 'لا يوجد اسم'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm app-text-main">{userProfile.email}</div>
-                    {userProfile.affiliate_code && (
-                      <div className="text-xs app-text-muted">كود: {userProfile.affiliate_code}</div>
-                    )}
+                  <td className="px-6 py-5">
+                    <span className="text-base app-text-main">{user.email}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex flex-col gap-1">
-                      {(() => {
-                        const isAdmin = userProfile.is_admin || false
-                        const isAffiliate = userProfile.is_affiliate || false
-                        
-                        if (isAdmin && isAffiliate) {
-                          return (
-                            <>
-                              <span className="px-2 py-1 rounded text-xs w-fit" style={{ background: 'var(--status-red-bg)', color: 'var(--status-error)' }}>مدير</span>
-                              <span className="px-2 py-1 rounded text-xs w-fit" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>مسوق</span>
-                            </>
-                          )
-                        } else if (isAdmin) {
-                          return (
-                            <span className="px-2 py-1 rounded text-xs w-fit" style={{ background: 'var(--status-red-bg)', color: 'var(--status-error)' }}>مدير</span>
-                          )
-                        } else if (isAffiliate) {
-                          return (
-                            <span className="px-2 py-1 rounded text-xs w-fit" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>مسوق</span>
-                          )
-                        } else {
-                          return (
-                            <span className="px-2 py-1 rounded text-xs w-fit" style={{ background: 'var(--surface-color)', color: 'var(--text-color)' }}>مستخدم</span>
-                          )
-                        }
-                      })()}
-                    </div>
+                  <td className="px-6 py-5">
+                    <span className="text-base app-text-muted">{user.phone || '-'}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-2">
+                  <td className="px-6 py-5">
+                    <span className="text-sm app-text-muted">
+                      {new Date(user.created_at).toLocaleDateString('ar-EG')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-5">
+                    <div className="flex justify-center gap-2">
                       <button
-                        onClick={() => toggleAdmin(userProfile.id, userProfile.is_admin || false)}
-                        className="p-2 rounded app-hover-bg"
-                        style={{ color: userProfile.is_admin ? 'var(--status-error)' : 'var(--primary-color)' }}
-                        title={userProfile.is_admin ? 'إلغاء صلاحيات المدير' : 'تعيين كمدير'}
+                        onClick={() => handleToggleAdmin(user)}
+                        className={`p-2 rounded transition-colors ${
+                          user.is_admin
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            : 'app-bg-surface app-text-muted hover:bg-blue-50'
+                        }`}
+                        title={user.is_admin ? 'إلغاء صلاحيات المدير' : 'تعيين كمدير'}
                       >
-                        <Crown size={18} />
+                        <Crown size={20} />
                       </button>
                       <button
-                        onClick={() => toggleAffiliate(userProfile.id, userProfile.is_affiliate || false)}
-                        className="p-2 rounded app-hover-bg"
-                        style={{ color: userProfile.is_affiliate ? 'var(--status-error)' : 'var(--status-warning)' }}
-                        title={userProfile.is_affiliate ? 'إلغاء صلاحيات المسوق' : 'تعيين كمسوق'}
+                        onClick={() => handleToggleAffiliate(user)}
+                        className={`p-2 rounded transition-colors ${
+                          user.is_affiliate
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'app-bg-surface app-text-muted hover:bg-green-50'
+                        }`}
+                        title={user.is_affiliate ? 'إلغاء صلاحيات المسوق' : 'تعيين كمسوق'}
                       >
-                        <TrendingUp size={18} />
+                        <TrendingUp size={20} />
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center app-text-muted">
+                    لا يوجد مستخدمين
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-        </div>
+        </Card>
       </div>
     </div>
   )

@@ -3,9 +3,11 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, Home } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function Breadcrumbs() {
   const pathname = usePathname()
+  const { colors } = useTheme()
 
   // Don't show breadcrumbs on home page
   if (pathname === '/') return null
@@ -26,13 +28,14 @@ export default function Breadcrumbs() {
     'settings': 'الإعدادات',
     'youtube': 'YouTube',
     'products': 'المنتجات',
+    'employees': 'الموظفين',
+    'posts': 'المنشورات',
     'new': 'جديد',
   }
 
   // Get place/product name from URL if it's a dynamic route
   const getDynamicLabel = (segment: string, index: number) => {
     // If it's a UUID or ID, try to get the actual name
-    // For now, we'll just show a generic label
     if (segment.length > 20 && /^[a-f0-9-]+$/i.test(segment)) {
       if (pathSegments[index - 1] === 'places') {
         return 'تفاصيل المكان'
@@ -54,26 +57,51 @@ export default function Breadcrumbs() {
   ]
 
   return (
-    <nav className="py-2 sm:py-3 border-b app-bg-surface app-border">
+    <nav 
+      className="py-2 sm:py-3 border-b"
+      style={{
+        backgroundColor: colors.surface,
+        borderColor: colors.outline
+      }}
+    >
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center gap-2 text-sm">
           {breadcrumbs.map((crumb, index) => (
             <div key={crumb.href} className="flex items-center gap-2">
               {index > 0 && (
-                <ChevronLeft size={14} className="flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                <ChevronLeft 
+                  size={14} 
+                  className="flex-shrink-0" 
+                  style={{ 
+                    color: colors.onSurface,
+                    opacity: 0.5
+                  }} 
+                />
               )}
               {index === breadcrumbs.length - 1 ? (
-                <span className="app-text-main font-medium flex items-center gap-1">
+                <span 
+                  className="font-medium flex items-center gap-1"
+                  style={{ color: colors.onSurface }}
+                >
                   {index === 0 && <Home size={14} />}
                   {crumb.label}
                 </span>
               ) : (
                 <Link
                   href={crumb.href}
-                  className="app-text-muted transition-colors flex items-center gap-1"
-                  style={{ color: 'var(--text-muted)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--primary-color)'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  className="transition-colors flex items-center gap-1"
+                  style={{ 
+                    color: colors.onSurface,
+                    opacity: 0.7
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.primary
+                    e.currentTarget.style.opacity = '1'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = colors.onSurface
+                    e.currentTarget.style.opacity = '0.7'
+                  }}
                 >
                   {index === 0 && <Home size={14} />}
                   {crumb.label}

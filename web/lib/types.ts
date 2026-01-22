@@ -146,6 +146,13 @@ export interface DiscountCode {
   updated_at: string
 }
 
+// ============================================
+// NEW DATABASE TYPES (from database.ts)
+// ============================================
+
+// Re-export all new database types
+export * from './types/database'
+
 export interface EmployeeRequest {
   id: string
   user_id: string

@@ -3,12 +3,14 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { Place, Product, Message } from '@/lib/types'
-import { getPlaceById, incrementPlaceView } from '@/lib/api/places'
-import { getProductsByPlace } from '@/lib/api/products'
+import { incrementPlaceView } from '@/lib/api/places'
+import { useAuth, usePlace, useProducts, useMessages } from '@/hooks'
+import { useTheme } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
 import { extractYouTubeId, getYouTubeEmbedUrl } from '@/lib/youtube'
 import { MapPin, Phone, MessageCircle, Send, Image as ImageIcon, Users, X, Reply, Mic, Square, Loader2, Package, UserPlus, CheckCircle, Plus, Trash2, Video, Upload } from 'lucide-react'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
+import { LoadingSpinner } from '@/components/common'
 import { AudioRecorder } from '@/lib/audio-recorder'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -25,12 +27,21 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const searchParams = useSearchParams()
   const placeId = params.id as string
 
-  const [place, setPlace] = useState<Place | null>(null)
-  const [products, setProducts] = useState<Product[]>([])
-  const [messages, setMessages] = useState<Message[]>([])
+  // Use custom hooks
+  const { user } = useAuth()
+  const { colors, isDark } = useTheme()
+  const { place, loading: placeLoading, refresh: refreshPlace } = usePlace(placeId)
+  const { products, loading: productsLoading } = useProducts({ placeId, autoLoad: !!placeId })
+  const { 
+    messages, 
+    loading: messagesLoading, 
+    sendMessage: sendMessageHook,
+    markAsRead,
+    refresh: refreshMessages
+  } = useMessages({ placeId, autoLoad: !!placeId })
+
   const [newMessage, setNewMessage] = useState('')
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null)
@@ -64,16 +75,15 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const [videoUploadMethod, setVideoUploadMethod] = useState<'link' | 'upload'>('link')
 
   useEffect(() => {
-    loadData()
-    checkUser()
-  }, [placeId])
-
-  useEffect(() => {
-    // Load messages when user is available or when placeId changes
-    if (placeId) {
-      loadMessages()
+    if (place) {
+      incrementPlaceView(placeId).catch(console.error)
+      loadPosts()
     }
-  }, [user, placeId])
+    // Set loading to false when place loading completes (whether successful or not)
+    if (!placeLoading) {
+      setLoading(false)
+    }
+  }, [place, placeId, placeLoading])
 
   useEffect(() => {
     // Check if user is employee or has pending request
@@ -82,29 +92,6 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     }
   }, [user, place])
 
-  const loadData = async () => {
-    try {
-      const [placeData, productsData] = await Promise.all([
-        getPlaceById(placeId),
-        getProductsByPlace(placeId),
-      ])
-      setPlace(placeData)
-      setProducts(productsData)
-      if (placeData) {
-        await incrementPlaceView(placeId)
-        loadPosts()
-      }
-    } catch (error) {
-      showError('حدث خطأ في تحميل البيانات')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    setUser(user)
-  }
 
   const loadPosts = async () => {
     try {
@@ -212,80 +199,22 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     }
   }
 
-  const loadMessages = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*, sender:user_profiles(*), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
-        .eq('place_id', placeId)
-        .order('created_at', { ascending: true })
-
-      // Load replied messages separately
-      if (data) {
-        const replyIds = data.filter(m => m.reply_to).map(m => m.reply_to).filter(Boolean)
-        if (replyIds.length > 0) {
-          const { data: repliedMessages } = await supabase
-            .from('messages')
-            .select('*, sender:user_profiles(*), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
-            .in('id', replyIds)
-          
-          if (repliedMessages) {
-            const repliedMap = new Map(repliedMessages.map(m => [m.id, m]))
-            data.forEach(msg => {
-              if (msg.reply_to && repliedMap.has(msg.reply_to)) {
-                msg.replied_message = repliedMap.get(msg.reply_to)
-              }
-            })
-          }
-        }
+  // Messages are automatically loaded by useMessages hook
+  // Auto-select first conversation if none selected
+  useEffect(() => {
+    if (!selectedConversation && messages.length > 0 && user) {
+      const uniqueSenders = Array.from(
+        new Set(
+          messages
+            .filter((msg) => msg.sender_id !== user.id)
+            .map((msg) => msg.sender_id)
+        )
+      )
+      if (uniqueSenders.length > 0) {
+        setSelectedConversation(uniqueSenders[0])
       }
-
-      if (error) {
-        console.error('Error loading messages:', error)
-        return
-      }
-
-      if (data) {
-        // Load products for messages that have product_id but product is null
-        const messagesWithProductId = data.filter(m => m.product_id && !m.product)
-        if (messagesWithProductId.length > 0) {
-          const productIds = messagesWithProductId.map(m => m.product_id).filter(Boolean)
-          const { data: productsData } = await supabase
-            .from('products')
-            .select('*, images:product_images(*), videos:product_videos(*), variants:product_variants(*)')
-            .in('id', productIds)
-          
-          if (productsData) {
-            const productsMap = new Map(productsData.map(p => [p.id, p]))
-            data.forEach(msg => {
-              if (msg.product_id && productsMap.has(msg.product_id)) {
-                msg.product = productsMap.get(msg.product_id)
-              }
-            })
-          }
-        }
-        
-        setMessages(data)
-        
-        // Auto-select first conversation if none selected
-        if (!selectedConversation && data.length > 0 && user) {
-          // Get unique sender IDs (excluding current user)
-          const uniqueSenders = Array.from(
-            new Set(
-              data
-                .filter((msg) => msg.sender_id !== user.id)
-                .map((msg) => msg.sender_id)
-            )
-          )
-          if (uniqueSenders.length > 0) {
-            setSelectedConversation(uniqueSenders[0])
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading messages:', error)
     }
-  }
+  }, [messages, user, selectedConversation])
 
   // Group messages by sender (conversations)
   const getConversations = () => {
@@ -330,36 +259,23 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     )
   }
 
-  // Mark messages as read
-  const markAsRead = async (senderId: string) => {
+  // Mark messages as read using hook function
+  const markConversationAsRead = async (senderId: string) => {
     if (!user) return
     
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('place_id', placeId)
-        .eq('sender_id', senderId)
-        .neq('sender_id', user.id) // Don't mark own messages as read
-
-      if (!error) {
-        // Update local state
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.sender_id === senderId && msg.sender_id !== user.id
-              ? { ...msg, is_read: true }
-              : msg
-          )
-        )
-      }
-    } catch (error) {
-      console.error('Error marking messages as read:', error)
+    // Mark all unread messages from this sender
+    const unreadMessages = messages.filter(
+      msg => msg.sender_id === senderId && !msg.is_read && msg.sender_id !== user.id
+    )
+    
+    for (const msg of unreadMessages) {
+      await markAsRead(msg.id)
     }
   }
 
   useEffect(() => {
     if (selectedConversation && user) {
-      markAsRead(selectedConversation)
+      markConversationAsRead(selectedConversation)
     }
   }, [selectedConversation, user])
 
@@ -531,7 +447,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       })
       
       // Reload messages to ensure we have the latest data
-      await loadMessages()
+      await refreshMessages()
     } catch (error: any) {
       console.error('Error sending message:', error)
       // Remove temporary message on error
@@ -685,7 +601,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       })
       
       // Reload messages to ensure we have the latest data
-      await loadMessages()
+      await refreshMessages()
     } catch (error: any) {
       console.error('Error sending message:', error)
       // Remove temporary message on error
@@ -702,7 +618,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-600">جاري التحميل...</p>
         </div>
       </div>
@@ -712,7 +628,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   if (!place) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">المكان غير موجود</p>
+        <p className="app-text-muted">المكان غير موجود</p>
       </div>
     )
   }
@@ -1041,7 +957,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     ) : (
                       <button
                         onClick={() => setShowEmployeeRequestModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
+                        style={{ background: colors.primary }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                       >
                         <UserPlus size={18} />
                         <span>انضمام كموظف</span>
@@ -1055,7 +974,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       params.set('openConversation', placeId)
                       router.push(`/places/${placeId}?${params.toString()}`)
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+                    className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
+                    style={{ background: colors.secondary }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     <MessageCircle size={18} />
                     <span>إرسال رسالة</span>
@@ -1084,9 +1006,9 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         {/* Employee Request Modal */}
         {showEmployeeRequestModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="app-card shadow-xl max-w-md w-full p-6">
+            <div className="app-card shadow-xl rounded-3xl max-w-md w-full p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">طلب انضمام كموظف</h3>
+                <h3 className="text-xl font-bold app-text-main">طلب انضمام كموظف</h3>
                 <button
                   onClick={() => {
                     setShowEmployeeRequestModal(false)
@@ -1098,7 +1020,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 </button>
               </div>
               
-              <p className="text-gray-600 dark:text-slate-400 mb-4">
+              <p className="app-text-muted mb-4">
                 أدخل رقم هاتفك لإرسال طلب الانضمام كموظف في {place.name_ar}
               </p>
               
@@ -1121,7 +1043,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               <div className="flex gap-3">
                 <button
                   onClick={handleEmployeeRequest}
-                  className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium"
+                  className="flex-1 px-6 py-3 text-white rounded-full transition-colors font-medium"
+                  style={{ background: colors.primary }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   إرسال الطلب
                 </button>
@@ -1142,14 +1067,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         {/* Posts and Products Tabs */}
         <div className="app-card shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
           {/* Tabs */}
-          <div className="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-slate-700">
+          <div className="flex justify-between items-center mb-4 border-b app-border">
             <div className="flex gap-2">
               <button
                 onClick={() => setActiveTab('posts')}
                 className={`px-4 py-2 font-medium transition-colors ${
                   activeTab === 'posts'
-                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
+                    ? 'icon-primary border-b-2 border-primary'
+                    : 'app-text-muted app-hover-text'
                 }`}
               >
                 المنشورات ({posts.length})
@@ -1158,8 +1083,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 onClick={() => setActiveTab('products')}
                 className={`px-4 py-2 font-medium transition-colors ${
                   activeTab === 'products'
-                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'
+                    ? 'icon-primary border-b-2 border-primary'
+                    : 'app-text-muted app-hover-text'
                 }`}
               >
                 المنتجات ({products.length})
@@ -1170,7 +1095,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             {canManagePosts && activeTab === 'posts' && (
               <button
                 onClick={() => setShowAddPostModal(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
+                style={{ background: colors.primary }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 <Plus size={16} />
                 <span>إضافة منشور</span>
@@ -1179,7 +1107,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             {canManageProducts && activeTab === 'products' && (
               <button
                 onClick={() => router.push(`/dashboard/places/${placeId}/products/new`)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
+                style={{ background: colors.secondary }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 <Plus size={16} />
                 <span>إضافة منتج</span>
@@ -1191,7 +1122,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
           {activeTab === 'posts' && (
             <div>
               {posts.length === 0 ? (
-                <p className="text-center text-gray-500 dark:text-slate-400 py-8">
+                <p className="text-center app-text-muted py-8">
                   لا توجد منشورات حالياً
                 </p>
               ) : (
@@ -1199,7 +1130,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   {posts.map((post) => (
                     <div
                       key={post.id}
-                      className="border border-gray-200 dark:border-slate-700 rounded-lg p-3 sm:p-4 relative"
+                      className="border app-border rounded-lg p-3 sm:p-4 relative"
                     >
                       {/* Delete Button */}
                       {canManagePosts && (
@@ -1213,7 +1144,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       )}
                       
                       {/* Post Content */}
-                      <p className="text-sm text-gray-900 dark:text-slate-100 mb-3 whitespace-pre-wrap">
+                      <p className="text-sm app-text-main mb-3 whitespace-pre-wrap">
                         {post.content}
                       </p>
 
@@ -1251,7 +1182,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       )}
 
                       {/* Post Date */}
-                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-2">
+                      <p className="text-xs app-text-muted mt-2">
                         {new Date(post.created_at).toLocaleDateString('ar-EG', {
                           year: 'numeric',
                           month: 'long',
@@ -1271,7 +1202,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
           {activeTab === 'products' && (
             <div>
               {products.length === 0 ? (
-                <p className="text-center text-gray-500 dark:text-slate-400 py-8">
+                <p className="text-center app-text-muted py-8">
                   لا توجد منتجات حالياً
                 </p>
               ) : (
@@ -1300,20 +1231,20 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           className="w-full h-40 sm:h-48 object-cover rounded-lg mb-2 sm:mb-3"
                         />
                       )}
-                      <h3 className="font-bold text-base sm:text-lg mb-1.5 sm:mb-2 text-gray-900 dark:text-slate-100">
+                      <h3 className="font-bold text-base sm:text-lg mb-1.5 sm:mb-2 app-text-main">
                         {product.name_ar}
                       </h3>
-                      <p className="text-gray-600 dark:text-slate-400 text-xs sm:text-sm mb-2 line-clamp-2">
+                      <p className="app-text-muted text-xs sm:text-sm mb-2 line-clamp-2">
                         {product.description_ar}
                       </p>
                       {product.price && (
-                        <p className="text-blue-600 dark:text-blue-400 font-semibold">
+                        <p className="icon-primary font-semibold">
                           {product.price} {product.currency}
                         </p>
                       )}
                       {product.variants && product.variants.length > 0 && (
                         <div className="mt-2">
-                          <p className="text-sm text-gray-500 dark:text-slate-500 mb-1">المتغيرات المتاحة:</p>
+                          <p className="text-sm app-text-muted mb-1">المتغيرات المتاحة:</p>
                           <div className="flex flex-wrap gap-2">
                             {product.variants.map((variant) => (
                               <span
@@ -1339,9 +1270,9 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       {/* Add Post Modal */}
       {showAddPostModal && canManagePosts && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="app-card shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="app-card shadow-xl rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 app-card border-b app-border p-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">إضافة منشور جديد</h3>
+              <h3 className="text-xl font-bold app-text-main">إضافة منشور جديد</h3>
               <button
                 onClick={() => {
                   setShowAddPostModal(false)
@@ -1427,7 +1358,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       <img
                         src={postData.image_url}
                         alt="Preview"
-                        className="max-w-full h-64 object-contain rounded-lg border border-gray-300 dark:border-slate-600"
+                        className="max-w-full h-64 object-contain rounded-lg border app-border"
                       />
                       <button
                         onClick={() => setPostData({ ...postData, image_url: '' })}
@@ -1527,10 +1458,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             <div className="flex items-center gap-2 p-3 app-bg-surface rounded-lg">
                               <Video className="text-gray-400" size={20} />
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                                <p className="text-sm font-medium app-text-main">
                                   {selectedVideoFile!.name}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-slate-400">
+                                <p className="text-xs app-text-muted">
                                   الحجم: {(selectedVideoFile!.size / (1024 * 1024)).toFixed(2)} MB
                                 </p>
                               </div>
@@ -1558,10 +1489,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         ) : (
                           <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer app-border app-hover-bg">
                             <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                            <span className="text-sm text-gray-600 dark:text-slate-400">
+                            <span className="text-sm app-text-muted">
                               انقر لاختيار فيديو
                             </span>
-                            <span className="text-xs text-gray-500 dark:text-slate-500 mt-1">
+                            <span className="text-xs app-text-muted mt-1">
                               الحد الأقصى: 2GB
                             </span>
                             <input
@@ -1592,7 +1523,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                             maxLength={100}
                           />
-                          <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">
+                          <p className="text-xs app-text-muted mt-1">
                             {videoTitle.length}/100
                           </p>
                         </div>
@@ -1695,10 +1626,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         setSelectedProduct(product)
                         setShowProductPicker(false)
                       }}
-                      className={`p-3 border-2 rounded-lg text-right hover:bg-blue-50 transition-all ${
+                      className={`p-3 border-2 rounded-lg text-right hover:app-hover-bg transition-all ${
                         selectedProduct?.id === product.id
-                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                          : 'border-gray-200 hover:border-blue-300'
+                          ? 'border-primary app-hover-bg ring-2 ring-2 ring-primary-light'
+                          : 'border-gray-200 hover:border-primary'
                       }`}
                     >
                       {product.images && product.images.length > 0 && (
@@ -1722,7 +1653,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               ) : (
                 <div className="text-center py-8">
                   <Package size={48} className="mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600">لا توجد منتجات متاحة</p>
+                  <p className="app-text-muted">لا توجد منتجات متاحة</p>
                 </div>
               )}
             </div>
@@ -1737,7 +1668,7 @@ export default function PlacePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     }>
       <ProductIdHandler>

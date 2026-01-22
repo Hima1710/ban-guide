@@ -175,7 +175,7 @@ export default function NewPlacePage() {
                 value={formData.name_ar}
                 onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
                 className="app-input w-full px-4 py-2.5 rounded-lg focus:outline-none"
-                style={{ borderColor: 'var(--border-color)' }}
+                
                 onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                 onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
               />
@@ -188,7 +188,7 @@ export default function NewPlacePage() {
                 value={formData.name_en}
                 onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
                 className="app-input w-full px-4 py-2.5 rounded-lg focus:outline-none"
-                style={{ borderColor: 'var(--border-color)' }}
+                
                 onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                 onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
               />
@@ -202,7 +202,7 @@ export default function NewPlacePage() {
               onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
               rows={3}
               className="app-input w-full px-4 py-2.5 rounded-lg focus:outline-none"
-              style={{ borderColor: 'var(--border-color)' }}
+              
               onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
               onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
             />
@@ -215,7 +215,7 @@ export default function NewPlacePage() {
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               className="app-input w-full px-4 py-2.5 rounded-lg focus:outline-none"
-              style={{ borderColor: 'var(--border-color)' }}
+              
               onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
               onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
             >
@@ -255,7 +255,7 @@ export default function NewPlacePage() {
             ) : (
               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors app-border app-hover-bg">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <ImageIcon className="w-10 h-10 mb-2" style={{ color: 'var(--text-muted)' }} />
+                  <ImageIcon className="w-10 h-10 mb-2 icon-muted" />
                   <p className="mb-2 text-sm app-text-muted">
                     <span className="font-semibold">اضغط لرفع</span> شعار المكان
                   </p>
@@ -284,7 +284,7 @@ export default function NewPlacePage() {
                 value={formData.phone_1}
                 onChange={(e) => setFormData({ ...formData, phone_1: e.target.value })}
                 className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                style={{ borderColor: 'var(--border-color)' }}
+                
                 onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                 onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
               />
@@ -296,7 +296,7 @@ export default function NewPlacePage() {
                 value={formData.phone_2}
                 onChange={(e) => setFormData({ ...formData, phone_2: e.target.value })}
                 className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                style={{ borderColor: 'var(--border-color)' }}
+                
                 onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                 onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
               />
@@ -344,7 +344,7 @@ export default function NewPlacePage() {
                   onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
                   placeholder="https://www.youtube.com/watch?v=..."
                   className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                  style={{ borderColor: 'var(--border-color)' }}
+                  
                   onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                   onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                 />
@@ -395,7 +395,7 @@ export default function NewPlacePage() {
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="سيتم ملؤه تلقائياً من الخريطة"
               className="app-input w-full px-4 py-2.5 rounded-lg focus:outline-none"
-              style={{ borderColor: 'var(--border-color)' }}
+              
               onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
               onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
             />

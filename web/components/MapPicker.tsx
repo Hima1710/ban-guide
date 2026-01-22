@@ -111,7 +111,6 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
           }
           
           // Log success with method used
-          console.log(`✅ Location found using ${method} (accuracy: ${Math.round(accuracy)}m)`)
           
           // Get location info and update parent
           getLocationInfo(lat, lng).then((info) => {
@@ -130,7 +129,6 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
         (error) => {
           // If GPS failed and we haven't tried WiFi yet, try WiFi/Network
           if (attempt === 1 && options.enableHighAccuracy) {
-            console.log('⚠️ GPS failed, trying WiFi/Network location...')
             // Retry with WiFi/Network (lower accuracy, faster)
             tryGetLocation({
               enableHighAccuracy: false, // Use WiFi/Network instead of GPS
@@ -162,7 +160,6 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
     }
     
     // Start with GPS (high accuracy) - tries GPS first, then falls back to WiFi/Network
-    console.log('📍 Attempting to get location using GPS...')
     tryGetLocation({
       enableHighAccuracy: true, // Try GPS first
       timeout: 12000, // 12 seconds for GPS attempt

@@ -1,14 +1,9 @@
 'use client'
 
-import { Place } from '@/lib/types'
+import { Place, PlaceCardProps } from '@/types'
 import Image from 'next/image'
 import Link from 'next/link'
 import { MapPin, Phone, Eye, Video } from 'lucide-react'
-
-interface PlaceCardProps {
-  place: Place
-  cardStyle?: string
-}
 
 export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardProps) {
   const getCardStyle = (): React.CSSProperties => {

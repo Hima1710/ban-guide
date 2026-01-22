@@ -2,11 +2,13 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { UserProfile, Place, Package, Message } from '@/lib/types'
+import { useAuth, usePlaces, useMessages } from '@/hooks'
 import Link from 'next/link'
-import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown, FileCheck } from 'lucide-react'
+import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown, FileCheck, LogOut } from 'lucide-react'
 import { showSuccess, showError } from '@/components/SweetAlert'
+import { Button, LoadingSpinner } from '@/components/common'
+import { supabase } from '@/lib/supabase'
+import { useTheme } from '@/contexts/ThemeContext'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function YouTubeAuthHandler() {
@@ -32,78 +34,38 @@ function YouTubeAuthHandler() {
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [places, setPlaces] = useState<Place[]>([])
-  const [messages, setMessages] = useState<Message[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const { colors } = useTheme()
   const [adminMenuOpen, setAdminMenuOpen] = useState(false)
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    setUser(user)
-
-    // Load profile
-    const { data: profileData } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    setProfile(profileData || null)
-
-    // Load user places
-    const { data: placesData } = await supabase
-      .from('places')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-
-    setPlaces(placesData || [])
-
-    // Load messages for all user places
-    if (placesData && placesData.length > 0) {
-      const placeIds = placesData.map(p => p.id)
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('messages')
-        .select('*, sender:user_profiles(*)')
-        .in('place_id', placeIds)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
-      if (messagesError) {
-        console.error('Error loading messages:', messagesError)
-      } else if (messagesData) {
-        setMessages(messagesData)
-        // Count unread messages (messages not from the owner)
-        const unread = messagesData.filter(
-          msg => !msg.is_read && msg.sender_id !== user.id
-        ).length
-        setUnreadCount(unread)
-      }
-    } else {
-      // No places, so no messages
-      setMessages([])
-      setUnreadCount(0)
-    }
-
-    setLoading(false)
+  // Use custom hooks for data fetching
+  const { user, profile, loading: authLoading } = useAuth(true)
+  
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
   }
+  const { places, loading: placesLoading } = usePlaces({ 
+    userId: user?.id, 
+    autoLoad: true  // Always load when hook mounts
+  })
+  
+  // Get place IDs for messages
+  const placeIds = places.map(p => p.id)
+  const { 
+    messages, 
+    loading: messagesLoading, 
+    unreadCount 
+  } = useMessages({ 
+    placeId: placeIds.length > 0 ? placeIds : undefined,
+    autoLoad: true  // Always load when hook mounts
+  })
+
+  const loading = authLoading || (user && placesLoading)
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
   }
@@ -116,10 +78,107 @@ export default function DashboardPage() {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 app-text-main">لوحة التحكم</h1>
 
+        {/* User Profile Section - Mobile & Desktop */}
+        {user && profile && (
+          <div className="app-card rounded-3xl shadow-lg p-4 mb-6">
+            <div className="flex items-center gap-4">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.full_name || ''}
+                    className="w-16 h-16 rounded-full border-2 object-cover shadow-sm"
+                    style={{ borderColor: colors.outline }}
+                  />
+                ) : (
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold"
+                    style={{
+                      backgroundColor: colors.primary,
+                      color: colors.onPrimary,
+                    }}
+                  >
+                    {(profile.full_name?.[0] || user.email?.[0] || 'U').toUpperCase()}
+                  </div>
+                )}
+                {/* Online indicator */}
+                <div 
+                  className="absolute bottom-0 right-0 w-4 h-4 border-2 rounded-full"
+                  style={{ 
+                    backgroundColor: '#10b981',
+                    borderColor: colors.surface
+                  }}
+                />
+              </div>
+
+              {/* User Info */}
+              <div className="flex-1 min-w-0">
+                <h2 
+                  className="text-lg font-bold truncate"
+                  style={{ color: colors.onSurface }}
+                >
+                  {profile.full_name || 'مستخدم'}
+                </h2>
+                <p 
+                  className="text-sm truncate"
+                  style={{ color: colors.onSurface, opacity: 0.7 }}
+                >
+                  {user.email}
+                </p>
+                {/* Badges */}
+                <div className="flex items-center gap-2 mt-1">
+                  {profile.is_admin && (
+                    <span 
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ 
+                        backgroundColor: `rgba(239, 68, 68, 0.1)`,
+                        color: colors.error
+                      }}
+                    >
+                      مدير
+                    </span>
+                  )}
+                  {profile.is_affiliate && !profile.is_admin && (
+                    <span 
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ 
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        color: '#f59e0b'
+                      }}
+                    >
+                      مسوق
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="flex-shrink-0 px-4 py-2 rounded-full flex items-center gap-2 transition-all text-sm font-medium"
+                style={{
+                  backgroundColor: `rgba(239, 68, 68, 0.1)`,
+                  color: colors.error,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = `rgba(239, 68, 68, 0.2)`
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = `rgba(239, 68, 68, 0.1)`
+                }}
+              >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">خروج</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="app-card shadow p-4 sm:p-6">
             <div className="flex items-center gap-3 sm:gap-4">
-              <PackageIcon className="flex-shrink-0 sm:w-8 sm:h-8" size={28} style={{ color: 'var(--primary-color)' }} />
+              <PackageIcon className="flex-shrink-0 sm:w-8 sm:h-8 icon-primary" size={28} />
               <div>
                 <p className="text-sm sm:text-base app-text-muted">الأماكن</p>
                 <p className="text-xl sm:text-2xl font-bold app-text-main">{places.length}</p>
@@ -131,13 +190,13 @@ export default function DashboardPage() {
             className="app-card shadow p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex items-center gap-3 sm:gap-4">
-              <MessageSquare className="flex-shrink-0 sm:w-8 sm:h-8" size={28} style={{ color: 'var(--secondary-color)' }} />
+              <MessageSquare className="flex-shrink-0 sm:w-8 sm:h-8" size={28} className="icon-secondary" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm sm:text-base app-text-muted">الرسائل</p>
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-xl sm:text-2xl font-bold app-text-main">{messages.length}</p>
                   {unreadCount > 0 && (
-                    <span className="text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full" style={{ background: 'var(--status-error)' }}>
+                    <span className="badge-error text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
                       {unreadCount} غير مقروء
                     </span>
                   )}
@@ -147,7 +206,7 @@ export default function DashboardPage() {
           </Link>
           <div className="app-card shadow p-4 sm:p-6 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 sm:gap-4">
-              <TrendingUp className="flex-shrink-0 sm:w-8 sm:h-8" size={28} style={{ color: 'var(--status-warning)' }} />
+              <TrendingUp className="flex-shrink-0 sm:w-8 sm:h-8 icon-warning" size={28} />
               <div>
                 <p className="text-sm sm:text-base app-text-muted">المشاهدات</p>
                 <p className="text-xl sm:text-2xl font-bold app-text-main">
@@ -161,17 +220,16 @@ export default function DashboardPage() {
         <div className="app-card shadow p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold app-text-main">أماكني</h2>
-            <Link
-              href="/dashboard/places/new"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-white rounded-lg text-sm sm:text-base"
-              style={{ background: 'var(--primary-color)' }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => router.push('/dashboard/places/new')}
+              className="w-full sm:w-auto"
             >
               <Plus size={18} className="sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">إضافة مكان جديد</span>
               <span className="sm:hidden">إضافة مكان</span>
-            </Link>
+            </Button>
           </div>
           <div className="space-y-3 sm:space-y-4">
             {places.map((place) => (
@@ -199,7 +257,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
               <h2 className="text-lg sm:text-xl font-bold app-text-main">الرسائل الأخيرة</h2>
               {unreadCount > 0 && (
-                <span className="text-white text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full" style={{ background: 'var(--status-error)' }}>
+                <span className="badge-error text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full">
                   {unreadCount} رسالة غير مقروءة
                 </span>
               )}
@@ -228,7 +286,7 @@ export default function DashboardPage() {
                             {place?.name_ar || 'مكان غير معروف'}
                           </h3>
                           {isUnread && (
-                            <span className="text-white text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: 'var(--primary-color)' }}>
+                            <span className="badge-primary text-xs px-2 py-0.5 rounded-full flex-shrink-0">
                               جديد
                             </span>
                           )}
@@ -273,8 +331,7 @@ export default function DashboardPage() {
           <h2 className="text-xl font-bold mb-4 app-text-main">الباقات والاشتراكات</h2>
           <Link
             href="/dashboard/packages"
-            className="hover:underline"
-            style={{ color: 'var(--primary-color)' }}
+            className="link-primary"
           >
             عرض الباقات المتاحة والاشتراك
           </Link>
@@ -285,81 +342,72 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold app-text-main">لوحة الإدارة</h2>
               <div className="relative">
-                <button
+                <Button
+                  variant="danger"
                   onClick={() => setAdminMenuOpen(!adminMenuOpen)}
-                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                  style={{ background: 'var(--status-error)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  className="flex items-center gap-2"
                 >
                   <Settings size={18} />
                   <span>لوحة الإدارة</span>
                   <ChevronDown size={18} className={`transition-transform ${adminMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
+                </Button>
                 
                 {adminMenuOpen && (
                   <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg border z-10 overflow-hidden app-card app-border">
                     <Link
                       href="/admin"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
                     >
-                      <Settings size={18} style={{ color: 'var(--status-error)' }} />
+                      <Settings size={18} className="icon-error" />
                       <span>لوحة الإدارة الرئيسية</span>
                     </Link>
                     <Link
                       href="/admin/packages"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
                     >
-                      <PackageIcon size={18} style={{ color: 'var(--primary-color)' }} />
+                      <PackageIcon size={18} className="icon-primary" />
                       <span>إدارة الباقات</span>
                     </Link>
                     <Link
                       href="/admin/users"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
                     >
-                      <Users size={18} style={{ color: 'var(--secondary-color)' }} />
+                      <Users size={18} className="icon-secondary" />
                       <span>المستخدمين</span>
                     </Link>
                     <Link
                       href="/admin/affiliates"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
                     >
-                      <TrendingUp size={18} style={{ color: 'var(--status-warning)' }} />
+                      <TrendingUp size={18} className="icon-warning" />
                       <span>المسوقين</span>
                     </Link>
                     <Link
                       href="/admin/youtube"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
                     >
-                      <MessageSquare size={18} style={{ color: 'var(--accent)' }} />
+                      <MessageSquare size={18} className="icon-accent" />
                       <span>إعدادات YouTube</span>
                     </Link>
                     <Link
                       href="/admin/discount-codes"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
                     >
-                      <PackageIcon size={18} style={{ color: 'var(--accent)' }} />
+                      <PackageIcon size={18} className="icon-accent" />
                       <span>كوبونات الخصم</span>
                     </Link>
                     <Link
                       href="/admin/subscriptions"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
                     >
-                      <FileCheck size={18} style={{ color: 'var(--primary-color)' }} />
+                      <FileCheck size={18} className="icon-primary" />
                       <span>مراجعة الاشتراكات</span>
                     </Link>
                     <Link
@@ -367,7 +415,7 @@ export default function DashboardPage() {
                       onClick={() => setAdminMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg"
                     >
-                      <Settings size={18} style={{ color: 'var(--text-muted)' }} />
+                      <Settings size={18} className="icon-muted" />
                       <span>الإعدادات</span>
                     </Link>
                   </div>
@@ -382,8 +430,7 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold mb-4 app-text-main">التسويق بالعمولة</h2>
             <Link
               href="/dashboard/affiliate"
-              className="hover:underline"
-              style={{ color: 'var(--primary-color)' }}
+              className="link-primary"
             >
               عرض لوحة المسوق
             </Link>

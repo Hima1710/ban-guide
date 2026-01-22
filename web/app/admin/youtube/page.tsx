@@ -3,12 +3,14 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useTheme } from '@/contexts/ThemeContext'
 import { showSuccess, showError } from '@/components/SweetAlert'
 import { CheckCircle, AlertCircle, ExternalLink, Copy } from 'lucide-react'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function YouTubeAuthHandler({ onAuthCheck }: { onAuthCheck: () => void }) {
   const router = useRouter()
+  const { colors, isDark } = useTheme()
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -29,7 +31,7 @@ function YouTubeAuthHandler({ onAuthCheck }: { onAuthCheck: () => void }) {
       showError('فشل ربط حساب YouTube. يرجى المحاولة مرة أخرى.')
       router.replace('/admin/youtube')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchParams, router, onAuthCheck])
 
   return null
@@ -37,6 +39,7 @@ function YouTubeAuthHandler({ onAuthCheck }: { onAuthCheck: () => void }) {
 
 export default function AdminYouTubePage() {
   const router = useRouter()
+  const { colors, isDark } = useTheme()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -45,6 +48,7 @@ export default function AdminYouTubePage() {
 
   useEffect(() => {
     checkAdmin()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const checkAdmin = async () => {
@@ -153,7 +157,7 @@ export default function AdminYouTubePage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" className="border-primary"></div>
       </div>
     )
   }
@@ -177,20 +181,20 @@ export default function AdminYouTubePage() {
 
           {isAuthenticated ? (
             <>
-              <div className="p-4 border rounded-lg app-border" style={{ background: 'var(--status-green-bg)' }}>
+              <div className="p-4 border rounded-lg app-border" className="bg-green-50 dark:bg-green-900/20">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="text-green-600 mt-1" size={24} />
                   <div className="flex-1">
-                    <p className="font-semibold mb-2" style={{ color: 'var(--secondary-color)' }}>
+                    <p className="font-semibold mb-2 icon-secondary">
                       حساب YouTube مربوط بنجاح
                     </p>
-                    <p className="text-sm mb-3" style={{ color: 'var(--secondary-color)', opacity: 0.8 }}>
+                    <p className="text-sm mb-3" className="icon-secondary opacity-80">
                       يمكن للمستخدمين الآن رفع الفيديوهات على حسابك في YouTube.
                     </p>
                     <button
                       onClick={authenticateYouTube}
-                      className="px-4 py-2 text-white rounded-lg transition-colors font-semibold"
-                      style={{ background: 'var(--primary-color)' }}
+                      className="px-6 py-3 text-white rounded-full transition-colors font-semibold"
+                      className="badge-primary"
                       onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                       onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
@@ -206,7 +210,7 @@ export default function AdminYouTubePage() {
                   <button
                     onClick={() => setShowTokens(!showTokens)}
                     className="text-sm font-medium app-hover-bg"
-                    style={{ color: 'var(--primary-color)' }}
+                    className="icon-primary"
                   >
                     {showTokens ? 'إخفاء' : 'عرض'}
                   </button>
@@ -225,7 +229,7 @@ export default function AdminYouTubePage() {
                         <button
                           onClick={() => copyToClipboard(`YOUTUBE_ACCESS_TOKEN=${profile.youtube_access_token}`)}
                           className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg"
-                          style={{ background: 'var(--surface-color)' }}
+                          className="app-surface"
                           title="نسخ"
                         >
                           <Copy size={16} />
@@ -244,7 +248,7 @@ export default function AdminYouTubePage() {
                         <button
                           onClick={() => copyToClipboard(`YOUTUBE_REFRESH_TOKEN=${profile.youtube_refresh_token}`)}
                           className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg"
-                          style={{ background: 'var(--surface-color)' }}
+                          className="app-surface"
                           title="نسخ"
                         >
                           <Copy size={16} />
@@ -264,7 +268,7 @@ export default function AdminYouTubePage() {
                           <button
                             onClick={() => copyToClipboard(`YOUTUBE_TOKEN_EXPIRY=${profile.youtube_token_expiry}`)}
                             className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg"
-                          style={{ background: 'var(--surface-color)' }}
+                          className="app-surface"
                             title="نسخ"
                           >
                             <Copy size={16} />
@@ -273,8 +277,8 @@ export default function AdminYouTubePage() {
                       </div>
                     )}
 
-                    <div className="mt-4 p-3 rounded border app-border" style={{ background: 'var(--status-blue-bg)' }}>
-                      <p className="text-sm" style={{ color: 'var(--primary-color)' }}>
+                    <div className="mt-4 p-3 rounded border app-border" className="bg-blue-50 dark:bg-blue-900/20">
+                      <p className="text-sm icon-primary">
                         <strong>ملاحظة:</strong> انسخ هذه القيم وأضفها في ملف <code className="px-2 py-1 rounded app-card">.env.local</code> في مجلد <code className="px-2 py-1 rounded app-card">web</code>
                       </p>
                     </div>
@@ -283,19 +287,19 @@ export default function AdminYouTubePage() {
               </div>
             </>
           ) : (
-            <div className="p-4 border rounded-lg app-border" style={{ background: 'var(--status-yellow-bg)' }}>
+            <div className="p-4 border rounded-lg app-border" className="bg-yellow-50 dark:bg-yellow-900/20">
               <div className="flex items-start gap-3">
-                <AlertCircle className="mt-1" size={24} style={{ color: 'var(--status-warning)' }} />
+                <AlertCircle className="mt-1" size={24} className="icon-warning" />
                 <div className="flex-1">
-                  <p className="font-semibold mb-2" style={{ color: 'var(--status-warning)' }}>
+                  <p className="font-semibold mb-2 icon-warning">
                     يجب ربط حساب YouTube أولاً
                   </p>
-                  <p className="text-sm mb-3" style={{ color: 'var(--status-warning)', opacity: 0.8 }}>
+                  <p className="text-sm mb-3" className="icon-warning opacity-80">
                     لرفع الفيديوهات إلى YouTube، يجب السماح للتطبيق بالوصول إلى قناة YouTube الخاصة بك.
                   </p>
                   <button
                     onClick={authenticateYouTube}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
+                    className="px-6 py-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
                   >
                     <ExternalLink size={18} />
                     ربط حساب YouTube

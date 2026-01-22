@@ -179,7 +179,7 @@ export default function NewProductPage() {
       <div className="container mx-auto px-4 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6 text-gray-900">إضافة منتج جديد</h1>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="app-card rounded-3xl shadow-lg p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-900">الاسم بالعربية *</label>
@@ -188,7 +188,7 @@ export default function NewProductPage() {
                 required
                 value={formData.name_ar}
                 onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
-                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             <div>
@@ -198,7 +198,7 @@ export default function NewProductPage() {
                 required
                 value={formData.name_en}
                 onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
-                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
               />
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function NewProductPage() {
               value={formData.description_ar}
               onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
               rows={3}
-              className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 
@@ -221,7 +221,7 @@ export default function NewProductPage() {
                 step="0.01"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             <div>
@@ -230,7 +230,7 @@ export default function NewProductPage() {
                 type="text"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
               />
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function NewProductPage() {
                         newVariants[index].variant_type = e.target.value
                         setVariants(newVariants)
                       }}
-                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="app-input w-full px-4 py-2.5 rounded-lg focus:outline-none focus:border-primary transition-colors"
                     >
                       <option value="color">لون</option>
                       <option value="size">حجم</option>
@@ -326,7 +326,7 @@ export default function NewProductPage() {
                         newVariants[index].variant_value = e.target.value
                         setVariants(newVariants)
                       }}
-                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
                     />
                   </div>
                 </div>
@@ -341,7 +341,7 @@ export default function NewProductPage() {
                         newVariants[index].variant_name_ar = e.target.value
                         setVariants(newVariants)
                       }}
-                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
                     />
                   </div>
                   <div>
@@ -355,7 +355,7 @@ export default function NewProductPage() {
                         newVariants[index].price_adjustment = parseFloat(e.target.value) || 0
                         setVariants(newVariants)
                       }}
-                      className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      className="w-full px-4 py-2.5 border-2 app-border rounded-lg app-input focus:outline-none focus:border-primary transition-colors"
                     />
                   </div>
                 </div>

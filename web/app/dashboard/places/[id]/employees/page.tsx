@@ -281,7 +281,7 @@ export default function PlaceEmployeesPage() {
         </div>
 
         {/* Pending Requests */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 mb-6">
+        <div className="app-card rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-slate-100 flex items-center gap-2">
             <UserPlus size={24} />
             طلبات التوظيف ({requests.length})
@@ -355,7 +355,7 @@ export default function PlaceEmployeesPage() {
         </div>
 
         {/* Current Employees */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+        <div className="app-card rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-slate-100 flex items-center gap-2">
             <Package size={24} />
             الموظفين الحاليين ({employees.length})

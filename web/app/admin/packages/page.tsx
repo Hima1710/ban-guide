@@ -2,16 +2,26 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { Package } from '@/lib/types'
-import { showError, showSuccess } from '@/components/SweetAlert'
+import { useAdminManager } from '@/hooks'
+import { showError } from '@/components/SweetAlert'
+import { Button, Input, Card, LoadingSpinner } from '@/components/common'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function AdminPackagesPage() {
   const router = useRouter()
-  const [packages, setPackages] = useState<Package[]>([])
-  const [loading, setLoading] = useState(true)
+  const { colors, isDark } = useTheme()
+  const {
+    isAdmin,
+    loading: adminLoading,
+    packages,
+    packagesLoading,
+    createPackage,
+    updatePackage,
+    deletePackage,
+  } = useAdminManager({ autoLoadPackages: true })
+
   const [showForm, setShowForm] = useState(false)
   const [editingPackage, setEditingPackage] = useState<Package | null>(null)
   const [formData, setFormData] = useState({
@@ -27,83 +37,41 @@ export default function AdminPackagesPage() {
     is_featured: false,
   })
 
+  // Redirect non-admin users
   useEffect(() => {
-    checkAdmin()
-    loadPackages()
-  }, [])
-
-  const checkAdmin = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.is_admin) {
+    if (!adminLoading && !isAdmin) {
       showError('ليس لديك صلاحيات للوصول إلى هذه الصفحة')
       router.push('/dashboard')
-      return
     }
-  }
-
-  const loadPackages = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('packages')
-        .select('*')
-        .order('priority', { ascending: false })
-
-      if (error) throw error
-      setPackages(data || [])
-    } catch (error: any) {
-      showError(error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [isAdmin, adminLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    try {
-      if (editingPackage) {
-        const { error } = await supabase
-          .from('packages')
-          .update(formData)
-          .eq('id', editingPackage.id)
+    
+    const success = editingPackage
+      ? await updatePackage(editingPackage.id, formData)
+      : await createPackage(formData)
 
-        if (error) throw error
-        showSuccess('تم تحديث الباقة بنجاح')
-      } else {
-        const { error } = await supabase.from('packages').insert(formData)
-
-        if (error) throw error
-        showSuccess('تم إضافة الباقة بنجاح')
-      }
-
+    if (success) {
       setShowForm(false)
       setEditingPackage(null)
-      setFormData({
-        name_ar: '',
-        name_en: '',
-        price: 0,
-        max_places: 1,
-        max_product_videos: 0,
-        max_product_images: 5,
-        max_place_videos: 1,
-        priority: 0,
-        card_style: 'default',
-        is_featured: false,
-      })
-      loadPackages()
-    } catch (error: any) {
-      showError(error.message)
+      resetForm()
     }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      name_ar: '',
+      name_en: '',
+      price: 0,
+      max_places: 1,
+      max_product_videos: 0,
+      max_product_images: 5,
+      max_place_videos: 1,
+      priority: 0,
+      card_style: 'default',
+      is_featured: false,
+    })
   }
 
   const handleEdit = (pkg: Package) => {
@@ -134,23 +102,20 @@ export default function AdminPackagesPage() {
     })
 
     if (confirmed.isConfirmed) {
-      try {
-        const { error } = await supabase.from('packages').delete().eq('id', id)
-        if (error) throw error
-        showSuccess('تم حذف الباقة بنجاح')
-        loadPackages()
-      } catch (error: any) {
-        showError(error.message)
-      }
+      await deletePackage(id)
     }
   }
 
-  if (loading) {
+  if (adminLoading || packagesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
+  }
+
+  if (!isAdmin) {
+    return null // Redirecting...
   }
 
   return (
@@ -159,198 +124,118 @@ export default function AdminPackagesPage() {
         <div className="mb-6">
           <Link
             href="/admin"
-            className="text-blue-500 hover:underline mb-4 inline-block"
+            className="mb-4 inline-block hover:underline"
+            className="icon-primary"
           >
             ← العودة للوحة الإدارة
           </Link>
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold app-text-main">إدارة الباقات</h1>
-            <button
+            <Button
+              variant="primary"
               onClick={() => {
                 setShowForm(true)
                 setEditingPackage(null)
-                setFormData({
-                  name_ar: '',
-                  name_en: '',
-                  price: 0,
-                  max_places: 1,
-                  max_product_videos: 0,
-                  max_product_images: 5,
-                  max_place_videos: 1,
-                  priority: 0,
-                  card_style: 'default',
-                  is_featured: false,
-                })
+                resetForm()
               }}
-              className="flex items-center gap-2 px-6 py-3 text-white rounded-lg text-base font-semibold shadow-md hover:shadow-lg transition-all"
-              style={{ background: 'var(--primary-color)' }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+              className="flex items-center gap-2"
             >
               <Plus size={22} />
               إضافة باقة جديدة
-            </button>
+            </Button>
           </div>
         </div>
 
         {showForm && (
-          <div className="app-card shadow-lg p-8 mb-6">
+          <Card className="mb-6 shadow-lg">
             <h2 className="text-2xl font-bold mb-6 app-text-main">
               {editingPackage ? 'تعديل الباقة' : 'إضافة باقة جديدة'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    الاسم بالعربية <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name_ar}
-                    onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
-                    className="app-input w-full text-lg font-medium focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="أدخل الاسم بالعربية"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    الاسم بالإنجليزية <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name_en}
-                    onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
-                    className="app-input w-full text-lg font-medium focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="Enter name in English"
-                  />
-                </div>
+                <Input
+                  label="الاسم بالعربية"
+                  required
+                  value={formData.name_ar}
+                  onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+                  placeholder="أدخل الاسم بالعربية"
+                />
+                <Input
+                  label="الاسم بالإنجليزية"
+                  required
+                  value={formData.name_en}
+                  onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
+                  placeholder="Enter name in English"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    السعر <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="0.01"
-                    value={formData.price || ''}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                    className="app-input w-full text-lg font-semibold focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    عدد الأماكن <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={formData.max_places || ''}
-                    onChange={(e) => setFormData({ ...formData, max_places: parseInt(e.target.value) || 1 })}
-                    className="app-input w-full text-lg font-semibold focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    الأولوية <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={formData.priority || ''}
-                    onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
-                    className="app-input w-full text-lg font-semibold focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="0"
-                  />
-                </div>
+                <Input
+                  label="السعر"
+                  type="number"
+                  required
+                  min="0"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                  placeholder="0.00"
+                />
+                <Input
+                  label="عدد الأماكن"
+                  type="number"
+                  required
+                  min="1"
+                  value={formData.max_places}
+                  onChange={(e) => setFormData({ ...formData, max_places: parseInt(e.target.value) || 1 })}
+                  placeholder="1"
+                />
+                <Input
+                  label="الأولوية"
+                  type="number"
+                  required
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    فيديوهات المنتج
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.max_product_videos || ''}
-                    onChange={(e) => setFormData({ ...formData, max_product_videos: parseInt(e.target.value) || 0 })}
-                    className="app-input w-full text-lg font-semibold focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="0"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    صور المنتج
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={formData.max_product_images || ''}
-                    onChange={(e) => setFormData({ ...formData, max_product_images: parseInt(e.target.value) || 5 })}
-                    className="app-input w-full text-lg font-semibold focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="5"
-                  />
-                </div>
-                <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
-                    فيديوهات المكان
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.max_place_videos || ''}
-                    onChange={(e) => setFormData({ ...formData, max_place_videos: parseInt(e.target.value) || 1 })}
-                    className="app-input w-full text-lg font-semibold focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                    placeholder="1"
-                  />
-                </div>
+                <Input
+                  label="فيديوهات المنتج"
+                  type="number"
+                  min="0"
+                  value={formData.max_product_videos}
+                  onChange={(e) => setFormData({ ...formData, max_product_videos: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                />
+                <Input
+                  label="صور المنتج"
+                  type="number"
+                  min="1"
+                  value={formData.max_product_images}
+                  onChange={(e) => setFormData({ ...formData, max_product_images: parseInt(e.target.value) || 5 })}
+                  placeholder="5"
+                />
+                <Input
+                  label="فيديوهات المكان"
+                  type="number"
+                  min="0"
+                  value={formData.max_place_videos}
+                  onChange={(e) => setFormData({ ...formData, max_place_videos: parseInt(e.target.value) || 1 })}
+                  placeholder="1"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-base font-semibold mb-3 app-text-main">
+                  <label className="block text-sm font-medium mb-1.5 app-text-main">
                     نمط الكارت
                   </label>
                   <select
                     value={formData.card_style}
                     onChange={(e) => setFormData({ ...formData, card_style: e.target.value })}
-                    className="app-input w-full text-lg font-semibold focus:outline-none"
-                    style={{ borderColor: 'var(--border-color)' }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                    className="app-input w-full"
+                    className="text-base"
                   >
                     <option value="default">افتراضي</option>
                     <option value="silver">فضي</option>
@@ -364,7 +249,8 @@ export default function AdminPackagesPage() {
                     id="is_featured"
                     checked={formData.is_featured}
                     onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                    className="w-6 h-6 text-blue-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    className="w-6 h-6 rounded focus:ring-2"
+                    className="accent-primary"
                   />
                   <label htmlFor="is_featured" className="text-base font-semibold app-text-main cursor-pointer">
                     باقة مميزة (تظهر في الأعلى)
@@ -373,31 +259,25 @@ export default function AdminPackagesPage() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  className="px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base font-semibold transition-colors shadow-md hover:shadow-lg"
-                >
+                <Button type="submit">
                   {editingPackage ? 'تحديث الباقة' : 'إضافة الباقة'}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => setShowForm(false)}
-                  className="px-8 py-3 rounded-lg text-base font-semibold transition-colors"
-                  style={{ background: 'var(--surface-color)', color: 'var(--text-color)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   إلغاء
-                </button>
+                </Button>
               </div>
             </form>
-          </div>
+          </Card>
         )}
 
-        <div className="app-card shadow-lg overflow-hidden">
+        <Card className="shadow-lg overflow-hidden" padding="none">
           <table className="w-full">
             <thead className="app-bg-surface">
-              <tr style={{ borderColor: 'var(--border-color)' }}>
+              <tr >
                 <th className="px-6 py-4 text-right text-base font-bold app-text-main">الاسم</th>
                 <th className="px-6 py-4 text-right text-base font-bold app-text-main">السعر</th>
                 <th className="px-6 py-4 text-right text-base font-bold app-text-main">الأماكن</th>
@@ -405,9 +285,9 @@ export default function AdminPackagesPage() {
                 <th className="px-6 py-4 text-right text-base font-bold app-text-main">الإجراءات</th>
               </tr>
             </thead>
-            <tbody style={{ borderColor: 'var(--border-color)' }}>
+            <tbody >
               {packages.map((pkg) => (
-                <tr key={pkg.id} className="app-hover-bg transition-colors" style={{ borderColor: 'var(--border-color)' }}>
+                <tr key={pkg.id} className="app-hover-bg transition-colors" >
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div>
                       <div className="font-semibold text-base app-text-main">{pkg.name_ar}</div>
@@ -415,7 +295,7 @@ export default function AdminPackagesPage() {
                     </div>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
-                    <span className="text-base font-bold" style={{ color: 'var(--primary-color)' }}>{pkg.price} EGP</span>
+                    <span className="text-base font-bold icon-primary">{pkg.price} EGP</span>
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
                     <span className="text-base app-text-main">{pkg.max_places}</span>
@@ -425,29 +305,31 @@ export default function AdminPackagesPage() {
                   </td>
                   <td className="px-6 py-5 whitespace-nowrap">
                     <div className="flex gap-3">
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleEdit(pkg)}
-                        className="p-2.5 rounded-lg transition-colors app-hover-bg"
-                        style={{ color: 'var(--primary-color)' }}
+                        className="!p-2"
                         title="تعديل"
                       >
-                        <Edit size={20} />
-                      </button>
-                      <button
+                        <Edit size={18} />
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={() => handleDelete(pkg.id)}
-                        className="p-2.5 rounded-lg transition-colors app-hover-bg"
-                        style={{ color: 'var(--status-error)' }}
+                        className="!p-2"
                         title="حذف"
                       >
-                        <Trash2 size={20} />
-                      </button>
+                        <Trash2 size={18} />
+                      </Button>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       </div>
     </div>
   )

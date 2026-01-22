@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get('code')
     const state = searchParams.get('state') // 'admin' or user_id
 
-    console.log('YouTube callback received:', { code: !!code, state })
 
     if (!code) {
       console.error('No code in callback')
@@ -21,7 +20,6 @@ export async function GET(request: NextRequest) {
     let tokens
     try {
       tokens = await getAccessToken(code)
-      console.log('Tokens received:', { has_access: !!tokens.access_token, has_refresh: !!tokens.refresh_token })
     } catch (error: any) {
       console.error('Error getting access token:', error)
       return NextResponse.redirect(
@@ -58,7 +56,6 @@ export async function GET(request: NextRequest) {
     }
 
     const adminUserId = adminUsers[0].id
-    console.log('Storing tokens for admin user:', adminUserId)
 
     // Store in admin profile using admin client (bypasses RLS)
     const { error: updateError } = await supabaseAdmin
@@ -79,7 +76,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('Tokens stored successfully')
 
     // Redirect to admin YouTube settings
     const url = new URL(request.url)

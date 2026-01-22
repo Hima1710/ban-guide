@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Place } from '@/lib/types'
+import { Place } from '@/types'
 import PlaceCard from './PlaceCard'
 
 interface FeaturedPlacesProps {

@@ -122,7 +122,6 @@ export async function POST(request: NextRequest) {
         lastModified: Date.now(),
       })
       
-      console.log(`📸 Image optimized: ${(file.size / 1024).toFixed(2)}KB → ${(optimizedFile.size / 1024).toFixed(2)}KB (${((1 - optimizedFile.size / file.size) * 100).toFixed(1)}% reduction)`)
     } catch (optimizeError: any) {
       console.error('⚠️ Image optimization failed, uploading original:', optimizeError)
       // If optimization fails, use original file

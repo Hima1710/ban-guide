@@ -6,6 +6,10 @@ import "./globals.css";
 import NavBar from "@/components/NavBar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import ConversationsSidebar from "@/components/ConversationsSidebar";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AppShell, BottomNavigation } from "@/components/m3";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,49 +64,57 @@ export default function RootLayout({
           fontFamily: "'Cairo', sans-serif",
           height: '100vh',
           overflowX: 'hidden',
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
           margin: 0,
-          display: 'flex',
-          flexDirection: 'column'
         }}
         suppressHydrationWarning
       >
-        {/* Header - Fixed at top */}
-        <header style={{ flexShrink: 0 }}>
-          <NavBar />
-          <Breadcrumbs />
-        </header>
+        <ErrorBoundary level="global">
+          <AuthProvider>
+            <ThemeProvider>
+              <AppShell>
+                {/* Header - Fixed at top */}
+                <header style={{ flexShrink: 0 }}>
+                  <ErrorBoundary level="section">
+                    <NavBar />
+                    <Breadcrumbs />
+                  </ErrorBoundary>
+                </header>
 
-        {/* Main Content - Flexible area */}
-        <main 
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            background: 'var(--bg-color)',
-            color: 'var(--text-color)',
-            width: '100%',
-            minHeight: 0
-          }}
-        >
-          {children}
-        </main>
+                {/* Main Content */}
+                <main 
+                  style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    width: '100%',
+                    minHeight: 0
+                  }}
+                >
+                  <ErrorBoundary level="section">
+                    {children}
+                  </ErrorBoundary>
+                </main>
 
-        {/* Bottom Navigation - Optional placeholder for future use */}
-        {/* <footer style={{ flexShrink: 0 }}>
-          Bottom Navigation placeholder
-        </footer> */}
+                {/* Sidebar - Fixed overlay */}
+                <Suspense fallback={null}>
+                  <ErrorBoundary level="section">
+                    <ConversationsSidebar />
+                  </ErrorBoundary>
+                </Suspense>
 
-        {/* Sidebar - Fixed overlay */}
-        <Suspense fallback={null}>
-          <ConversationsSidebar />
-        </Suspense>
+                {/* Bottom Navigation - Mobile only */}
+                <ErrorBoundary level="section">
+                  <BottomNavigation />
+                </ErrorBoundary>
 
-        <Script
-          src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
-          strategy="lazyOnload"
-        />
+                <Script
+                  src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+                  strategy="lazyOnload"
+                />
+              </AppShell>
+            </ThemeProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

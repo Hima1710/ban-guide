@@ -292,7 +292,7 @@ export default function PlacePostsPage() {
         </div>
 
         {/* Posts List */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+        <div className="app-card rounded-lg shadow-lg p-6">
           {posts.length === 0 ? (
             <p className="text-center text-gray-500 dark:text-slate-400 py-8">
               لا توجد منشورات حالياً
@@ -372,7 +372,7 @@ export default function PlacePostsPage() {
         {/* Add/Edit Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="app-card rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">
                   {editingPost ? 'تعديل المنشور' : 'إضافة منشور جديد'}

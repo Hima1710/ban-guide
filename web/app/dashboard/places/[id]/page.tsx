@@ -299,7 +299,7 @@ export default function PlaceDetailsPage() {
           <Link
             href="/dashboard"
             className="hover:underline flex items-center gap-2"
-            style={{ color: 'var(--primary-color)' }}
+            className="icon-primary"
           >
             ← العودة للوحة التحكم
           </Link>
@@ -329,7 +329,7 @@ export default function PlaceDetailsPage() {
                 <button
                   onClick={handleStartEdit}
                   className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                  style={{ background: 'var(--primary-color)' }}
+                  className="badge-primary"
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
@@ -339,7 +339,7 @@ export default function PlaceDetailsPage() {
                 <button
                   onClick={handleDelete}
                   className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                  style={{ background: 'var(--status-error)' }}
+                  className="badge-error"
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
@@ -389,11 +389,11 @@ export default function PlaceDetailsPage() {
                     />
                   )}
                   <label className="flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors app-border"
-                    style={{ borderColor: 'var(--border-color)' }}
+                    
                     onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                     onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                   >
-                    <Upload size={24} className="mb-2" style={{ color: 'var(--text-muted)' }} />
+                    <Upload size={24} className="mb-2 icon-muted" />
                     <span className="text-xs text-center px-2 app-text-muted">رفع صورة</span>
                     <input
                       type="file"
@@ -426,7 +426,7 @@ export default function PlaceDetailsPage() {
                       value={editData.name_ar}
                       onChange={(e) => setEditData({ ...editData, name_ar: e.target.value })}
                       className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      
                       onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                       onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                       placeholder="اسم المكان بالعربية"
@@ -441,7 +441,7 @@ export default function PlaceDetailsPage() {
                       value={editData.name_en}
                       onChange={(e) => setEditData({ ...editData, name_en: e.target.value })}
                       className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      
                       onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                       onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                       placeholder="اسم المكان بالإنجليزية"
@@ -456,7 +456,7 @@ export default function PlaceDetailsPage() {
                       onChange={(e) => setEditData({ ...editData, description_ar: e.target.value })}
                       rows={4}
                       className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      
                       onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                       onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                       placeholder="وصف المكان"
@@ -472,7 +472,7 @@ export default function PlaceDetailsPage() {
                         value={editData.phone_1}
                         onChange={(e) => setEditData({ ...editData, phone_1: e.target.value })}
                         className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      
                       onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                       onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                         placeholder="رقم الهاتف الأول"
@@ -487,7 +487,7 @@ export default function PlaceDetailsPage() {
                         value={editData.phone_2}
                         onChange={(e) => setEditData({ ...editData, phone_2: e.target.value })}
                         className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      
                       onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
                       onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                         placeholder="رقم الهاتف الثاني (اختياري)"
@@ -649,7 +649,7 @@ export default function PlaceDetailsPage() {
                     <p className="text-sm app-text-muted mb-2 line-clamp-2">{product.description_ar}</p>
                   )}
                   {product.price && (
-                    <p className="text-lg font-semibold mb-2" style={{ color: 'var(--primary-color)' }}>
+                    <p className="text-lg font-semibold mb-2 icon-primary">
                       {product.price} {product.currency}
                     </p>
                   )}
@@ -672,12 +672,12 @@ export default function PlaceDetailsPage() {
             </div>
           ) : (
             <div className="text-center py-8 app-text-muted">
-              <Package size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+              <Package size={48} className="mx-auto mb-4 icon-muted" />
               <p>لا توجد منتجات بعد</p>
               <Link
                 href={`/dashboard/places/${placeId}/products/new`}
                 className="inline-block mt-4 hover:underline"
-                style={{ color: 'var(--primary-color)' }}
+                className="icon-primary"
               >
                 إضافة منتج جديد
               </Link>
