@@ -65,22 +65,18 @@ export default function Modal({
         className={`app-card w-full ${sizeStyles[size]} max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
-        {(title || onClose) && (
-          <div className="flex items-center justify-between mb-4 pb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
-            {title && (
-              <h2 className="text-xl font-bold app-text-main">{title}</h2>
-            )}
-            {onClose && (
-              <button
-                onClick={onClose}
-                className="p-1 rounded-full hover:opacity-70 transition-opacity"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                <X size={20} />
-              </button>
-            )}
-          </div>
-        )}
+        <div className="flex items-center justify-between mb-4 pb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
+          {title && (
+            <h2 className="text-xl font-bold app-text-main">{title}</h2>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:opacity-70 transition-opacity ml-auto"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <X size={20} />
+          </button>
+        </div>
         <div>{children}</div>
       </div>
     </div>
