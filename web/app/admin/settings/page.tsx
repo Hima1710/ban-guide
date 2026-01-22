@@ -92,7 +92,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen py-8" app-bg-base>
+    <div className="min-h-screen py-8 app-bg-base">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-6">
           <Link
