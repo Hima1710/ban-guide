@@ -231,8 +231,7 @@ export default function AdminSubscriptionsPage() {
                               setSelectedSubscription(subscription)
                               setShowImageModal(true)
                             }}
-                            className="flex items-center gap-1"
-                            className="icon-primary"
+                            className="flex items-center gap-1 icon-primary"
                             onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
                             onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                           >
@@ -309,8 +308,7 @@ export default function AdminSubscriptionsPage() {
                       setShowImageModal(false)
                       setSelectedSubscription(null)
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-colors font-medium"
-                    className="bg-secondary"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg transition-colors font-medium bg-secondary"
                     onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                     onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >

@@ -234,8 +234,7 @@ export default function AdminPackagesPage() {
                   <select
                     value={formData.card_style}
                     onChange={(e) => setFormData({ ...formData, card_style: e.target.value })}
-                    className="app-input w-full"
-                    className="text-base"
+                    className="app-input w-full text-base"
                   >
                     <option value="default">افتراضي</option>
                     <option value="silver">فضي</option>
@@ -249,8 +248,7 @@ export default function AdminPackagesPage() {
                     id="is_featured"
                     checked={formData.is_featured}
                     onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                    className="w-6 h-6 rounded focus:ring-2"
-                    className="accent-primary"
+                    className="w-6 h-6 rounded focus:ring-2 accent-primary"
                   />
                   <label htmlFor="is_featured" className="text-base font-semibold app-text-main cursor-pointer">
                     باقة مميزة (تظهر في الأعلى)

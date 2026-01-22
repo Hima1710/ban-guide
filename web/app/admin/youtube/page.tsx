@@ -193,8 +193,7 @@ export default function AdminYouTubePage() {
                     </p>
                     <button
                       onClick={authenticateYouTube}
-                      className="px-6 py-3 text-white rounded-full transition-colors font-semibold"
-                      className="badge-primary"
+                      className="px-6 py-3 text-white rounded-full transition-colors font-semibold badge-primary"
                       onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                       onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
@@ -209,8 +208,7 @@ export default function AdminYouTubePage() {
                   <h3 className="font-semibold app-text-main">Credentials للتخزين في .env.local (اختياري)</h3>
                   <button
                     onClick={() => setShowTokens(!showTokens)}
-                    className="text-sm font-medium app-hover-bg"
-                    className="icon-primary"
+                    className="text-sm font-medium app-hover-bg icon-primary"
                   >
                     {showTokens ? 'إخفاء' : 'عرض'}
                   </button>
@@ -228,8 +226,7 @@ export default function AdminYouTubePage() {
                         </code>
                         <button
                           onClick={() => copyToClipboard(`YOUTUBE_ACCESS_TOKEN=${profile.youtube_access_token}`)}
-                          className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg"
-                          className="app-surface"
+                          className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg app-surface"
                           title="نسخ"
                         >
                           <Copy size={16} />
@@ -247,8 +244,7 @@ export default function AdminYouTubePage() {
                         </code>
                         <button
                           onClick={() => copyToClipboard(`YOUTUBE_REFRESH_TOKEN=${profile.youtube_refresh_token}`)}
-                          className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg"
-                          className="app-surface"
+                          className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg app-surface"
                           title="نسخ"
                         >
                           <Copy size={16} />
@@ -267,8 +263,7 @@ export default function AdminYouTubePage() {
                           </code>
                           <button
                             onClick={() => copyToClipboard(`YOUTUBE_TOKEN_EXPIRY=${profile.youtube_token_expiry}`)}
-                            className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg"
-                          className="app-surface"
+                            className="px-3 py-2 rounded flex items-center gap-2 app-hover-bg app-surface"
                             title="نسخ"
                           >
                             <Copy size={16} />
