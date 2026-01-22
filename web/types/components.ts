@@ -94,15 +94,7 @@ export interface MessageProduct {
   variants?: Array<{ id: string; name: string; value: string }>
 }
 
-// Place Employee
-export interface PlaceEmployee {
-  id: string
-  place_id: string
-  user_id: string
-  is_active: boolean
-  created_at?: string
-  user?: MessageUserProfile
-}
+// PlaceEmployee is imported from @/lib/types to avoid duplication
 
 // Conversation Message (replaces Message)
 export interface ConversationMessage {
