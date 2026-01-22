@@ -530,8 +530,7 @@ export default function PackagesPage() {
                     />
                     <button
                       onClick={handleRemoveReceipt}
-                      className="absolute top-2 left-2 text-white p-2 rounded-full"
-                      className="badge-error"
+                      className="absolute top-2 left-2 text-white p-2 rounded-full badge-error"
                       onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                       onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                     >
