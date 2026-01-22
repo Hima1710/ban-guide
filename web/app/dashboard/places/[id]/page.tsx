@@ -11,6 +11,7 @@ import { MapPin, Phone, Edit, Trash2, Plus, Package, Eye, Video, Save, X, Upload
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import YouTubeUpload from '@/components/YouTubeUpload'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false })
 const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false })
@@ -18,6 +19,7 @@ const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false }
 export default function PlaceDetailsPage() {
   const params = useParams()
   const router = useRouter()
+  const { colors } = useTheme()
   const placeId = params.id as string
 
   const [place, setPlace] = useState<Place | null>(null)
@@ -620,7 +622,11 @@ export default function PlaceDetailsPage() {
             <h2 className="text-xl font-bold app-text-main">المنتجات والخدمات ({products.length})</h2>
             <Link
               href={`/dashboard/places/${placeId}/products/new`}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105 active:scale-95"
+              style={{
+                backgroundColor: colors.primary,
+                color: colors.onPrimary,
+              }}
             >
               <Plus size={20} />
               إضافة منتج جديد
