@@ -865,7 +865,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       }
       
       showSuccess('تم حذف المنتج بنجاح')
-      loadData()
+      router.refresh()
     } catch (error) {
       console.error('Error deleting product:', error)
       showError('حدث خطأ في حذف المنتج')
