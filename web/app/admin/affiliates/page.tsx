@@ -93,12 +93,16 @@ export default function AdminAffiliatesPage() {
   }
 
   return (
-    <div className="min-h-screen app-bg-base py-8">
+    <div 
+      className="min-h-screen py-8"
+      style={{ backgroundColor: colors.background }}
+    >
       <div className="container mx-auto px-4">
         <div className="mb-6">
           <Link
             href="/admin"
-            className="mb-4 inline-block hover:underline icon-primary"
+            className="mb-4 inline-block hover:underline"
+            style={{ color: colors.primary }}
           >
             ← العودة للوحة الإدارة
           </Link>
@@ -163,11 +167,13 @@ export default function AdminAffiliatesPage() {
                   <td className="px-6 py-5">
                     <button
                       onClick={() => handleToggleActive(affiliate)}
-                      className={`px-3 py-1 rounded text-sm ${
-                        affiliate.is_active
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}
+                      className="px-3 py-1 rounded-lg text-sm font-semibold transition-all hover:scale-105"
+                      style={{
+                        backgroundColor: affiliate.is_active 
+                          ? `${colors.success}20`
+                          : `${colors.error}20`,
+                        color: affiliate.is_active ? colors.success : colors.error,
+                      }}
                     >
                       {affiliate.is_active ? 'نشط' : 'معطل'}
                     </button>
