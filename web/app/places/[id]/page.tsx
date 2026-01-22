@@ -387,8 +387,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       replied_message: messageReplyTo || null,
     }
 
-    // Add temporary message with loading state
-    setMessages((prev) => [...prev, tempMessage])
+    // Add temporary message ID to sending set
     setSendingMessages((prev) => new Set(prev).add(tempId))
     setNewMessage('')
     setReplyingTo(null)
@@ -424,7 +423,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       if (error) {
         console.error('Error sending message:', error)
         // Remove temporary message on error
-        setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+        
         setSendingMessages((prev) => {
           const newSet = new Set(prev)
           newSet.delete(tempId)
@@ -439,7 +438,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       }
 
       // Replace temporary message with real one
-      setMessages((prev) => prev.map((msg) => (msg.id === tempId ? newMessageData : msg)))
+      
       setSendingMessages((prev) => {
         const newSet = new Set(prev)
         newSet.delete(tempId)
@@ -451,7 +450,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     } catch (error: any) {
       console.error('Error sending message:', error)
       // Remove temporary message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+      
       setSendingMessages((prev) => {
         const newSet = new Set(prev)
         newSet.delete(tempId)
@@ -494,7 +493,6 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     }
 
     // Add temporary message with loading state
-    setMessages((prev) => [...prev, tempMessage])
     setSendingMessages((prev) => new Set(prev).add(tempId))
     setNewMessage('')
     setSelectedImage(null)
@@ -562,7 +560,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       if (error) {
         console.error('Error sending message:', error)
         // Remove temporary message on error
-        setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+        
         setSendingMessages((prev) => {
           const newSet = new Set(prev)
           newSet.delete(tempId)
@@ -593,7 +591,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       }
 
       // Replace temporary message with real one
-      setMessages((prev) => prev.map((msg) => (msg.id === tempId ? newMessageData : msg)))
+      
       setSendingMessages((prev) => {
         const newSet = new Set(prev)
         newSet.delete(tempId)
@@ -605,7 +603,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     } catch (error: any) {
       console.error('Error sending message:', error)
       // Remove temporary message on error
-      setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+      
       setSendingMessages((prev) => {
         const newSet = new Set(prev)
         newSet.delete(tempId)
