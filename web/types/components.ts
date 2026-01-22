@@ -2,6 +2,8 @@
  * Component-specific TypeScript interfaces
  */
 
+import type { PlaceEmployee } from '@/lib/types'
+
 // Button component props
 export interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline'
