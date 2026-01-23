@@ -25,6 +25,8 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 banenv
+newwebenv/
+githubtokens
 
 # IDE
 .vscode/
