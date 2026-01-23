@@ -84,7 +84,7 @@ export default function AdminUsersPage() {
           </h1>
           <p 
             className="mt-2"
-            style={{ color: colors.onSurfaceVariant }}
+            style={{ color: colors.onSurface, opacity: 0.7 }}
           >
             عدد المستخدمين: {users.length}
           </p>
@@ -152,7 +152,7 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-5">
                     <span 
                       className="text-base"
-                      style={{ color: colors.onSurfaceVariant }}
+                      style={{ color: colors.onSurface }}
                     >
                       {user.phone || '-'}
                     </span>
@@ -160,7 +160,7 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-5">
                     <span 
                       className="text-sm"
-                      style={{ color: colors.onSurfaceVariant }}
+                      style={{ color: colors.onSurface }}
                     >
                       {new Date(user.created_at).toLocaleDateString('ar-EG')}
                     </span>
@@ -174,7 +174,7 @@ export default function AdminUsersPage() {
                           backgroundColor: user.is_admin 
                             ? `${colors.primary}20`
                             : colors.surfaceVariant,
-                          color: user.is_admin ? colors.primary : colors.onSurfaceVariant,
+                          color: user.is_admin ? colors.primary : colors.onSurface,
                         }}
                         title={user.is_admin ? 'إلغاء صلاحيات المدير' : 'تعيين كمدير'}
                       >
@@ -187,7 +187,7 @@ export default function AdminUsersPage() {
                           backgroundColor: user.is_affiliate 
                             ? `${colors.success}20`
                             : colors.surfaceVariant,
-                          color: user.is_affiliate ? colors.success : colors.onSurfaceVariant,
+                          color: user.is_affiliate ? colors.success : colors.onSurface,
                         }}
                         title={user.is_affiliate ? 'إلغاء صلاحيات المسوق' : 'تعيين كمسوق'}
                       >
@@ -202,7 +202,7 @@ export default function AdminUsersPage() {
                   <td 
                     colSpan={5} 
                     className="px-6 py-8 text-center"
-                    style={{ color: colors.onSurfaceVariant }}
+                    style={{ color: colors.onSurface }}
                   >
                     لا يوجد مستخدمين
                   </td>
