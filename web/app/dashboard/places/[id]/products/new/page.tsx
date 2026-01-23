@@ -493,7 +493,7 @@ export default function NewProductPage() {
             {videos.length === 0 && (subscription?.max_product_videos || 0) === 0 && (
               <p 
                 className="text-sm"
-                style={{ color: colors.onSurfaceVariant }}
+                style={{ color: colors.onSurface }}
               >
                 باقتك الحالية لا تدعم فيديوهات المنتجات
               </p>

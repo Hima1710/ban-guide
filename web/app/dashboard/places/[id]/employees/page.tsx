@@ -292,7 +292,7 @@ export default function PlaceEmployeesPage() {
           >
             إدارة الموظفين - {place?.name_ar}
           </h1>
-          <p style={{ color: colors.onSurfaceVariant }}>إدارة طلبات التوظيف والموظفين</p>
+          <p style={{ color: colors.onSurface }}>إدارة طلبات التوظيف والموظفين</p>
         </div>
 
         {/* Pending Requests */}
@@ -311,7 +311,7 @@ export default function PlaceEmployeesPage() {
           {requests.length === 0 ? (
             <p 
               className="text-center py-8"
-              style={{ color: colors.onSurfaceVariant }}
+              style={{ color: colors.onSurface }}
             >
               لا توجد طلبات توظيف قيد الانتظار
             </p>
@@ -333,13 +333,13 @@ export default function PlaceEmployeesPage() {
                       </h3>
                       <p 
                         className="text-sm"
-                        style={{ color: colors.onSurfaceVariant }}
+                        style={{ color: colors.onSurface }}
                       >
                         رقم الهاتف: {request.phone}
                       </p>
                       <p 
                         className="text-xs mt-1 opacity-70"
-                        style={{ color: colors.onSurfaceVariant }}
+                        style={{ color: colors.onSurface }}
                       >
                         {new Date(request.created_at).toLocaleDateString('ar-EG', {
                           year: 'numeric',
@@ -420,7 +420,7 @@ export default function PlaceEmployeesPage() {
           {employees.length === 0 ? (
             <p 
               className="text-center py-8"
-              style={{ color: colors.onSurfaceVariant }}
+              style={{ color: colors.onSurface }}
             >
               لا يوجد موظفين حالياً
             </p>
@@ -445,21 +445,21 @@ export default function PlaceEmployeesPage() {
                       </div>
                       <p 
                         className="text-sm mb-1"
-                        style={{ color: colors.onSurfaceVariant }}
+                        style={{ color: colors.onSurface }}
                       >
                         الصلاحيات: {getPermissionLabel(employee.permissions)}
                       </p>
                       {employee.phone && (
                         <p 
                           className="text-sm mb-1"
-                          style={{ color: colors.onSurfaceVariant }}
+                          style={{ color: colors.onSurface }}
                         >
                           رقم الهاتف: {employee.phone}
                         </p>
                       )}
                       <p 
                         className="text-xs opacity-70"
-                        style={{ color: colors.onSurfaceVariant }}
+                        style={{ color: colors.onSurface }}
                       >
                         انضم في: {new Date(employee.created_at).toLocaleDateString('ar-EG', {
                           year: 'numeric',

@@ -267,7 +267,7 @@ export default function PlacePostsPage() {
       case 'video':
         return colors.error
       default:
-        return colors.onSurfaceVariant
+        return colors.onSurface
     }
   }
 
@@ -307,7 +307,7 @@ export default function PlacePostsPage() {
               >
                 إدارة المنشورات - {place?.name_ar}
               </h1>
-              <p style={{ color: colors.onSurfaceVariant }}>إضافة وتعديل منشورات المكان</p>
+              <p style={{ color: colors.onSurface }}>إضافة وتعديل منشورات المكان</p>
             </div>
             <button
               onClick={() => setShowAddModal(true)}
@@ -331,7 +331,7 @@ export default function PlacePostsPage() {
           {posts.length === 0 ? (
             <p 
               className="text-center py-8"
-              style={{ color: colors.onSurfaceVariant }}
+              style={{ color: colors.onSurface }}
             >
               لا توجد منشورات حالياً
             </p>
@@ -359,7 +359,7 @@ export default function PlacePostsPage() {
                         </p>
                         <p 
                           className="text-xs"
-                          style={{ color: colors.onSurfaceVariant }}
+                          style={{ color: colors.onSurface }}
                         >
                           {new Date(post.created_at).toLocaleDateString('ar-EG', {
                             year: 'numeric',
@@ -416,7 +416,7 @@ export default function PlacePostsPage() {
                     <div className="mb-3">
                       <p 
                         className="text-xs"
-                        style={{ color: colors.onSurfaceVariant }}
+                        style={{ color: colors.onSurface }}
                       >
                         رابط الفيديو: {post.video_url}
                       </p>
@@ -448,7 +448,7 @@ export default function PlacePostsPage() {
                 <button
                   onClick={handleCancel}
                   className="transition-colors"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   <X size={24} />
                 </button>
@@ -577,10 +577,10 @@ export default function PlacePostsPage() {
                         htmlFor="image-upload"
                         className="cursor-pointer flex flex-col items-center gap-2"
                       >
-                        <Upload size={32} style={{ color: colors.onSurfaceVariant }} />
+                        <Upload size={32} style={{ color: colors.onSurface }} />
                         <span 
                           className="text-sm"
-                          style={{ color: colors.onSurfaceVariant }}
+                          style={{ color: colors.onSurface }}
                         >
                           {uploadingImage ? 'جاري الرفع...' : 'اضغط لرفع صورة'}
                         </span>

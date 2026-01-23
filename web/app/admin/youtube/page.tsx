@@ -197,7 +197,7 @@ export default function AdminYouTubePage() {
             </h2>
             <p 
               className="mb-4"
-              style={{ color: colors.onSurfaceVariant }}
+              style={{ color: colors.onSurface }}
             >
               جميع الفيديوهات التي يرفعها المستخدمون ستُرفع على حساب YouTube الخاص بك.
               يجب ربط حساب YouTube مرة واحدة فقط.
@@ -443,7 +443,7 @@ export default function AdminYouTubePage() {
             </h3>
             <ul 
               className="list-disc list-inside space-y-2 text-sm"
-              style={{ color: colors.onSurfaceVariant }}
+              style={{ color: colors.onSurface }}
             >
               <li>جميع الفيديوهات تُرفع على حسابك في YouTube</li>
               <li>يمكنك اختيار حالة الخصوصية لكل فيديو (خاص/غير مدرج/عام)</li>

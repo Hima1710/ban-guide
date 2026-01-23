@@ -617,7 +617,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4" style={{ color: colors.onSurfaceVariant }}>جاري التحميل...</p>
+          <p className="mt-4" style={{ color: colors.onSurface }}>جاري التحميل...</p>
         </div>
       </div>
     )
@@ -913,13 +913,13 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             )}
             <div className="flex-1 text-center md:text-right">
               <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4" style={{ color: colors.onSurface }}>{place.name_ar}</h1>
-              <p className="text-sm sm:text-base mb-3 sm:mb-4" style={{ color: colors.onSurfaceVariant }}>{place.description_ar}</p>
+              <p className="text-sm sm:text-base mb-3 sm:mb-4" style={{ color: colors.onSurface }}>{place.description_ar}</p>
               
               <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm justify-center md:justify-start">
                 <a
                   href={`tel:${place.phone_1}`}
                   className="flex items-center justify-center md:justify-start gap-2 transition-colors cursor-pointer hover:opacity-70"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   <Phone size={16} className="sm:w-[18px] sm:h-[18px]" />
                   <span>{place.phone_1}</span>
@@ -928,7 +928,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   <a
                     href={`tel:${place.phone_2}`}
                     className="flex items-center justify-center md:justify-start gap-2 transition-colors cursor-pointer hover:opacity-70"
-                    style={{ color: colors.onSurfaceVariant }}
+                    style={{ color: colors.onSurface }}
                   >
                     <Phone size={16} className="sm:w-[18px] sm:h-[18px]" />
                     <span>{place.phone_2}</span>
@@ -939,7 +939,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center md:justify-start gap-2 transition-colors cursor-pointer hover:opacity-70"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   <MapPin size={16} className="sm:w-[18px] sm:h-[18px]" />
                   <span className="truncate max-w-[200px] sm:max-w-none">{place.address || 'العنوان غير متاح'}</span>
@@ -1016,7 +1016,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     setEmployeePhone('')
                   }}
                   className="transition-colors hover:opacity-70"
-                  style={{ color: colors.onSurfaceVariant }}
+                  style={{ color: colors.onSurface }}
                 >
                   <X size={24} />
                 </button>
@@ -1292,7 +1292,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   setVideoUploadMethod('link')
                 }}
                 className="transition-colors hover:opacity-70"
-                style={{ color: colors.onSurfaceVariant }}
+                style={{ color: colors.onSurface }}
               >
                 <X size={24} />
               </button>
@@ -1471,7 +1471,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         {selectedVideoFile ? (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 p-3 app-bg-surface rounded-lg">
-                              <Video size={20} style={{ color: colors.onSurfaceVariant }} />
+                              <Video size={20} style={{ color: colors.onSurface }} />
                               <div className="flex-1">
                                 <p className="text-sm font-medium app-text-main">
                                   {selectedVideoFile!.name}
@@ -1504,7 +1504,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           </div>
                         ) : (
                           <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer app-border app-hover-bg">
-                            <Upload className="w-8 h-8 mb-2" style={{ color: colors.onSurfaceVariant }} />
+                            <Upload className="w-8 h-8 mb-2" style={{ color: colors.onSurface }} />
                             <span className="text-sm app-text-muted">
                               انقر لاختيار فيديو
                             </span>
@@ -1668,7 +1668,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurfaceVariant }} />
+                  <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurface }} />
                   <p className="app-text-muted">لا توجد منتجات متاحة</p>
                 </div>
               )}
