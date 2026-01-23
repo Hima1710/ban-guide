@@ -482,7 +482,7 @@ export default function NewProductPage() {
                   onClick={() => removeVideo(index)}
                   className="p-2 rounded-lg transition-colors"
                   style={{
-                    backgroundColor: `${colors.error}20`,
+                    backgroundColor: colors.errorContainer,
                     color: colors.error,
                   }}
                 >

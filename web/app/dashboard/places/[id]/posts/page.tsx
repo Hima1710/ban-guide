@@ -267,7 +267,7 @@ export default function PlacePostsPage() {
       case 'video':
         return colors.error
       default:
-        return colors.onSurface
+        return colors.onSurfaceVariant
     }
   }
 
@@ -303,11 +303,11 @@ export default function PlacePostsPage() {
             <div>
               <h1 
                 className="text-3xl font-bold mb-2"
-                style={{ color: colors.onSurface }}
+                style={{ color: colors.onSurfaceVariant }}
               >
                 إدارة المنشورات - {place?.name_ar}
               </h1>
-              <p style={{ color: colors.onSurface }}>إضافة وتعديل منشورات المكان</p>
+              <p style={{ color: colors.onSurfaceVariant }}>إضافة وتعديل منشورات المكان</p>
             </div>
             <button
               onClick={() => setShowAddModal(true)}
@@ -331,7 +331,7 @@ export default function PlacePostsPage() {
           {posts.length === 0 ? (
             <p 
               className="text-center py-8"
-              style={{ color: colors.onSurface }}
+              style={{ color: colors.onSurfaceVariant }}
             >
               لا توجد منشورات حالياً
             </p>
@@ -351,7 +351,7 @@ export default function PlacePostsPage() {
                       <div>
                         <p 
                           className="text-sm font-semibold"
-                          style={{ color: colors.onSurface }}
+                          style={{ color: colors.onSurfaceVariant }}
                         >
                           {post.post_type === 'text' && 'منشور نصي'}
                           {post.post_type === 'image' && 'منشور بصورة'}
@@ -359,7 +359,7 @@ export default function PlacePostsPage() {
                         </p>
                         <p 
                           className="text-xs"
-                          style={{ color: colors.onSurface }}
+                          style={{ color: colors.onSurfaceVariant }}
                         >
                           {new Date(post.created_at).toLocaleDateString('ar-EG', {
                             year: 'numeric',
@@ -397,7 +397,7 @@ export default function PlacePostsPage() {
 
                   <p 
                     className="text-sm mb-3 whitespace-pre-wrap"
-                    style={{ color: colors.onSurface }}
+                    style={{ color: colors.onSurfaceVariant }}
                   >
                     {post.content}
                   </p>
@@ -416,7 +416,7 @@ export default function PlacePostsPage() {
                     <div className="mb-3">
                       <p 
                         className="text-xs"
-                        style={{ color: colors.onSurface }}
+                        style={{ color: colors.onSurfaceVariant }}
                       >
                         رابط الفيديو: {post.video_url}
                       </p>
@@ -441,14 +441,14 @@ export default function PlacePostsPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 
                   className="text-xl font-bold"
-                  style={{ color: colors.onSurface }}
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   {editingPost ? 'تعديل المنشور' : 'إضافة منشور جديد'}
                 </h2>
                 <button
                   onClick={handleCancel}
                   className="transition-colors"
-                  style={{ color: colors.onSurface }}
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   <X size={24} />
                 </button>
@@ -458,7 +458,7 @@ export default function PlacePostsPage() {
               <div className="mb-4">
                 <label 
                   className="block text-sm font-medium mb-2"
-                  style={{ color: colors.onSurface }}
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   نوع المنشور
                 </label>
@@ -472,7 +472,7 @@ export default function PlacePostsPage() {
                         : colors.surfaceVariant,
                       color: postData.post_type === 'text' 
                         ? colors.onPrimary 
-                        : colors.onSurface,
+                        : colors.onSurfaceVariant,
                     }}
                   >
                     <FileText size={18} />
@@ -487,7 +487,7 @@ export default function PlacePostsPage() {
                         : colors.surfaceVariant,
                       color: postData.post_type === 'image' 
                         ? colors.onPrimary 
-                        : colors.onSurface,
+                        : colors.onSurfaceVariant,
                     }}
                   >
                     <ImageIcon size={18} />
@@ -502,7 +502,7 @@ export default function PlacePostsPage() {
                         : colors.surfaceVariant,
                       color: postData.post_type === 'video' 
                         ? colors.onPrimary 
-                        : colors.onSurface,
+                        : colors.onSurfaceVariant,
                     }}
                   >
                     <Video size={18} />
@@ -515,7 +515,7 @@ export default function PlacePostsPage() {
               <div className="mb-4">
                 <label 
                   className="block text-sm font-medium mb-2"
-                  style={{ color: colors.onSurface }}
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   المحتوى
                 </label>
@@ -528,7 +528,7 @@ export default function PlacePostsPage() {
                   style={{
                     backgroundColor: colors.surface,
                     borderColor: colors.outline,
-                    color: colors.onSurface,
+                    color: colors.onSurfaceVariant,
                   }}
                 />
               </div>
@@ -538,7 +538,7 @@ export default function PlacePostsPage() {
                 <div className="mb-4">
                   <label 
                     className="block text-sm font-medium mb-2"
-                    style={{ color: colors.onSurface }}
+                    style={{ color: colors.onSurfaceVariant }}
                   >
                     الصورة
                   </label>
@@ -577,10 +577,10 @@ export default function PlacePostsPage() {
                         htmlFor="image-upload"
                         className="cursor-pointer flex flex-col items-center gap-2"
                       >
-                        <Upload size={32} style={{ color: colors.onSurface }} />
+                        <Upload size={32} style={{ color: colors.onSurfaceVariant }} />
                         <span 
                           className="text-sm"
-                          style={{ color: colors.onSurface }}
+                          style={{ color: colors.onSurfaceVariant }}
                         >
                           {uploadingImage ? 'جاري الرفع...' : 'اضغط لرفع صورة'}
                         </span>
@@ -595,7 +595,7 @@ export default function PlacePostsPage() {
                 <div className="mb-4">
                   <label 
                     className="block text-sm font-medium mb-2"
-                    style={{ color: colors.onSurface }}
+                    style={{ color: colors.onSurfaceVariant }}
                   >
                     رابط الفيديو (YouTube أو رابط مباشر)
                   </label>
@@ -608,7 +608,7 @@ export default function PlacePostsPage() {
                     style={{
                       backgroundColor: colors.surface,
                       borderColor: colors.outline,
-                      color: colors.onSurface,
+                      color: colors.onSurfaceVariant,
                     }}
                   />
                   {extractYouTubeId(postData.video_url) && (
@@ -640,7 +640,7 @@ export default function PlacePostsPage() {
                   className="px-4 py-2 rounded-lg transition-all hover:scale-105 active:scale-95"
                   style={{
                     backgroundColor: colors.surfaceContainer,
-                    color: colors.onSurface,
+                    color: colors.onSurfaceVariant,
                   }}
                 >
                   إلغاء

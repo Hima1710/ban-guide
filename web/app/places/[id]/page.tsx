@@ -617,7 +617,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4" style={{ color: colors.onSurface }}>جاري التحميل...</p>
+          <p className="mt-4" style={{ color: colors.onSurfaceVariant }}>جاري التحميل...</p>
         </div>
       </div>
     )
@@ -912,14 +912,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               </div>
             )}
             <div className="flex-1 text-center md:text-right">
-              <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4" style={{ color: colors.onSurface }}>{place.name_ar}</h1>
-              <p className="text-sm sm:text-base mb-3 sm:mb-4" style={{ color: colors.onSurface }}>{place.description_ar}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4" style={{ color: colors.onSurfaceVariant }}>{place.name_ar}</h1>
+              <p className="text-sm sm:text-base mb-3 sm:mb-4" style={{ color: colors.onSurfaceVariant }}>{place.description_ar}</p>
               
               <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm justify-center md:justify-start">
                 <a
                   href={`tel:${place.phone_1}`}
                   className="flex items-center justify-center md:justify-start gap-2 transition-colors cursor-pointer hover:opacity-70"
-                  style={{ color: colors.onSurface }}
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   <Phone size={16} className="sm:w-[18px] sm:h-[18px]" />
                   <span>{place.phone_1}</span>
@@ -928,7 +928,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   <a
                     href={`tel:${place.phone_2}`}
                     className="flex items-center justify-center md:justify-start gap-2 transition-colors cursor-pointer hover:opacity-70"
-                    style={{ color: colors.onSurface }}
+                    style={{ color: colors.onSurfaceVariant }}
                   >
                     <Phone size={16} className="sm:w-[18px] sm:h-[18px]" />
                     <span>{place.phone_2}</span>
@@ -939,7 +939,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center md:justify-start gap-2 transition-colors cursor-pointer hover:opacity-70"
-                  style={{ color: colors.onSurface }}
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   <MapPin size={16} className="sm:w-[18px] sm:h-[18px]" />
                   <span className="truncate max-w-[200px] sm:max-w-none">{place.address || 'العنوان غير متاح'}</span>
@@ -1016,7 +1016,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     setEmployeePhone('')
                   }}
                   className="transition-colors hover:opacity-70"
-                  style={{ color: colors.onSurface }}
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   <X size={24} />
                 </button>
@@ -1027,7 +1027,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               </p>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                   رقم الهاتف
                 </label>
                 <input
@@ -1292,7 +1292,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   setVideoUploadMethod('link')
                 }}
                 className="transition-colors hover:opacity-70"
-                style={{ color: colors.onSurface }}
+                style={{ color: colors.onSurfaceVariant }}
               >
                 <X size={24} />
               </button>
@@ -1301,7 +1301,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             <div className="p-6 space-y-4">
               {/* Post Type Selection */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                   نوع المنشور
                 </label>
                 <div className="flex gap-2">
@@ -1343,7 +1343,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
               {/* Content */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                   المحتوى
                 </label>
                 <textarea
@@ -1361,7 +1361,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               {/* Image Upload */}
               {postData.post_type === 'image' && (
                 <div>
-                  <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                     الصورة
                   </label>
                   {postData.image_url ? (
@@ -1405,7 +1405,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 <div className="space-y-4">
                   {/* Video Method Selection */}
                   <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                    <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                       طريقة إضافة الفيديو
                     </label>
                     <div className="flex gap-2">
@@ -1444,7 +1444,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   {/* Video Link Method */}
                   {videoUploadMethod === 'link' && (
                     <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                      <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                         رابط الفيديو (YouTube)
                       </label>
                       <input
@@ -1465,13 +1465,13 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     <div className="space-y-4">
                       {/* File Selection */}
                       <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                        <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                           اختر فيديو للرفع *
                         </label>
                         {selectedVideoFile ? (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 p-3 app-bg-surface rounded-lg">
-                              <Video size={20} style={{ color: colors.onSurface }} />
+                              <Video size={20} style={{ color: colors.onSurfaceVariant }} />
                               <div className="flex-1">
                                 <p className="text-sm font-medium app-text-main">
                                   {selectedVideoFile!.name}
@@ -1504,7 +1504,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           </div>
                         ) : (
                           <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer app-border app-hover-bg">
-                            <Upload className="w-8 h-8 mb-2" style={{ color: colors.onSurface }} />
+                            <Upload className="w-8 h-8 mb-2" style={{ color: colors.onSurfaceVariant }} />
                             <span className="text-sm app-text-muted">
                               انقر لاختيار فيديو
                             </span>
@@ -1525,7 +1525,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       {/* Video Title */}
                       {selectedVideoFile && (
                         <div>
-                          <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurface }}>
+                          <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
                             عنوان الفيديو *
                           </label>
                           <input
@@ -1621,7 +1621,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             {/* Header */}
             <div className="px-4 pb-3 border-b">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold" style={{ color: colors.onSurface }}>اختر منتج للمشاركة</h3>
+                <h3 className="text-lg font-bold" style={{ color: colors.onSurfaceVariant }}>اختر منتج للمشاركة</h3>
                 <button
                   onClick={() => setShowProductPicker(false)}
                   className="p-2 rounded-full transition-colors app-hover-bg"
@@ -1655,7 +1655,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           className="w-full h-24 object-cover rounded mb-2"
                         />
                       )}
-                      <p className="text-sm font-semibold truncate mb-1" style={{ color: colors.onSurface }}>
+                      <p className="text-sm font-semibold truncate mb-1" style={{ color: colors.onSurfaceVariant }}>
                         {product.name_ar}
                       </p>
                       {product.price && (
@@ -1668,7 +1668,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurface }} />
+                  <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurfaceVariant }} />
                   <p className="app-text-muted">لا توجد منتجات متاحة</p>
                 </div>
               )}

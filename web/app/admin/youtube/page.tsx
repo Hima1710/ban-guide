@@ -179,7 +179,7 @@ export default function AdminYouTubePage() {
       <div className="container mx-auto px-4 max-w-4xl">
         <h1 
           className="text-3xl font-bold mb-6"
-          style={{ color: colors.onSurface }}
+          style={{ color: colors.onSurfaceVariant }}
         >
           إعدادات YouTube
         </h1>
@@ -191,13 +191,13 @@ export default function AdminYouTubePage() {
           <div>
             <h2 
               className="text-xl font-bold mb-4"
-              style={{ color: colors.onSurface }}
+              style={{ color: colors.onSurfaceVariant }}
             >
               حساب YouTube للموقع
             </h2>
             <p 
               className="mb-4"
-              style={{ color: colors.onSurface }}
+              style={{ color: colors.onSurfaceVariant }}
             >
               جميع الفيديوهات التي يرفعها المستخدمون ستُرفع على حساب YouTube الخاص بك.
               يجب ربط حساب YouTube مرة واحدة فقط.
@@ -249,7 +249,7 @@ export default function AdminYouTubePage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 
                     className="font-semibold"
-                    style={{ color: colors.onSurface }}
+                    style={{ color: colors.onSurfaceVariant }}
                   >
                     Credentials للتخزين في .env.local (اختياري)
                   </h3>
@@ -273,7 +273,7 @@ export default function AdminYouTubePage() {
                     <div>
                       <label 
                         className="block text-sm font-medium mb-2"
-                        style={{ color: colors.onSurface }}
+                        style={{ color: colors.onSurfaceVariant }}
                       >
                         YOUTUBE_ACCESS_TOKEN
                       </label>
@@ -283,7 +283,7 @@ export default function AdminYouTubePage() {
                           style={{
                             backgroundColor: colors.surface,
                             borderColor: colors.outline,
-                            color: colors.onSurface,
+                            color: colors.onSurfaceVariant,
                           }}
                         >
                           {profile.youtube_access_token || 'غير متاح'}
@@ -293,7 +293,7 @@ export default function AdminYouTubePage() {
                           className="px-3 py-2 rounded flex items-center gap-2 transition-colors"
                           style={{
                             backgroundColor: colors.surfaceContainer,
-                            color: colors.onSurface,
+                            color: colors.onSurfaceVariant,
                           }}
                           title="نسخ"
                         >
@@ -305,7 +305,7 @@ export default function AdminYouTubePage() {
                     <div>
                       <label 
                         className="block text-sm font-medium mb-2"
-                        style={{ color: colors.onSurface }}
+                        style={{ color: colors.onSurfaceVariant }}
                       >
                         YOUTUBE_REFRESH_TOKEN
                       </label>
@@ -315,7 +315,7 @@ export default function AdminYouTubePage() {
                           style={{
                             backgroundColor: colors.surface,
                             borderColor: colors.outline,
-                            color: colors.onSurface,
+                            color: colors.onSurfaceVariant,
                           }}
                         >
                           {profile.youtube_refresh_token || 'غير متاح'}
@@ -325,7 +325,7 @@ export default function AdminYouTubePage() {
                           className="px-3 py-2 rounded flex items-center gap-2 transition-colors"
                           style={{
                             backgroundColor: colors.surfaceContainer,
-                            color: colors.onSurface,
+                            color: colors.onSurfaceVariant,
                           }}
                           title="نسخ"
                         >
@@ -338,7 +338,7 @@ export default function AdminYouTubePage() {
                       <div>
                         <label 
                           className="block text-sm font-medium mb-2"
-                          style={{ color: colors.onSurface }}
+                          style={{ color: colors.onSurfaceVariant }}
                         >
                           YOUTUBE_TOKEN_EXPIRY
                         </label>
@@ -348,7 +348,7 @@ export default function AdminYouTubePage() {
                             style={{
                               backgroundColor: colors.surface,
                               borderColor: colors.outline,
-                              color: colors.onSurface,
+                              color: colors.onSurfaceVariant,
                             }}
                           >
                             {profile.youtube_token_expiry}
@@ -358,7 +358,7 @@ export default function AdminYouTubePage() {
                             className="px-3 py-2 rounded flex items-center gap-2 transition-colors"
                             style={{
                               backgroundColor: colors.surfaceContainer,
-                              color: colors.onSurface,
+                              color: colors.onSurfaceVariant,
                             }}
                             title="نسخ"
                           >
@@ -437,13 +437,13 @@ export default function AdminYouTubePage() {
           >
             <h3 
               className="font-semibold mb-2"
-              style={{ color: colors.onSurface }}
+              style={{ color: colors.onSurfaceVariant }}
             >
               معلومات مهمة:
             </h3>
             <ul 
               className="list-disc list-inside space-y-2 text-sm"
-              style={{ color: colors.onSurface }}
+              style={{ color: colors.onSurfaceVariant }}
             >
               <li>جميع الفيديوهات تُرفع على حسابك في YouTube</li>
               <li>يمكنك اختيار حالة الخصوصية لكل فيديو (خاص/غير مدرج/عام)</li>

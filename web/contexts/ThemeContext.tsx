@@ -40,12 +40,17 @@ export interface ThemeColors {
   onSecondary: string
   onBackground: string
   onSurface: string
+  onSurfaceVariant: string
   
   // Status colors
   success: string
+  successContainer: string
   warning: string
+  warningContainer: string
   error: string
+  errorContainer: string
   info: string
+  infoContainer: string
   
   // Border colors
   outline: string
@@ -109,10 +114,15 @@ function getLightColors(role: UserRole): ThemeColors {
     onSecondary: '#ffffff',
     onBackground: '#171717',
     onSurface: '#171717',
+    onSurfaceVariant: '#525252',
     success: '#10b981',
+    successContainer: '#d1fae5',
     warning: '#f59e0b',
+    warningContainer: '#fef3c7',
     error: '#ef4444',
+    errorContainer: '#fee2e2',
     info: '#3b82f6',
+    infoContainer: '#dbeafe',
     outline: '#e5e7eb',
     outlineVariant: '#d1d5db',
   }
@@ -138,10 +148,15 @@ function getDarkColors(role: UserRole): ThemeColors {
     onSecondary: '#000000',
     onBackground: '#ededed',
     onSurface: '#e5e5e5',
+    onSurfaceVariant: '#a3a3a3',
     success: '#34d399',
+    successContainer: '#064e3b',
     warning: '#fbbf24',
+    warningContainer: '#78350f',
     error: '#f87171',
+    errorContainer: '#7f1d1d',
     info: '#60a5fa',
+    infoContainer: '#1e3a8a',
     outline: '#374151',
     outlineVariant: '#4b5563',
   }
