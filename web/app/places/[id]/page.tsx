@@ -889,7 +889,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 <img
                   src={place.logo_url}
                   alt={place.name_ar}
-                  className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 border-gray-200"
+                  className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 object-cover rounded-lg border-2"
+                  style={{ borderColor: colors.outline }}
                   onError={(e) => {
                     // Hide broken image and show placeholder
                     const target = e.target as HTMLImageElement
@@ -897,7 +898,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     const parent = target.parentElement
                     if (parent && !parent.querySelector('.logo-placeholder')) {
                       const placeholder = document.createElement('div')
-                      placeholder.className = 'logo-placeholder w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg border-2 border-gray-200 flex items-center justify-center text-white text-2xl sm:text-3xl md:text-4xl font-bold'
+                      placeholder.className = 'logo-placeholder w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg border-2 flex items-center justify-center text-white text-2xl sm:text-3xl md:text-4xl font-bold'
+                      placeholder.style.background = `linear-gradient(to bottom right, ${colors.primary}, ${colors.primaryDark})`
+                      placeholder.style.borderColor = colors.outline
+                      placeholder.style.color = colors.onPrimary
                       placeholder.textContent = place.name_ar?.[0]?.toUpperCase() || 'M'
                       parent.appendChild(placeholder)
                     }
@@ -906,7 +910,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               </div>
             ) : (
               <div className="flex-shrink-0 mx-auto md:mx-0">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg border-2 border-gray-200 flex items-center justify-center text-white text-2xl sm:text-3xl md:text-4xl font-bold">
+                <div 
+                  className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg border-2 flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-bold"
+                  style={{
+                    background: `linear-gradient(to bottom right, ${colors.primary}, ${colors.primaryDark})`,
+                    borderColor: colors.outline,
+                    color: colors.onPrimary,
+                  }}
+                >
                   {place.name_ar?.[0]?.toUpperCase() || 'M'}
                 </div>
               </div>
@@ -1642,11 +1653,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         setSelectedProduct(product)
                         setShowProductPicker(false)
                       }}
-                      className={`p-3 border-2 rounded-lg text-right hover:app-hover-bg transition-all ${
-                        selectedProduct?.id === product.id
-                          ? 'border-primary app-hover-bg ring-2 ring-2 ring-primary-light'
-                          : 'border-gray-200 hover:border-primary'
-                      }`}
+                      className="p-3 border-2 rounded-lg text-right hover:app-hover-bg transition-all"
+                      style={{
+                        borderColor: selectedProduct?.id === product.id ? colors.primary : colors.outline,
+                        backgroundColor: selectedProduct?.id === product.id ? `${colors.primary}10` : 'transparent',
+                      }}
                     >
                       {product.images && product.images.length > 0 && (
                         <img
