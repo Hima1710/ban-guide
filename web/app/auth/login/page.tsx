@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { showError, showSuccess } from '@/components/SweetAlert'
+import { showError } from '@/components/SweetAlert'
 import { LogIn } from 'lucide-react'
+import { HeadlineMedium, Button } from '@/components/m3'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,19 +35,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center app-bg-base">
-      <div className="app-card shadow-lg p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold text-center mb-6 app-text-main">تسجيل الدخول</h1>
-        <button
+      <div className="app-card shadow-lg p-8 max-w-md w-full rounded-3xl">
+        <HeadlineMedium className="text-center mb-6">تسجيل الدخول</HeadlineMedium>
+        <Button
+          variant="filled"
+          size="lg"
+          fullWidth
           onClick={handleGoogleLogin}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ background: 'var(--primary-color)' }}
-          onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '0.9')}
-          onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '1')}
+          loading={loading}
         >
           <LogIn size={20} />
           {loading ? 'جاري التحميل...' : 'تسجيل الدخول بحساب Google'}
-        </button>
+        </Button>
       </div>
     </div>
   )

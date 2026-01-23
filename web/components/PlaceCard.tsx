@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { MapPin, Phone, Eye, Video } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
+import { TitleMedium, BodySmall, LabelSmall } from '@/components/m3'
 
 export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardProps) {
   const { colors } = useTheme()
@@ -85,16 +86,16 @@ export default function PlaceCard({ place, cardStyle = 'default' }: PlaceCardPro
           )}
         </div>
         <div className="p-3 sm:p-4">
-          <h3 className="text-base sm:text-lg font-bold app-text-main mb-1.5 sm:mb-2 line-clamp-1">{place.name_ar}</h3>
-          <p className="text-xs sm:text-sm app-text-muted mb-2 sm:mb-3 line-clamp-2">{place.description_ar}</p>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm app-text-muted">
+          <TitleMedium className="mb-1.5 sm:mb-2 line-clamp-1">{place.name_ar}</TitleMedium>
+          <BodySmall color="onSurfaceVariant" className="mb-2 sm:mb-3 line-clamp-2">{place.description_ar}</BodySmall>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-1">
               <Phone size={14} className="sm:w-4 sm:h-4" />
-              <span className="truncate">{place.phone_1}</span>
+              <LabelSmall color="onSurfaceVariant" className="truncate">{place.phone_1}</LabelSmall>
             </div>
             <div className="flex items-center gap-1">
               <Eye size={14} className="sm:w-4 sm:h-4" />
-              <span>{place.today_views} اليوم</span>
+              <LabelSmall color="onSurfaceVariant">{place.today_views} اليوم</LabelSmall>
             </div>
           </div>
         </div>

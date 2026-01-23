@@ -8,6 +8,7 @@ import { showError } from '@/components/SweetAlert'
 import { LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
 import { Package, Users, TrendingUp, Settings, Video, Ticket, FileCheck } from 'lucide-react'
+import { HeadlineLarge, TitleMedium, BodySmall } from '@/components/m3'
 
 export default function AdminDashboardPage() {
   const router = useRouter()
@@ -93,8 +94,8 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen py-8 app-bg-base">
       <div className="container mx-auto px-4">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 app-text-main">لوحة الإدارة</h1>
-          <p className="app-text-muted">إدارة النظام والمستخدمين</p>
+          <HeadlineLarge className="mb-2">لوحة الإدارة</HeadlineLarge>
+          <BodySmall color="onSurfaceVariant">إدارة النظام والمستخدمين</BodySmall>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -109,8 +110,8 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center gap-4">
                   <Icon size={32} style={{ color: link.color }} />
                   <div>
-                    <p className="app-text-muted text-sm">{link.label}</p>
-                    <p className="text-lg font-bold app-text-main">{link.description}</p>
+                    <BodySmall color="onSurfaceVariant">{link.label}</BodySmall>
+                    <TitleMedium>{link.description}</TitleMedium>
                   </div>
                 </div>
               </Link>

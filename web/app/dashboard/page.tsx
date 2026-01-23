@@ -6,7 +6,8 @@ import { useAuth, usePlaces, useMessages } from '@/hooks'
 import Link from 'next/link'
 import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown, FileCheck, LogOut } from 'lucide-react'
 import { showSuccess, showError } from '@/components/SweetAlert'
-import { Button, LoadingSpinner } from '@/components/common'
+import { LoadingSpinner } from '@/components/common'
+import { Button, HeadlineLarge, HeadlineMedium, TitleMedium, TitleLarge, BodyMedium, BodySmall, LabelSmall } from '@/components/m3'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 
@@ -76,7 +77,7 @@ export default function DashboardPage() {
         <YouTubeAuthHandler />
       </Suspense>
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 app-text-main">لوحة التحكم</h1>
+        <HeadlineLarge className="mb-4 sm:mb-6">لوحة التحكم</HeadlineLarge>
 
         {/* User Profile Section - Mobile & Desktop */}
         {user && profile && (
@@ -114,112 +115,103 @@ export default function DashboardPage() {
 
               {/* User Info */}
               <div className="flex-1 min-w-0">
-                <h2 
-                  className="text-lg font-bold truncate"
-                  style={{ color: colors.onSurface }}
-                >
+                <TitleLarge className="truncate">
                   {profile.full_name || 'مستخدم'}
-                </h2>
-                <p 
-                  className="text-sm truncate"
-                  style={{ color: colors.onSurface, opacity: 0.7 }}
-                >
+                </TitleLarge>
+                <BodySmall color="onSurfaceVariant" className="truncate">
                   {user.email}
-                </p>
+                </BodySmall>
                 {/* Badges */}
                 <div className="flex items-center gap-2 mt-1">
                   {profile.is_admin && (
-                    <span 
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    <LabelSmall 
+                      as="span"
+                      className="px-2 py-0.5 rounded-full"
                       style={{ 
                         backgroundColor: `rgba(239, 68, 68, 0.1)`,
                         color: colors.error
                       }}
                     >
                       مدير
-                    </span>
+                    </LabelSmall>
                   )}
                   {profile.is_affiliate && !profile.is_admin && (
-                    <span 
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    <LabelSmall 
+                      as="span"
+                      className="px-2 py-0.5 rounded-full"
                       style={{ 
                         backgroundColor: 'rgba(245, 158, 11, 0.1)',
                         color: '#f59e0b'
                       }}
                     >
                       مسوق
-                    </span>
+                    </LabelSmall>
                   )}
                 </div>
               </div>
 
               {/* Logout Button */}
-              <button
+              <Button
+                variant="text"
+                size="sm"
                 onClick={handleLogout}
-                className="flex-shrink-0 px-4 py-2 rounded-full flex items-center gap-2 transition-all text-sm font-medium"
-                style={{
-                  backgroundColor: `rgba(239, 68, 68, 0.1)`,
-                  color: colors.error,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = `rgba(239, 68, 68, 0.2)`
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = `rgba(239, 68, 68, 0.1)`
-                }}
+                style={{ color: colors.error }}
               >
                 <LogOut size={18} />
                 <span className="hidden sm:inline">خروج</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="app-card shadow p-4 sm:p-6">
+          <div className="app-card shadow p-4 sm:p-6 rounded-3xl">
             <div className="flex items-center gap-3 sm:gap-4">
               <PackageIcon className="flex-shrink-0 sm:w-8 sm:h-8 icon-primary" size={28} />
               <div>
-                <p className="text-sm sm:text-base app-text-muted">الأماكن</p>
-                <p className="text-xl sm:text-2xl font-bold app-text-main">{places.length}</p>
+                <BodyMedium color="onSurfaceVariant">الأماكن</BodyMedium>
+                <HeadlineMedium>{places.length}</HeadlineMedium>
               </div>
             </div>
           </div>
           <Link
             href="#messages"
-            className="app-card shadow p-4 sm:p-6 hover:shadow-md transition-shadow cursor-pointer"
+            className="app-card shadow p-4 sm:p-6 rounded-3xl hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex items-center gap-3 sm:gap-4">
               <MessageSquare className="flex-shrink-0 sm:w-8 sm:h-8 icon-secondary" size={28} />
               <div className="flex-1 min-w-0">
-                <p className="text-sm sm:text-base app-text-muted">الرسائل</p>
+                <BodyMedium color="onSurfaceVariant">الرسائل</BodyMedium>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-xl sm:text-2xl font-bold app-text-main">{messages.length}</p>
+                  <HeadlineMedium>{messages.length}</HeadlineMedium>
                   {unreadCount > 0 && (
-                    <span className="badge-error text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                    <LabelSmall 
+                      as="span"
+                      className="badge-error px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full"
+                    >
                       {unreadCount} غير مقروء
-                    </span>
+                    </LabelSmall>
                   )}
                 </div>
               </div>
             </div>
           </Link>
-          <div className="app-card shadow p-4 sm:p-6 sm:col-span-2 lg:col-span-1">
+          <div className="app-card shadow p-4 sm:p-6 rounded-3xl sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 sm:gap-4">
               <TrendingUp className="flex-shrink-0 sm:w-8 sm:h-8 icon-warning" size={28} />
               <div>
-                <p className="text-sm sm:text-base app-text-muted">المشاهدات</p>
-                <p className="text-xl sm:text-2xl font-bold app-text-main">
+                <BodyMedium color="onSurfaceVariant">المشاهدات</BodyMedium>
+                <HeadlineMedium>
                   {places.reduce((sum, p) => sum + p.total_views, 0)}
-                </p>
+                </HeadlineMedium>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="app-card shadow p-4 sm:p-6 mb-4 sm:mb-6">
+        <div className="app-card shadow p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold app-text-main">أماكني</h2>
+            <TitleLarge>أماكني</TitleLarge>
             <Button
               variant="filled"
               size="md"
@@ -236,30 +228,35 @@ export default function DashboardPage() {
               <Link
                 key={place.id}
                 href={`/dashboard/places/${place.id}`}
-                className="block p-3 sm:p-4 border rounded-lg transition-colors app-hover-bg app-border"
+                className="block p-3 sm:p-4 border rounded-2xl transition-colors app-hover-bg app-border"
               >
-                <h3 className="font-bold text-sm sm:text-base app-text-main mb-1">{place.name_ar}</h3>
-                <p className="text-xs sm:text-sm app-text-muted mb-1">{place.category}</p>
-                <p className="text-[10px] sm:text-xs app-text-muted mt-1.5 sm:mt-2">
+                <TitleMedium className="mb-1">{place.name_ar}</TitleMedium>
+                <BodySmall color="onSurfaceVariant" className="mb-1">{place.category}</BodySmall>
+                <LabelSmall color="onSurfaceVariant" className="mt-1.5 sm:mt-2">
                   المشاهدات: {place.total_views} | اليوم: {place.today_views}
-                </p>
+                </LabelSmall>
               </Link>
             ))}
             {places.length === 0 && (
-              <p className="text-center text-sm sm:text-base app-text-muted py-6 sm:py-8">لا توجد أماكن بعد</p>
+              <div className="text-center py-6 sm:py-8">
+                <BodyMedium color="onSurfaceVariant">لا توجد أماكن بعد</BodyMedium>
+              </div>
             )}
           </div>
         </div>
 
         {/* Messages Section */}
         {messages.length > 0 && (
-          <div id="messages" className="app-card shadow p-4 sm:p-6 mb-4 sm:mb-6">
+          <div id="messages" className="app-card shadow p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <h2 className="text-lg sm:text-xl font-bold app-text-main">الرسائل الأخيرة</h2>
+              <TitleLarge>الرسائل الأخيرة</TitleLarge>
               {unreadCount > 0 && (
-                <span className="badge-error text-[10px] sm:text-xs px-2 sm:px-3 py-1 rounded-full">
+                <LabelSmall 
+                  as="span"
+                  className="badge-error px-2 sm:px-3 py-1 rounded-full"
+                >
                   {unreadCount} رسالة غير مقروءة
-                </span>
+                </LabelSmall>
               )}
             </div>
             <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -271,7 +268,7 @@ export default function DashboardPage() {
                   <Link
                     key={message.id}
                     href={`/places/${message.place_id}`}
-                    className={`block p-4 border rounded-lg transition-colors app-border ${
+                    className={`block p-4 border rounded-2xl transition-colors app-border ${
                       isUnread ? '' : 'app-hover-bg'
                     }`}
                     style={isUnread ? {
@@ -282,28 +279,31 @@ export default function DashboardPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold app-text-main truncate">
+                          <TitleMedium className="truncate">
                             {place?.name_ar || 'مكان غير معروف'}
-                          </h3>
+                          </TitleMedium>
                           {isUnread && (
-                            <span className="badge-primary text-xs px-2 py-0.5 rounded-full flex-shrink-0">
+                            <LabelSmall 
+                              as="span"
+                              className="badge-primary px-2 py-0.5 rounded-full flex-shrink-0"
+                            >
                               جديد
-                            </span>
+                            </LabelSmall>
                           )}
                         </div>
                         {message.sender && (
-                          <p className="text-sm app-text-muted mb-1">
+                          <BodySmall color="onSurfaceVariant" className="mb-1">
                             من: {message.sender.full_name || message.sender.email || 'مستخدم'}
-                          </p>
+                          </BodySmall>
                         )}
                         {message.content ? (
-                          <p className="text-sm app-text-main line-clamp-2">{message.content}</p>
+                          <BodySmall className="line-clamp-2">{message.content}</BodySmall>
                         ) : message.image_url ? (
-                          <p className="text-sm app-text-muted italic">صورة</p>
+                          <BodySmall color="onSurfaceVariant" className="italic">صورة</BodySmall>
                         ) : null}
-                        <div className="flex items-center gap-2 mt-2 text-xs app-text-muted">
+                        <div className="flex items-center gap-2 mt-2">
                           <Clock size={14} />
-                          <span>
+                          <LabelSmall color="onSurfaceVariant">
                             {new Date(message.created_at).toLocaleString('ar-EG', {
                               year: 'numeric',
                               month: 'short',
@@ -311,7 +311,7 @@ export default function DashboardPage() {
                               hour: '2-digit',
                               minute: '2-digit',
                             })}
-                          </span>
+                          </LabelSmall>
                         </div>
                       </div>
                     </div>
@@ -426,8 +426,8 @@ export default function DashboardPage() {
         )}
 
         {profile?.is_affiliate && (
-          <div className="app-card shadow p-6">
-            <h2 className="text-xl font-bold mb-4 app-text-main">التسويق بالعمولة</h2>
+          <div className="app-card shadow p-6 rounded-3xl">
+            <TitleLarge className="mb-4">التسويق بالعمولة</TitleLarge>
             <Link
               href="/dashboard/affiliate"
               className="link-primary"

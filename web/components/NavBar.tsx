@@ -10,6 +10,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { getNavigationForRole, getUserRole, isNavigationItemActive } from '@/config/navigation'
 import { LogOut, User, Moon, Sun } from 'lucide-react'
 import NotificationBell from './NotificationBell'
+import { TitleMedium, LabelMedium, LabelSmall, Button } from '@/components/m3'
 
 export default function NavBar() {
   const pathname = usePathname()
@@ -57,12 +58,9 @@ export default function NavBar() {
                 suppressHydrationWarning
               />
             </div>
-            <span 
-              className="text-base sm:text-lg font-bold hidden sm:inline"
-              style={{ color: colors.onSurface }}
-            >
+            <TitleMedium className="hidden sm:inline">
               دليل المحلات
-            </span>
+            </TitleMedium>
           </Link>
 
           {/* Desktop Navigation */}
@@ -193,27 +191,24 @@ export default function NavBar() {
                     </div>
                   )}
                   <div className="flex flex-col min-w-0">
-                    <span 
-                      className="text-sm sm:text-base font-medium hidden lg:inline truncate max-w-[150px]"
-                      style={{ color: colors.onSurface }}
-                    >
+                    <LabelMedium className="hidden lg:inline truncate max-w-[150px]">
                       {profile?.full_name || user.email}
-                    </span>
+                    </LabelMedium>
                     {profile?.is_admin && (
-                      <span 
-                        className="text-[10px] font-medium hidden lg:inline"
+                      <LabelSmall 
+                        className="hidden lg:inline"
                         style={{ color: colors.error }}
                       >
                         مدير
-                      </span>
+                      </LabelSmall>
                     )}
                     {profile?.is_affiliate && !profile?.is_admin && (
-                      <span 
-                        className="text-[10px] font-medium hidden lg:inline"
+                      <LabelSmall 
+                        className="hidden lg:inline"
                         style={{ color: '#f59e0b' }}
                       >
                         مسوق
-                      </span>
+                      </LabelSmall>
                     )}
                   </div>
                 </div>
@@ -239,21 +234,11 @@ export default function NavBar() {
                 </button>
               </>
             ) : (
-              <Link
-                href="/auth/login"
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-white rounded-full transition-all text-sm font-medium"
-                style={{ backgroundColor: colors.primary }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = '0.9'
-                  e.currentTarget.style.transform = 'scale(1.02)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = '1'
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}
-              >
-                <User size={18} />
-                <span>تسجيل الدخول</span>
+              <Link href="/auth/login" className="hidden sm:flex">
+                <Button variant="filled" size="sm">
+                  <User size={18} />
+                  <span>تسجيل الدخول</span>
+                </Button>
               </Link>
             )}
 

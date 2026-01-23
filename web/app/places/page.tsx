@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { usePlaces } from '@/hooks/usePlaces'
 import PlaceCard from '@/components/PlaceCard'
 import { Search, MapPin, Loader2, Filter } from 'lucide-react'
+import { HeadlineLarge, HeadlineMedium, BodyMedium, BodySmall, LabelMedium } from '@/components/m3'
 
 export default function PlacesPage() {
   const router = useRouter()
@@ -35,16 +36,13 @@ export default function PlacesPage() {
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 
-            className="text-3xl font-bold mb-2 flex items-center gap-3"
-            style={{ color: colors.onSurface }}
-          >
+          <div className="flex items-center gap-3 mb-2">
             <MapPin size={32} style={{ color: colors.primary }} />
-            الأماكن
-          </h1>
-          <p style={{ color: colors.onSurface }}>
+            <HeadlineLarge>الأماكن</HeadlineLarge>
+          </div>
+          <BodyMedium color="onSurfaceVariant">
             اكتشف المحلات والصيدليات والأماكن القريبة منك
-          </p>
+          </BodyMedium>
         </div>
 
         {/* Search & Filter */}
@@ -99,7 +97,7 @@ export default function PlacesPage() {
               className="animate-spin mb-4" 
               style={{ color: colors.primary }} 
             />
-            <p style={{ color: colors.onSurface }}>جاري التحميل...</p>
+            <BodyMedium>جاري التحميل...</BodyMedium>
           </div>
         ) : filteredPlaces.length === 0 ? (
           <div 
@@ -111,30 +109,24 @@ export default function PlacesPage() {
               className="mx-auto mb-4" 
               style={{ color: colors.onSurface, opacity: 0.3 }} 
             />
-            <h3 
-              className="text-xl font-bold mb-2"
-              style={{ color: colors.onSurface }}
-            >
+            <HeadlineMedium className="mb-2">
               {searchQuery || selectedCategory !== 'all' 
                 ? 'لا توجد نتائج' 
                 : 'لا توجد أماكن بعد'}
-            </h3>
-            <p style={{ color: colors.onSurface }}>
+            </HeadlineMedium>
+            <BodyMedium color="onSurfaceVariant">
               {searchQuery || selectedCategory !== 'all'
                 ? 'جرب البحث بكلمات مختلفة أو غيّر الفئة'
                 : 'سيتم إضافة الأماكن قريباً'}
-            </p>
+            </BodyMedium>
           </div>
         ) : (
           <>
             {/* Results Count */}
             <div className="mb-4">
-              <p 
-                className="text-sm"
-                style={{ color: colors.onSurface }}
-              >
+              <BodySmall color="onSurfaceVariant">
                 {filteredPlaces.length} {filteredPlaces.length === 1 ? 'مكان' : 'أماكن'}
-              </p>
+              </BodySmall>
             </div>
 
             {/* Places Grid */}

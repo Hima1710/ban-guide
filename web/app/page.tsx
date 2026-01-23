@@ -9,6 +9,7 @@ import PlaceCard from '@/components/PlaceCard'
 import FeaturedPlaces from '@/components/FeaturedPlaces'
 import { Search, Eye, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import { HeadlineMedium, BodyMedium, BodySmall, LabelMedium } from '@/components/m3'
 export default function HomePage() {
   const [places, setPlaces] = useState<Place[]>([])
   const [featuredPlaces, setFeaturedPlaces] = useState<Place[]>([])
@@ -80,15 +81,19 @@ export default function HomePage() {
       {/* Stats Bar */}
       <div className="app-card border-b py-2 app-border">
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-center gap-4 text-xs sm:text-sm app-text-muted">
+          <div className="flex items-center justify-center gap-4">
             <div className="flex items-center gap-1.5">
               <Eye size={14} className="sm:w-4 sm:h-4" />
-              <span>اليوم: <strong className="app-text-main">{siteStats.today}</strong></span>
+              <LabelMedium color="onSurfaceVariant" as="span">
+                اليوم: <strong>{siteStats.today}</strong>
+              </LabelMedium>
             </div>
             <span className="opacity-30">|</span>
             <div className="flex items-center gap-1.5">
               <TrendingUp size={14} className="sm:w-4 sm:h-4" />
-              <span>الإجمالي: <strong className="app-text-main">{siteStats.total}</strong></span>
+              <LabelMedium color="onSurfaceVariant" as="span">
+                الإجمالي: <strong>{siteStats.total}</strong>
+              </LabelMedium>
             </div>
           </div>
         </div>
@@ -112,7 +117,9 @@ export default function HomePage() {
           {searchQuery && (
             <div className="mt-3 sm:mt-4 app-card rounded-lg shadow-lg p-3 sm:p-4 max-h-96 overflow-y-auto">
               {isSearching ? (
-                <div className="text-center py-4 text-sm sm:text-base app-text-muted">جاري البحث...</div>
+                <div className="text-center py-4">
+                  <BodyMedium color="onSurfaceVariant">جاري البحث...</BodyMedium>
+                </div>
               ) : searchResults.length > 0 ? (
                 <div className="space-y-2">
                   {searchResults.map((product) => (
@@ -130,11 +137,11 @@ export default function HomePage() {
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-sm sm:text-base app-text-main truncate">{product.name_ar}</h3>
+                          <BodyMedium className="truncate">{product.name_ar}</BodyMedium>
                           {product.price && (
-                            <p className="text-xs sm:text-sm app-text-muted">
+                            <BodySmall color="onSurfaceVariant">
                               {product.price} {product.currency}
-                            </p>
+                            </BodySmall>
                           )}
                         </div>
                       </div>
@@ -142,7 +149,9 @@ export default function HomePage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-4 text-sm sm:text-base app-text-muted">لا توجد نتائج</div>
+                <div className="text-center py-4">
+                  <BodyMedium color="onSurfaceVariant">لا توجد نتائج</BodyMedium>
+                </div>
               )}
             </div>
           )}
@@ -153,14 +162,16 @@ export default function HomePage() {
 
         {/* All Places */}
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 app-text-main">جميع الأماكن</h2>
+          <HeadlineMedium className="mb-4 sm:mb-6">جميع الأماكن</HeadlineMedium>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {sortedPlaces.map((place) => (
               <PlaceCard key={place.id} place={place} cardStyle={place.is_featured ? 'premium' : 'default'} />
             ))}
           </div>
           {sortedPlaces.length === 0 && (
-            <div className="text-center py-12 app-text-muted">لا توجد أماكن متاحة حالياً</div>
+            <div className="text-center py-12">
+              <BodyMedium color="onSurfaceVariant">لا توجد أماكن متاحة حالياً</BodyMedium>
+            </div>
           )}
         </div>
       </main>
