@@ -436,6 +436,26 @@ export default function DashboardPage() {
             </Link>
           </div>
         )}
+
+        {/* Legal & Privacy Links */}
+        <div className="app-card shadow p-6 rounded-3xl">
+          <TitleLarge className="mb-4">القانونية والخصوصية</TitleLarge>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/dashboard/privacy-ar"
+              className="link-primary"
+            >
+              سياسة الخصوصية (عربي)
+            </Link>
+            <span className="hidden sm:inline app-text-muted">•</span>
+            <Link
+              href="/dashboard/privacy"
+              className="link-primary"
+            >
+              Privacy Policy (English)
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )
