@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { showError } from '@/components/SweetAlert'
-import { HeadlineMedium, Button } from '@/components/m3'
+import { showError, showSuccess } from '@/components/SweetAlert'
+import { HeadlineMedium, BodyMedium, Button } from '@/components/m3'
 
 // Google Logo SVG Component
 function GoogleIcon() {
@@ -21,6 +22,40 @@ function GoogleIcon() {
 export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [receivedEmail, setReceivedEmail] = useState<string | null>(null)
+
+  // استمع لحدث تسجيل الدخول واستقبل الإيميل
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user?.email) {
+          const email = session.user.email
+          setReceivedEmail(email)
+          showSuccess(`تم تسجيل الدخول بنجاح: ${email}`)
+          router.push('/dashboard')
+        }
+      }
+    )
+    return () => subscription.unsubscribe()
+  }, [router])
+
+  // تحقق من الجلسة الحالية عند تحميل الصفحة (بعد العودة من Google)
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        const email = session.user.email
+        setReceivedEmail(email)
+        const isFromCallback = searchParams?.get('success') === '1'
+        if (isFromCallback) {
+          showSuccess(`تم تسجيل الدخول بنجاح: ${email}`)
+          setTimeout(() => router.push('/dashboard'), 1500)
+        } else {
+          router.push('/dashboard')
+        }
+      }
+    })
+  }, [router, searchParams])
 
   const handleGoogleLogin = async () => {
     try {
@@ -48,6 +83,16 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center app-bg-base">
       <div className="app-card shadow-lg p-8 max-w-md w-full rounded-3xl">
         <HeadlineMedium className="text-center mb-6">تسجيل الدخول</HeadlineMedium>
+
+        {receivedEmail && (
+          <div className="mb-4 p-3 rounded-2xl app-card app-border text-center">
+            <BodyMedium color="onSurfaceVariant" className="text-sm mb-1">
+              تم استقبال الإيميل:
+            </BodyMedium>
+            <BodyMedium className="font-medium break-all">{receivedEmail}</BodyMedium>
+          </div>
+        )}
+
         <Button
           variant="filled"
           size="lg"
