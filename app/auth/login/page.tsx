@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { showError, showSuccess } from '@/components/SweetAlert'
@@ -24,53 +23,76 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [receivedEmail, setReceivedEmail] = useState<string | null>(null)
 
-  // استمع لحدث googleAccountSelected من التطبيق (WebView / Native)
+  // استمع لحدث googleAccountSelected من التطبيق (WebView / Native) — تسجيل دخول مباشر بدون بريد
   useEffect(() => {
-    const handleGoogleAccountSelected = (e: CustomEvent<{ email: string }>) => {
+    const handleGoogleAccountSelected = async (e: CustomEvent<{ email: string; accessToken?: string; idToken?: string }>) => {
       const email = e.detail?.email
-      if (email) {
-        console.log('تم اختيار الحساب:', email)
-        setReceivedEmail(email)
-        showSuccess(`تم استقبال الإيميل: ${email}`)
-        // هنا يمكنك: استدعاء API لتسجيل الدخول بالإيميل، أو إرسال magic link، إلخ
+      if (!email) return
+      console.log('تم اختيار الحساب:', email)
+      setReceivedEmail(email)
+      setLoading(true)
+      try {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+        const redirectTo = `${siteUrl}/auth/callback`
+        
+        // إذا التطبيق أرسل access token أو id token، استخدمه مباشرة لتسجيل الدخول
+        if (e.detail?.accessToken || e.detail?.idToken) {
+          // استخدم الـ token مباشرة (إذا كان التطبيق يرسله)
+          const { data, error } = await supabase.auth.setSession({
+            access_token: e.detail.accessToken || '',
+            refresh_token: '',
+          } as any)
+          if (error) throw error
+          showSuccess(`تم تسجيل الدخول بنجاح: ${email}`)
+          router.push('/')
+          return
+        }
+        
+        // إذا لم يكن هناك token، نفتح Google OAuth تلقائياً مع تحديد الإيميل
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo,
+            queryParams: {
+              login_hint: email, // نحدد الإيميل لتسريع العملية - Google يعرض الحساب مباشرة
+            },
+          },
+        })
+        if (error) throw error
+        // سيتم التوجيه تلقائياً لـ Google ثم العودة للـ callback ثم للرئيسية
+      } catch (err: unknown) {
+        showError((err as Error)?.message || 'حدث خطأ في تسجيل الدخول')
+        setLoading(false)
       }
     }
     window.addEventListener('googleAccountSelected', handleGoogleAccountSelected as EventListener)
     return () => window.removeEventListener('googleAccountSelected', handleGoogleAccountSelected as EventListener)
-  }, [])
+  }, [router])
 
-  // استمع لحدث تسجيل الدخول واستقبل الإيميل (Supabase)
+  // استمع لحدث تسجيل الدخول (Supabase) — توجيه للصفحة الرئيسية
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user?.email) {
-          const email = session.user.email
-          setReceivedEmail(email)
-          showSuccess(`تم تسجيل الدخول بنجاح: ${email}`)
-          router.push('/dashboard')
+          setReceivedEmail(session.user.email)
+          showSuccess(`تم تسجيل الدخول بنجاح`)
+          router.push('/')
         }
       }
     )
     return () => subscription.unsubscribe()
   }, [router])
 
-  // تحقق من الجلسة الحالية عند تحميل الصفحة (بعد العودة من Google)
-  const searchParams = useSearchParams()
+  // تحقق من الجلسة عند تحميل الصفحة — إن كان مسجّل الدخول يوجّه للرئيسية
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
-        const email = session.user.email
-        setReceivedEmail(email)
-        const isFromCallback = searchParams?.get('success') === '1'
-        if (isFromCallback) {
-          showSuccess(`تم تسجيل الدخول بنجاح: ${email}`)
-          setTimeout(() => router.push('/dashboard'), 1500)
-        } else {
-          router.push('/dashboard')
-        }
+        setReceivedEmail(session.user.email)
+        showSuccess('تم تسجيل الدخول بنجاح')
+        router.push('/')
       }
     })
-  }, [router, searchParams])
+  }, [router])
 
   const handleGoogleLogin = async () => {
     try {
