@@ -24,7 +24,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [receivedEmail, setReceivedEmail] = useState<string | null>(null)
 
-  // استمع لحدث تسجيل الدخول واستقبل الإيميل
+  // استمع لحدث googleAccountSelected من التطبيق (WebView / Native)
+  useEffect(() => {
+    const handleGoogleAccountSelected = (e: CustomEvent<{ email: string }>) => {
+      const email = e.detail?.email
+      if (email) {
+        console.log('تم اختيار الحساب:', email)
+        setReceivedEmail(email)
+        showSuccess(`تم استقبال الإيميل: ${email}`)
+        // هنا يمكنك: استدعاء API لتسجيل الدخول بالإيميل، أو إرسال magic link، إلخ
+      }
+    }
+    window.addEventListener('googleAccountSelected', handleGoogleAccountSelected as EventListener)
+    return () => window.removeEventListener('googleAccountSelected', handleGoogleAccountSelected as EventListener)
+  }, [])
+
+  // استمع لحدث تسجيل الدخول واستقبل الإيميل (Supabase)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
