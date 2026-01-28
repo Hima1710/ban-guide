@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // إضافة BUILD_TIME كـ environment variable في build time
+  env: {
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+  },
 };
 
 export default nextConfig;

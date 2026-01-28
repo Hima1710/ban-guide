@@ -10,6 +10,8 @@ import FeaturedPlaces from '@/components/FeaturedPlaces'
 import { Search, Eye, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { HeadlineMedium, BodyMedium, BodySmall, LabelMedium } from '@/components/m3'
+import VersionBadge from '@/components/VersionBadge'
+
 export default function HomePage() {
   const [places, setPlaces] = useState<Place[]>([])
   const [featuredPlaces, setFeaturedPlaces] = useState<Place[]>([])
@@ -175,6 +177,9 @@ export default function HomePage() {
           )}
         </div>
       </main>
+
+      {/* Version Badge - يعرض رقم الإصدار في كل deploy */}
+      <VersionBadge />
     </div>
   )
 }
