@@ -41,6 +41,13 @@ export default function LoginPage() {
       }
       setLoading(true)
       try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user?.email?.toLowerCase() === trimmed.toLowerCase()) {
+          setReceivedEmail(trimmed)
+          showSuccess('تم تسجيل الدخول بنجاح')
+          router.push('/')
+          return
+        }
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
         const redirectTo = `${siteUrl}/auth/callback`
         const { error } = await supabase.auth.signInWithOtp({
@@ -51,12 +58,17 @@ export default function LoginPage() {
         setReceivedEmail(trimmed)
         showSuccess('تم إرسال رابط الدخول إلى بريدك. تحقق من صندوق الوارد.')
       } catch (err: unknown) {
-        showError((err as Error)?.message || 'حدث خطأ في تسجيل الدخول')
+        const msg = (err as Error)?.message ?? ''
+        if (/rate limit|rate_limit|too many requests/i.test(msg)) {
+          showError('تم تجاوز حد المحاولات. انتظر بضع دقائق ثم جرّب مرة أخرى، أو استخدم تسجيل الدخول بحساب Google.')
+        } else {
+          showError(msg || 'حدث خطأ في تسجيل الدخول')
+        }
       } finally {
         setLoading(false)
       }
     },
-    [email]
+    [email, router]
   )
 
   useEffect(() => {
