@@ -100,8 +100,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-      
+      let { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+
+      // بعد التوجيه من OAuth قد تكون الجلسة في الكوكيز فقط (الويب فيو لا يقرأها). جلب الجلسة من السيرفر ثم setSession.
+      if ((authError || !authUser) && typeof window !== 'undefined') {
+        try {
+          const res = await fetch('/api/auth/session')
+          const { session } = await res.json()
+          if (session?.access_token) {
+            await supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token ?? '',
+            })
+            const next = await supabase.auth.getUser()
+            authUser = next.data.user
+            authError = next.error
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       if (authError || !authUser) {
         setUser(null)
         setProfile(null)
