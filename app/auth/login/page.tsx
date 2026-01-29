@@ -67,10 +67,11 @@ export default function LoginPage() {
         el.value = injectedEmail
         el.dispatchEvent(new Event('input', { bubbles: true }))
       }
-      if (window.Android?.onEmailReceived) {
-        window.Android.onEmailReceived()
-      }
-      void handleLogin(injectedEmail)
+      void handleLogin(injectedEmail).finally(() => {
+        if (typeof window.Android !== 'undefined' && window.Android.onEmailReceived) {
+          window.Android.onEmailReceived()
+        }
+      })
     }
     return () => {
       delete window.receiveEmailFromNative
