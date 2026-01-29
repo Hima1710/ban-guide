@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { showError, showSuccess } from '@/components/SweetAlert'
-import { Card, Button, Input } from '@/components/common'
+import { Card, Button } from '@/components/common'
 import { useTheme } from '@/contexts/ThemeContext'
 
 declare global {
@@ -29,66 +29,41 @@ export default function LoginPage() {
   const router = useRouter()
   const { colors } = useTheme()
   const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState('')
   const [receivedEmail, setReceivedEmail] = useState<string | null>(null)
 
-  const handleLogin = useCallback(
-    async (emailToUse: string) => {
-      const trimmed = (emailToUse ?? email).trim()
-      if (!trimmed) {
-        showError('أدخل البريد الإلكتروني')
-        return
-      }
-      setLoading(true)
+  useEffect(() => {
+    window.receiveEmailFromNative = async (injectedEmail: string) => {
+      const email = injectedEmail?.trim()
+      if (!email) return
+      setReceivedEmail(email)
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user?.email?.toLowerCase() === trimmed.toLowerCase()) {
-          setReceivedEmail(trimmed)
+        if (session?.user) {
           showSuccess('تم تسجيل الدخول بنجاح')
+          if (typeof window.Android !== 'undefined' && window.Android.onEmailReceived) {
+            window.Android.onEmailReceived()
+          }
           router.push('/')
           return
         }
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
         const redirectTo = `${siteUrl}/auth/callback`
-        const { error } = await supabase.auth.signInWithOtp({
-          email: trimmed,
-          options: { emailRedirectTo: redirectTo },
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo, queryParams: { login_hint: email } },
         })
         if (error) throw error
-        setReceivedEmail(trimmed)
-        showSuccess('تم إرسال رابط الدخول إلى بريدك. تحقق من صندوق الوارد.')
-      } catch (err: unknown) {
-        const msg = (err as Error)?.message ?? ''
-        if (/rate limit|rate_limit|too many requests/i.test(msg)) {
-          showError('تم تجاوز حد المحاولات. انتظر بضع دقائق ثم جرّب مرة أخرى، أو استخدم تسجيل الدخول بحساب Google.')
-        } else {
-          showError(msg || 'حدث خطأ في تسجيل الدخول')
-        }
-      } finally {
-        setLoading(false)
-      }
-    },
-    [email, router]
-  )
-
-  useEffect(() => {
-    window.receiveEmailFromNative = (injectedEmail: string) => {
-      setEmail(injectedEmail)
-      const el = document.getElementById('email-input') as HTMLInputElement | null
-      if (el) {
-        el.value = injectedEmail
-        el.dispatchEvent(new Event('input', { bubbles: true }))
-      }
-      void handleLogin(injectedEmail).finally(() => {
         if (typeof window.Android !== 'undefined' && window.Android.onEmailReceived) {
           window.Android.onEmailReceived()
         }
-      })
+      } catch (err: unknown) {
+        showError((err as Error)?.message || 'حدث خطأ في تسجيل الدخول')
+      }
     }
     return () => {
       delete window.receiveEmailFromNative
     }
-  }, [handleLogin])
+  }, [router])
 
   useEffect(() => {
     const handleGoogleAccountSelected = async (e: Event) => {
@@ -176,30 +151,6 @@ export default function LoginPage() {
         <h1 className="text-headline-medium text-on-surface text-center mb-6">
           تسجيل الدخول
         </h1>
-
-        <div className="mb-4">
-          <label htmlFor="email-input" className="block text-label-medium text-on-surface-variant mb-2">
-            البريد الإلكتروني (Magic Link)
-          </label>
-          <Input
-            id="email-input"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="example@email.com"
-            className="w-full"
-          />
-        </div>
-        <Button
-          variant="outlined"
-          size="lg"
-          fullWidth
-          onClick={() => void handleLogin(email)}
-          loading={loading}
-          className="mb-4"
-        >
-          {loading ? 'جاري الإرسال...' : 'إرسال رابط الدخول'}
-        </Button>
 
         {receivedEmail && (
           <div
