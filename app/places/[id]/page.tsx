@@ -1051,7 +1051,6 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   value={employeePhone}
                   onChange={(e) => setEmployeePhone(e.target.value)}
                   placeholder="مثال: 01234567890"
-                  variant="outlined"
                   className="w-full"
                 />
               </div>

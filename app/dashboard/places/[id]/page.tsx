@@ -420,7 +420,6 @@ export default function PlaceDetailsPage() {
                       type="text"
                       value={editData.name_ar}
                       onChange={(e) => setEditData({ ...editData, name_ar: e.target.value })}
-                      variant="outlined"
                       className="w-full"
                       placeholder="اسم المكان بالعربية"
                     />
@@ -431,7 +430,6 @@ export default function PlaceDetailsPage() {
                       type="text"
                       value={editData.name_en}
                       onChange={(e) => setEditData({ ...editData, name_en: e.target.value })}
-                      variant="outlined"
                       className="w-full"
                       placeholder="اسم المكان بالإنجليزية"
                     />
@@ -456,7 +454,6 @@ export default function PlaceDetailsPage() {
                         type="tel"
                         value={editData.phone_1}
                         onChange={(e) => setEditData({ ...editData, phone_1: e.target.value })}
-                        variant="outlined"
                         className="w-full"
                         placeholder="رقم الهاتف الأول"
                       />
@@ -467,7 +464,6 @@ export default function PlaceDetailsPage() {
                         type="tel"
                         value={editData.phone_2}
                         onChange={(e) => setEditData({ ...editData, phone_2: e.target.value })}
-                        variant="outlined"
                         className="w-full"
                         placeholder="رقم الهاتف الثاني (اختياري)"
                       />
