@@ -169,7 +169,6 @@ export default function YouTubeUpload({
           onChange={(e) => setTitle(e.target.value)}
           placeholder="أدخل عنوان الفيديو"
           variant="outlined"
-          shape="large"
           className="w-full"
           maxLength={100}
         />
@@ -200,7 +199,6 @@ export default function YouTubeUpload({
           onChange={(e) => setTags(e.target.value)}
           placeholder="مثال: منتج، تسوق، عرض"
           variant="outlined"
-          shape="large"
           className="w-full"
         />
       </div>

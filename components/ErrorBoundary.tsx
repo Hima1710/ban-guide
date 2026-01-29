@@ -145,11 +145,11 @@ function ErrorBoundaryFallback({
             </div>
           )}
           <div className="flex flex-col gap-3">
-            <Button variant="filled" shape="large" fullWidth onClick={onReload} className="justify-center gap-2">
+            <Button variant="filled"  fullWidth onClick={onReload} className="justify-center gap-2">
               <RefreshCcw size={20} />
               إعادة تحميل الصفحة
             </Button>
-            <Button variant="filled-tonal" shape="large" fullWidth onClick={onGoHome} className="justify-center gap-2" style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}>
+            <Button variant="outlined"  fullWidth onClick={onGoHome} className="justify-center gap-2" style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}>
               <Home size={20} />
               العودة للصفحة الرئيسية
             </Button>
@@ -172,7 +172,7 @@ function ErrorBoundaryFallback({
                 <p className="text-sm font-mono" style={{ color: colors.error }}>{error.toString()}</p>
               </div>
             )}
-            <Button variant="filled" shape="large" size="sm" onClick={onReset} className="gap-2">
+            <Button variant="filled"  size="sm" onClick={onReset} className="gap-2">
               <RefreshCcw size={16} />
               إعادة المحاولة
             </Button>

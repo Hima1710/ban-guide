@@ -1052,17 +1052,15 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   onChange={(e) => setEmployeePhone(e.target.value)}
                   placeholder="مثال: 01234567890"
                   variant="outlined"
-                  shape="large"
                   className="w-full"
                 />
               </div>
               <div className="flex gap-3">
-                <Button variant="filled" shape="full" fullWidth onClick={handleEmployeeRequest}>
+                <Button variant="filled"  fullWidth onClick={handleEmployeeRequest}>
                   إرسال الطلب
                 </Button>
                 <Button
-                  variant="filled-tonal"
-                  shape="large"
+                  variant="outlined"
                   onClick={() => {
                     setShowEmployeeRequestModal(false)
                     setEmployeePhone('')
@@ -1120,7 +1118,6 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             {canManagePosts && activeTab === 'posts' && (
               <Button
                 variant="filled"
-                shape="full"
                 size="sm"
                 onClick={() => setShowAddPostModal(true)}
                 className="flex items-center gap-2 shrink-0"
@@ -1132,7 +1129,6 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             {canManageProducts && activeTab === 'products' && (
               <Button
                 variant="filled"
-                shape="full"
                 size="sm"
                 onClick={() => router.push(`/dashboard/places/${placeId}/products/new`)}
                 className="flex items-center gap-2 shrink-0"

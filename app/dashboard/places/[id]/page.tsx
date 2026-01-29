@@ -326,13 +326,12 @@ export default function PlaceDetailsPage() {
                   <FileText size={18} />
                   إدارة المنشورات
                 </Link>
-                <Button variant="filled" shape="large" onClick={handleStartEdit} className="flex items-center gap-2">
+                <Button variant="filled"  onClick={handleStartEdit} className="flex items-center gap-2">
                   <Edit size={18} />
                   تعديل المعلومات
                 </Button>
                 <Button
                   variant="filled"
-                  shape="large"
                   onClick={handleDelete}
                   className="flex items-center gap-2"
                   style={{ backgroundColor: colors.error, color: colors.onPrimary }}
@@ -345,7 +344,6 @@ export default function PlaceDetailsPage() {
               <>
                 <Button
                   variant="filled"
-                  shape="large"
                   onClick={handleSave}
                   className="flex items-center gap-2"
                   style={{ backgroundColor: colors.secondary, color: colors.onSecondary }}
@@ -354,8 +352,7 @@ export default function PlaceDetailsPage() {
                   حفظ التعديلات
                 </Button>
                 <Button
-                  variant="filled-tonal"
-                  shape="large"
+                  variant="outlined"
                   onClick={handleCancelEdit}
                   className="flex items-center gap-2"
                   style={{ backgroundColor: colors.surfaceVariant, color: colors.onSurfaceVariant }}
@@ -424,7 +421,6 @@ export default function PlaceDetailsPage() {
                       value={editData.name_ar}
                       onChange={(e) => setEditData({ ...editData, name_ar: e.target.value })}
                       variant="outlined"
-                      shape="large"
                       className="w-full"
                       placeholder="اسم المكان بالعربية"
                     />
@@ -436,7 +432,6 @@ export default function PlaceDetailsPage() {
                       value={editData.name_en}
                       onChange={(e) => setEditData({ ...editData, name_en: e.target.value })}
                       variant="outlined"
-                      shape="large"
                       className="w-full"
                       placeholder="اسم المكان بالإنجليزية"
                     />
@@ -462,7 +457,6 @@ export default function PlaceDetailsPage() {
                         value={editData.phone_1}
                         onChange={(e) => setEditData({ ...editData, phone_1: e.target.value })}
                         variant="outlined"
-                        shape="large"
                         className="w-full"
                         placeholder="رقم الهاتف الأول"
                       />
@@ -474,7 +468,6 @@ export default function PlaceDetailsPage() {
                         value={editData.phone_2}
                         onChange={(e) => setEditData({ ...editData, phone_2: e.target.value })}
                         variant="outlined"
-                        shape="large"
                         className="w-full"
                         placeholder="رقم الهاتف الثاني (اختياري)"
                       />
