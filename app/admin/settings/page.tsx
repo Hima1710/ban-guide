@@ -231,7 +231,6 @@ export default function AdminSettingsPage() {
           <div className="flex justify-end">
             <Button
               variant="filled"
-              shape="full"
               loading={saving}
               disabled={saving}
               onClick={handleSave}
