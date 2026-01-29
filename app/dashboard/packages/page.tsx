@@ -400,8 +400,6 @@ export default function PackagesPage() {
               value={discountCode}
               onChange={(e) => handleDiscountCodeChange(e.target.value)}
               placeholder="أدخل كود الخصم (اختياري)"
-              variant="outlined"
-              shape="large"
               className="flex-1"
             />
             {selectedDiscount && (
@@ -487,7 +485,6 @@ export default function PackagesPage() {
 
                 <Button
                   variant="filled"
-                  shape="large"
                   fullWidth
                   disabled={disabled}
                   onClick={() => handleSubscribeClick(pkg)}
@@ -593,8 +590,7 @@ export default function PackagesPage() {
 
               <div className="flex gap-3">
                 <Button
-                  variant="filled-tonal"
-                  shape="large"
+                  variant="outlined"
                   fullWidth
                   disabled={uploadingReceipt}
                   onClick={() => {
@@ -607,7 +603,6 @@ export default function PackagesPage() {
                 </Button>
                 <Button
                   variant="filled"
-                  shape="large"
                   fullWidth
                   loading={uploadingReceipt}
                   disabled={!receiptFile || uploadingReceipt}
