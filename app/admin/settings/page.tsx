@@ -7,7 +7,7 @@ import { useAdminManager } from '@/hooks'
 import { showError, showSuccess } from '@/components/SweetAlert'
 import { LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
-import { Save, Globe } from 'lucide-react'
+import { Save, Globe, Eye } from 'lucide-react'
 import { HeadlineLarge, TitleLarge, BodyMedium, BodySmall, LabelMedium, Button } from '@/components/m3'
 import { Input } from '@/components/common'
 
@@ -115,8 +115,6 @@ export default function AdminSettingsPage() {
                   type="text"
                   value={settings.siteName}
                   onChange={(e) => handleChange('siteName', e.target.value)}
-                  variant="outlined"
-                  shape="large"
                   className="w-full"
                 />
               </div>
@@ -150,8 +148,6 @@ export default function AdminSettingsPage() {
                   type="email"
                   value={settings.siteEmail}
                   onChange={(e) => handleChange('siteEmail', e.target.value)}
-                  variant="outlined"
-                  shape="large"
                   className="w-full"
                 />
               </div>
