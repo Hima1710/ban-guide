@@ -412,8 +412,8 @@ export default function NewProductPage() {
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-2 left-2 text-white rounded-full p-1"
-                    style={{ backgroundColor: colors.error }}
+                    className="absolute top-2 left-2 rounded-full p-1"
+                    style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                   >
                     <X size={16} />
                   </button>

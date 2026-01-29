@@ -1,185 +1,180 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Place, Product } from '@/lib/types'
-import { getPlaces } from '@/lib/api/places'
-import { searchProducts } from '@/lib/api/products'
-import { getSiteStats, recordSiteVisit } from '@/lib/api/visits'
-import PlaceCard from '@/components/PlaceCard'
-import FeaturedPlaces from '@/components/FeaturedPlaces'
-import { Search, Eye, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
-import { HeadlineMedium, BodyMedium, BodySmall, LabelMedium } from '@/components/m3'
-import VersionBadge from '@/components/VersionBadge'
+import { useEffect, useState, useRef } from 'react'
+import { useUnifiedFeed, type EntityType } from '@/hooks/useUnifiedFeed'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { BanCard, BanSkeleton } from '@/components/common'
+import type { PlaceFeedItem, PostFeedItem, ProductFeedItem } from '@/hooks/useUnifiedFeed'
+
+const TABS: { key: EntityType; label: string }[] = [
+  { key: 'places', label: 'الأماكن' },
+  { key: 'posts', label: 'المنشورات' },
+  { key: 'products', label: 'المنتجات' },
+]
+const EMPTY_PLACE_LABEL = 'مكان'
+
+interface FollowedPlace {
+  id: string
+  name_ar: string | null
+  logo_url: string | null
+}
 
 export default function HomePage() {
-  const [places, setPlaces] = useState<Place[]>([])
-  const [featuredPlaces, setFeaturedPlaces] = useState<Place[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<Product[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [siteStats, setSiteStats] = useState({ today: 0, total: 0 })
+  const [activeTab, setActiveTab] = useState<EntityType>('places')
+  const [followedPlaces, setFollowedPlaces] = useState<FollowedPlace[]>([])
+  const [storiesLoading, setStoriesLoading] = useState(true)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  const { user } = useAuthContext()
+  const { items, fetchNextPage, hasNextPage, loading, error } = useUnifiedFeed({ entityType: activeTab })
+
   useEffect(() => {
-    loadData()
-    recordSiteVisit().catch(err => {
-      console.error('Error recording visit:', err)
-    })
-  }, [])
-
-  const loadData = async () => {
-    try {
-      const [allPlaces, featured, stats] = await Promise.all([
-        getPlaces().catch(err => {
-          console.error('Error loading places:', err)
-          return []
-        }),
-        getPlaces(true).catch(err => {
-          console.error('Error loading featured places:', err)
-          return []
-        }),
-        getSiteStats().catch(err => {
-          console.error('Error loading stats:', err)
-          return { today: 0, total: 0 }
-        }),
-      ])
-      setPlaces(allPlaces)
-      setFeaturedPlaces(featured)
-      setSiteStats(stats)
-    } catch (error) {
-      console.error('Error loading data:', error)
-    }
-  }
-
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query)
-    if (query.trim().length < 2) {
-      setSearchResults([])
-      setIsSearching(false)
+    if (!user?.id) {
+      setFollowedPlaces([])
+      setStoriesLoading(false)
       return
     }
+    setStoriesLoading(true)
+    supabase
+      .from('follows')
+      .select('places(id, name_ar, logo_url)')
+      .eq('follower_id', user.id)
+      .then(({ data, error }) => {
+        if (error) {
+          setFollowedPlaces([])
+          return
+        }
+        const list = (data || [])
+          .map((r: { places: FollowedPlace | null }) => r.places)
+          .filter(Boolean) as FollowedPlace[]
+        setFollowedPlaces(list)
+      })
+      .finally(() => setStoriesLoading(false))
+  }, [user?.id])
 
-    setIsSearching(true)
-    try {
-      const results = await searchProducts(query)
-      setSearchResults(results)
-    } catch (error) {
-      console.error('Error searching:', error)
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
-  // Sort places by priority (from subscription package)
-  const sortedPlaces = [...places].sort((a, b) => {
-    // Featured places first
-    if (a.is_featured && !b.is_featured) return -1
-    if (!a.is_featured && b.is_featured) return 1
-    // Then by views
-    return b.total_views - a.total_views
-  })
+  useEffect(() => {
+    if (!hasNextPage || loading) return
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) fetchNextPage()
+      },
+      { rootMargin: '200px', threshold: 0 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [hasNextPage, loading, fetchNextPage])
 
   return (
-    <div className="min-h-screen app-bg-base">
-      {/* Stats Bar */}
-      <div className="app-card border-b py-2 app-border">
-        <div className="container mx-auto px-3 sm:px-4">
-          <div className="flex items-center justify-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <Eye size={14} className="sm:w-4 sm:h-4" />
-              <LabelMedium color="onSurfaceVariant" as="span">
-                اليوم: <strong>{siteStats.today}</strong>
-              </LabelMedium>
-            </div>
-            <span className="opacity-30">|</span>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp size={14} className="sm:w-4 sm:h-4" />
-              <LabelMedium color="onSurfaceVariant" as="span">
-                الإجمالي: <strong>{siteStats.total}</strong>
-              </LabelMedium>
-            </div>
-          </div>
+    <div className="min-h-screen bg-background">
+      {/* Stories: متابعات المستخدم */}
+      <section aria-label="الأماكن المتابعة" className="border-b border-outline bg-surface px-3 py-4">
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3" role="list">
+          {storiesLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <BanSkeleton key={`story-skeleton-${i}`} variant="avatar" className="shrink-0" />
+            ))
+          ) : followedPlaces.length === 0 ? (
+            <p className="text-body-small text-on-surface-variant py-2 px-1">
+              {user?.id ? 'لم تتابع أي مكان بعد' : 'سجّل الدخول لمتابعة الأماكن'}
+            </p>
+          ) : (
+            followedPlaces.map((place) => (
+              <a
+                key={place.id}
+                href={`/places/${place.id}`}
+                className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation"
+                aria-label={place.name_ar || EMPTY_PLACE_LABEL}
+              >
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-primary flex-shrink-0 bg-surface">
+                  {place.logo_url ? (
+                    <img src={place.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-small">
+                      {place.name_ar?.[0] || '?'}
+                    </div>
+                  )}
+                </div>
+                <span className="text-label-small text-on-surface truncate max-w-[64px] text-center">
+                  {place.name_ar || EMPTY_PLACE_LABEL}
+                </span>
+              </a>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Tabs */}
+      <div
+        role="tablist"
+        aria-label="نوع المحتوى"
+        className="sticky top-[var(--header-height,56px)] z-30 bg-surface border-b border-outline"
+      >
+        <div className="flex px-2">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.key}
+              aria-controls="feed-panel"
+              id={`tab-${tab.key}`}
+              onClick={() => setActiveTab(tab.key)}
+              className={`
+                flex-1 min-h-[48px] rounded-extra-large text-title-small font-semibold transition-colors
+                ${activeTab === tab.key ? 'bg-primary/10 text-primary' : 'text-on-surface-variant'}
+              `}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        {/* Search Bar */}
-        <div className="mb-8">
-          <div className="relative">
-            <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 app-text-muted" size={20} />
-            <input
-              type="text"
-              placeholder="ابحث عن منتج أو خدمة..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="app-input w-full pr-12 pl-4 py-3 rounded-lg focus:outline-none focus:border-primary transition-colors"
-            />
-          </div>
+      {/* Feed */}
+      <main id="feed-panel" role="tabpanel" aria-label="التغذية" className="container mx-auto px-3 py-4 max-w-6xl">
+        {error && (
+          <p className="text-body-medium text-error text-center py-4" role="alert">
+            حدث خطأ في التحميل. حاول مرة أخرى.
+          </p>
+        )}
 
-          {/* Search Results */}
-          {searchQuery && (
-            <div className="mt-3 sm:mt-4 app-card rounded-lg shadow-lg p-3 sm:p-4 max-h-96 overflow-y-auto">
-              {isSearching ? (
-                <div className="text-center py-4">
-                  <BodyMedium color="onSurfaceVariant">جاري البحث...</BodyMedium>
-                </div>
-              ) : searchResults.length > 0 ? (
-                <div className="space-y-2">
-                  {searchResults.map((product) => (
-                    <Link
-                      key={product.id}
-                      href={`/places/${product.place_id}?product=${product.id}`}
-                      className="block p-2 sm:p-3 rounded-lg transition-colors app-hover-bg"
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        {product.images && product.images.length > 0 && (
-                          <img
-                            src={product.images[0].image_url}
-                            alt={product.name_ar}
-                            className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <BodyMedium className="truncate">{product.name_ar}</BodyMedium>
-                          {product.price && (
-                            <BodySmall color="onSurfaceVariant">
-                              {product.price} {product.currency}
-                            </BodySmall>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <BodyMedium color="onSurfaceVariant">لا توجد نتائج</BodyMedium>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Featured Places */}
-        {featuredPlaces.length > 0 && <FeaturedPlaces places={featuredPlaces} />}
-
-        {/* All Places */}
-        <div>
-          <HeadlineMedium className="mb-4 sm:mb-6">جميع الأماكن</HeadlineMedium>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {sortedPlaces.map((place) => (
-              <PlaceCard key={place.id} place={place} cardStyle={place.is_featured ? 'premium' : 'default'} />
+        {loading && items.length === 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-busy="true">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <BanSkeleton key={`card-skeleton-${i}`} variant="card" lines={3} />
             ))}
           </div>
-          {sortedPlaces.length === 0 && (
-            <div className="text-center py-12">
-              <BodyMedium color="onSurfaceVariant">لا توجد أماكن متاحة حالياً</BodyMedium>
-            </div>
-          )}
-        </div>
-      </main>
+        ) : !loading && items.length === 0 && !error ? (
+          <p className="text-body-medium text-on-surface-variant text-center py-12">
+            لا يوجد {activeTab === 'places' ? 'أماكن' : activeTab === 'posts' ? 'منشورات' : 'منتجات'} لعرضها.
+          </p>
+        ) : error && items.length === 0 ? null : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {items.map((item) =>
+              activeTab === 'places' ? (
+                <BanCard key={item.id} layout="places" item={item as PlaceFeedItem} />
+              ) : activeTab === 'posts' ? (
+                <BanCard key={item.id} layout="posts" item={item as PostFeedItem} />
+              ) : (
+                <BanCard key={item.id} layout="products" item={item as ProductFeedItem} />
+              )
+            )}
+          </div>
+        )}
 
-      {/* Version Badge - يعرض رقم الإصدار في كل deploy */}
-      <VersionBadge />
+        {loading && items.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" aria-busy="true">
+            <BanSkeleton variant="card" lines={3} />
+            <BanSkeleton variant="card" lines={3} className="hidden md:block" />
+            <BanSkeleton variant="card" lines={3} className="hidden md:block" />
+          </div>
+        )}
+
+        <div ref={sentinelRef} className="h-4 w-full" aria-hidden />
+      </main>
     </div>
   )
 }

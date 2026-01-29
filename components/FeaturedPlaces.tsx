@@ -1,57 +1,38 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import { Place } from '@/types'
 import PlaceCard from './PlaceCard'
+import { useTheme } from '@/contexts/ThemeContext'
+import { Carousel, HeadlineMedium } from '@/components/m3'
+import type { CarouselItemSize } from '@/components/m3'
 
 interface FeaturedPlacesProps {
   places: Place[]
 }
 
+const CAROUSEL_SIZES: CarouselItemSize[] = ['large', 'medium', 'small']
+
 export default function FeaturedPlaces({ places }: FeaturedPlacesProps) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [isPaused, setIsPaused] = useState(false)
-
-  useEffect(() => {
-    if (!scrollContainerRef.current || isPaused) return
-
-    const container = scrollContainerRef.current
-    let scrollPosition = 0
-    const scrollSpeed = 0.5 // pixels per frame
-
-    const scroll = () => {
-      if (isPaused) return
-      scrollPosition += scrollSpeed
-      container.scrollLeft = scrollPosition
-
-      // Reset when reaching the end
-      if (scrollPosition >= container.scrollWidth - container.clientWidth) {
-        scrollPosition = 0
-      }
-    }
-
-    const interval = setInterval(scroll, 16) // ~60fps
-
-    return () => clearInterval(interval)
-  }, [isPaused])
-
-  if (places.length === 0) return null
+  const { colors } = useTheme()
 
   return (
-    <div className="mb-6 sm:mb-8">
-      <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 app-text-main">الأماكن المميزة</h2>
-      <div
-        ref={scrollContainerRef}
-        className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        {places.map((place) => (
-          <div key={place.id} className="flex-shrink-0 w-[280px] sm:w-80">
-            <PlaceCard place={place} cardStyle="premium" />
-          </div>
-        ))}
-      </div>
-    </div>
+    <Carousel<Place>
+      title={
+        <HeadlineMedium className="mb-4 sm:mb-6" style={{ color: colors.onSurface }}>
+          الأماكن المميزة
+        </HeadlineMedium>
+      }
+      ariaLabel="الأماكن المميزة"
+      items={places}
+      keyExtractor={(p) => p.id}
+      renderItem={(place, index) => {
+        const size = CAROUSEL_SIZES[index % CAROUSEL_SIZES.length]
+        return <PlaceCard place={place} cardStyle="premium" size={size} />
+      }}
+      getItemSize={(index) => CAROUSEL_SIZES[index % CAROUSEL_SIZES.length]}
+      autoScroll
+      pauseOnHover
+      snap
+    />
   )
 }

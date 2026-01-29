@@ -161,16 +161,17 @@ export default function NavBar() {
                       <div 
                         className="absolute bottom-0 right-0 w-3 h-3 border-2 rounded-full"
                         style={{ 
-                          backgroundColor: '#10b981',
+                          backgroundColor: colors.success,
                           borderColor: colors.surface
                         }}
                       />
                     </div>
                   ) : (
                     <div 
-                      className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white text-sm sm:text-base font-bold shadow-sm border-2 transition-all relative"
-                      style={{ 
+className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm sm:text-base font-bold shadow-sm border-2 transition-all relative"
+                      style={{
                         backgroundColor: colors.primary,
+                        color: colors.onPrimary,
                         borderColor: colors.outline
                       }}
                       onMouseEnter={(e) => {
@@ -184,7 +185,7 @@ export default function NavBar() {
                       <div 
                         className="absolute bottom-0 right-0 w-3 h-3 border-2 rounded-full"
                         style={{ 
-                          backgroundColor: '#10b981',
+                          backgroundColor: colors.success,
                           borderColor: colors.surface
                         }}
                       />
@@ -205,7 +206,7 @@ export default function NavBar() {
                     {profile?.is_affiliate && !profile?.is_admin && (
                       <LabelSmall 
                         className="hidden lg:inline"
-                        style={{ color: '#f59e0b' }}
+                        style={{ color: colors.warning }}
                       >
                         مسوق
                       </LabelSmall>

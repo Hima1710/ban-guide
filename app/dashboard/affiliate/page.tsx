@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useAffiliate } from '@/hooks/useAffiliate'
-import { 
-  Copy, 
-  TrendingUp, 
-  DollarSign, 
-  Users, 
-  ShoppingBag,
+import { formatDateTime } from '@/utils/helpers'
+import {
+  Copy,
   CreditCard,
+  TrendingUp,
+  DollarSign,
+  Users,
+  ShoppingBag,
   MapPin,
   Plus,
   ArrowUpRight,
@@ -32,23 +33,12 @@ export default function AffiliateDashboardPage() {
   // Get transaction type label and color
   const getTransactionStyle = (type: string) => {
     const styles: Record<string, { label: string; color: string; icon: any }> = {
-      earning: { label: 'عمولة', color: '#10B981', icon: ArrowUpRight },
-      withdrawal: { label: 'سحب', color: '#EF4444', icon: ArrowDownRight },
-      bonus: { label: 'مكافأة', color: '#F59E0B', icon: Gift },
-      adjustment: { label: 'تعديل', color: '#6B7280', icon: CheckCircle }
+      earning: { label: 'عمولة', color: colors.success, icon: ArrowUpRight },
+      withdrawal: { label: 'سحب', color: colors.error, icon: ArrowDownRight },
+      bonus: { label: 'مكافأة', color: colors.warning, icon: Gift },
+      adjustment: { label: 'تعديل', color: colors.onSurfaceVariant, icon: CheckCircle }
     }
     return styles[type] || styles.earning
-  }
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
   }
 
   // Handle withdrawal request
@@ -198,9 +188,9 @@ export default function AffiliateDashboardPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div 
                     className="w-12 h-12 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: '#10B98120' }}
+                    style={{ backgroundColor: colors.successContainer }}
                   >
-                    <DollarSign size={24} style={{ color: '#10B981' }} />
+                    <DollarSign size={24} style={{ color: colors.success }} />
                   </div>
                   <button
                     onClick={() => setShowWithdrawalModal(true)}
@@ -241,9 +231,9 @@ export default function AffiliateDashboardPage() {
               >
                 <div 
                   className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                  style={{ backgroundColor: '#3B82F620' }}
+                  style={{ backgroundColor: colors.infoContainer }}
                 >
-                  <TrendingUp size={24} style={{ color: '#3B82F6' }} />
+                  <TrendingUp size={24} style={{ color: colors.info }} />
                 </div>
                 <p 
                   className="text-sm mb-1"
@@ -270,9 +260,9 @@ export default function AffiliateDashboardPage() {
               >
                 <div 
                   className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                  style={{ backgroundColor: '#F59E0B20' }}
+                  style={{ backgroundColor: colors.warningContainer }}
                 >
-                  <Users size={24} style={{ color: '#F59E0B' }} />
+                  <Users size={24} style={{ color: colors.warning }} />
                 </div>
                 <p 
                   className="text-sm mb-1"
@@ -299,9 +289,9 @@ export default function AffiliateDashboardPage() {
               >
                 <div 
                   className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                  style={{ backgroundColor: '#8B5CF620' }}
+                  style={{ backgroundColor: colors.surfaceContainer }}
                 >
-                  <ShoppingBag size={24} style={{ color: '#8B5CF6' }} />
+                  <ShoppingBag size={24} style={{ color: colors.secondary }} />
                 </div>
                 <p 
                   className="text-sm mb-1"
@@ -471,10 +461,10 @@ export default function AffiliateDashboardPage() {
                               <span
                                 className="px-3 py-1 rounded-full text-xs font-medium"
                                 style={{
-                                  backgroundColor: transaction.status === 'completed' ? '#10B98120' : 
-                                                  transaction.status === 'pending' ? '#F59E0B20' : '#EF444420',
-                                  color: transaction.status === 'completed' ? '#10B981' : 
-                                        transaction.status === 'pending' ? '#F59E0B' : '#EF4444'
+                                  backgroundColor: transaction.status === 'completed' ? colors.successContainer : 
+                                                  transaction.status === 'pending' ? colors.warningContainer : colors.errorContainer,
+                                  color: transaction.status === 'completed' ? colors.success : 
+                                        transaction.status === 'pending' ? colors.warning : colors.error
                                 }}
                               >
                                 {transaction.status === 'completed' ? 'مكتمل' : 
@@ -485,7 +475,7 @@ export default function AffiliateDashboardPage() {
                               className="px-6 py-4 text-sm"
                               style={{ color: colors.onSurface }}
                             >
-                              {formatDate(transaction.created_at)}
+                              {formatDateTime(transaction.created_at)}
                             </td>
                           </tr>
                         )
@@ -547,7 +537,7 @@ export default function AffiliateDashboardPage() {
         {showWithdrawalModal && (
           <div 
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            style={{ backgroundColor: colors.overlay }}
             onClick={() => setShowWithdrawalModal(false)}
           >
             <div

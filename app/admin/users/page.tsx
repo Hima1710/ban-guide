@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAdminManager } from '@/hooks'
 import { showError, showConfirm } from '@/components/SweetAlert'
 import { LoadingSpinner, Card } from '@/components/common'
+import { HeadlineLarge, BodySmall } from '@/components/m3'
 import { Crown, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
@@ -49,10 +50,7 @@ export default function AdminUsersPage() {
 
   if (adminLoading || usersLoading) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
         <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
@@ -76,52 +74,27 @@ export default function AdminUsersPage() {
           >
             ← العودة للوحة الإدارة
           </Link>
-          <h1 
-            className="text-3xl font-bold"
-            style={{ color: colors.onSurfaceVariant }}
-          >
-            إدارة المستخدمين
-          </h1>
-          <p 
-            className="mt-2"
-            style={{ color: colors.onSurfaceVariant, opacity: 0.7 }}
-          >
-            عدد المستخدمين: {users.length}
-          </p>
+          <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>إدارة المستخدمين</HeadlineLarge>
+          <BodySmall color="onSurfaceVariant">عدد المستخدمين: {users.length}</BodySmall>
         </div>
 
-        <Card className="shadow-lg overflow-hidden" padding="none">
+        <Card className="shadow-lg overflow-hidden" padding="none" style={{ border: `1px solid ${colors.outline}` }}>
           <table className="w-full">
-            <thead style={{ backgroundColor: colors.surfaceVariant }}>
+            <thead style={{ backgroundColor: colors.surface }}>
               <tr>
-                <th 
-                  className="px-6 py-4 text-right text-base font-bold"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
                   المستخدم
                 </th>
-                <th 
-                  className="px-6 py-4 text-right text-base font-bold"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
                   البريد الإلكتروني
                 </th>
-                <th 
-                  className="px-6 py-4 text-right text-base font-bold"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
                   الهاتف
                 </th>
-                <th 
-                  className="px-6 py-4 text-right text-base font-bold"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
                   تاريخ التسجيل
                 </th>
-                <th 
-                  className="px-6 py-4 text-center text-base font-bold"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
+                <th className="px-6 py-4 text-center text-base font-bold" style={{ color: colors.onSurface }}>
                   الصلاحيات
                 </th>
               </tr>

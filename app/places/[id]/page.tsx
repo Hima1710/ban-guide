@@ -8,10 +8,11 @@ import { useAuth, usePlace, useProducts, useMessages } from '@/hooks'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
 import { extractYouTubeId, getYouTubeEmbedUrl } from '@/lib/youtube'
-import { MapPin, Phone, MessageCircle, Send, Image as ImageIcon, Users, X, Reply, Mic, Square, Loader2, Package, UserPlus, CheckCircle, Plus, Trash2, Video, Upload } from 'lucide-react'
+import { MapPin, Phone, MessageCircle, Image as ImageIcon, X, Package, UserPlus, CheckCircle, Plus, Trash2, Video, Upload } from 'lucide-react'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
-import { LoadingSpinner } from '@/components/common'
+import { LoadingSpinner, Input } from '@/components/common'
 import { AudioRecorder } from '@/lib/audio-recorder'
+import { TitleLarge, TitleMedium, BodyMedium, BodySmall, LabelMedium, LabelLarge, Button } from '@/components/m3'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function ProductIdHandler({ children }: { children: (productId: string | null) => React.ReactNode }) {
@@ -29,13 +30,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
   // Use custom hooks
   const { user } = useAuth()
-  const { colors, isDark } = useTheme()
-  const { place, loading: placeLoading, refresh: refreshPlace } = usePlace(placeId)
-  const { products, loading: productsLoading } = useProducts({ placeId, autoLoad: !!placeId })
+  const { colors } = useTheme()
+  const { place, loading: placeLoading } = usePlace(placeId)
+  const { products } = useProducts({ placeId, autoLoad: !!placeId })
   const { 
     messages, 
-    loading: messagesLoading, 
-    sendMessage: sendMessageHook,
     markAsRead,
     refresh: refreshMessages
   } = useMessages({ placeId, autoLoad: !!placeId })
@@ -61,7 +60,6 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const [activeTab, setActiveTab] = useState<'posts' | 'products'>('posts')
   const [posts, setPosts] = useState<any[]>([])
   const [showAddPostModal, setShowAddPostModal] = useState(false)
-  const [showAddProductModal, setShowAddProductModal] = useState(false)
   const [postData, setPostData] = useState({
     content: '',
     post_type: 'text' as 'text' | 'image' | 'video',
@@ -616,8 +614,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4" style={{ color: colors.onSurfaceVariant }}>جاري التحميل...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: colors.primary }}></div>
+        <p className="mt-4" style={{ color: colors.onSurfaceVariant }}>جاري التحميل...</p>
         </div>
       </div>
     )
@@ -625,8 +623,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
   if (!place) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="app-text-muted">المكان غير موجود</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <BodyMedium color="onSurfaceVariant">المكان غير موجود</BodyMedium>
       </div>
     )
   }
@@ -879,10 +877,13 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   }
 
   return (
-    <div className="min-h-screen app-bg-base">
+    <div className="min-h-screen" style={{ backgroundColor: colors.background }}>
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Place Header */}
-        <div className="app-card shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <div
+          className="shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 rounded-2xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
           <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
             {place.logo_url ? (
               <div className="flex-shrink-0 mx-auto md:mx-0">
@@ -898,7 +899,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     const parent = target.parentElement
                     if (parent && !parent.querySelector('.logo-placeholder')) {
                       const placeholder = document.createElement('div')
-                      placeholder.className = 'logo-placeholder w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg border-2 flex items-center justify-center text-white text-2xl sm:text-3xl md:text-4xl font-bold'
+                      placeholder.className = 'logo-placeholder w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-lg border-2 flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-bold'
                       placeholder.style.background = `linear-gradient(to bottom right, ${colors.primary}, ${colors.primaryDark})`
                       placeholder.style.borderColor = colors.outline
                       placeholder.style.color = colors.onPrimary
@@ -962,15 +963,18 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 <div className="mt-4 flex justify-center md:justify-start gap-2 flex-wrap">
                   {!isEmployee && (
                     hasPendingRequest ? (
-                      <div className="flex items-center gap-2 px-4 py-2 rounded-lg border app-border" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>
+                      <div
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border"
+                      style={{ background: colors.warningContainer, color: colors.warning, borderColor: colors.outline }}
+                    >
                         <CheckCircle size={18} />
                         <span className="text-sm font-medium">طلبك قيد المراجعة</span>
                       </div>
                     ) : (
                       <button
                         onClick={() => setShowEmployeeRequestModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
-                        style={{ background: colors.primary }}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-medium"
+                        style={{ background: colors.primary, color: colors.onPrimary }}
                         onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                         onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                       >
@@ -986,8 +990,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       params.set('openConversation', placeId)
                       router.push(`/places/${placeId}?${params.toString()}`)
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
-                    style={{ background: colors.secondary }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-medium"
+                    style={{ background: colors.secondary, color: colors.onSecondary }}
                     onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                     onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
@@ -1000,7 +1004,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               {/* Video - Small inline video */}
               {videoId && (
                 <div className="mt-4">
-                  <h3 className="text-sm font-semibold app-text-main mb-2">فيديو المكان</h3>
+                  <TitleMedium style={{ color: colors.onSurface }} className="mb-2">فيديو المكان</TitleMedium>
                   <div className="aspect-video rounded-lg overflow-hidden max-w-sm mx-auto md:mx-0">
                     <iframe
                       src={getYouTubeEmbedUrl(videoId)}
@@ -1017,117 +1021,126 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
         {/* Employee Request Modal */}
         {showEmployeeRequestModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="app-card shadow-xl rounded-3xl max-w-md w-full p-6">
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: colors.overlay }}>
+            <div
+              className="shadow-xl rounded-3xl max-w-md w-full p-6"
+              style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+            >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold app-text-main">طلب انضمام كموظف</h3>
+                <TitleLarge style={{ color: colors.onSurface }}>طلب انضمام كموظف</TitleLarge>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowEmployeeRequestModal(false)
                     setEmployeePhone('')
                   }}
-                  className="transition-colors hover:opacity-70"
+                  className="transition-colors hover:opacity-70 p-2 rounded-full"
                   style={{ color: colors.onSurfaceVariant }}
+                  aria-label="إغلاق"
                 >
                   <X size={24} />
                 </button>
               </div>
-              
-              <p className="app-text-muted mb-4">
+              <BodyMedium color="onSurfaceVariant" className="mb-4">
                 أدخل رقم هاتفك لإرسال طلب الانضمام كموظف في {place.name_ar}
-              </p>
-              
+              </BodyMedium>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
-                  رقم الهاتف
-                </label>
-                <input
+                <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">رقم الهاتف</LabelMedium>
+                <Input
                   type="tel"
                   value={employeePhone}
                   onChange={(e) => setEmployeePhone(e.target.value)}
                   placeholder="مثال: 01234567890"
-                  className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                  style={{ borderColor: 'var(--border-color)' }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                  variant="outlined"
+                  shape="large"
+                  className="w-full"
                 />
               </div>
-              
               <div className="flex gap-3">
-                <button
-                  onClick={handleEmployeeRequest}
-                  className="flex-1 px-6 py-3 text-white rounded-full transition-colors font-medium"
-                  style={{ background: colors.primary }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
+                <Button variant="filled" shape="full" fullWidth onClick={handleEmployeeRequest}>
                   إرسال الطلب
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="filled-tonal"
+                  shape="large"
                   onClick={() => {
                     setShowEmployeeRequestModal(false)
                     setEmployeePhone('')
                   }}
-                  className="px-4 py-2 rounded-lg transition-colors app-bg-surface app-hover-bg app-text-main"
                 >
                   إلغاء
-                </button>
+                </Button>
               </div>
             </div>
           </div>
         )}
 
         {/* Posts and Products Tabs */}
-        <div className="app-card shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <div
+          className="shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
           {/* Tabs */}
-          <div className="flex justify-between items-center mb-4 border-b app-border">
-            <div className="flex gap-2">
+          <div
+            className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b"
+            style={{ borderColor: colors.outline }}
+          >
+            <div className="flex gap-1 sm:gap-2">
               <button
+                type="button"
                 onClick={() => setActiveTab('posts')}
-                className={`px-4 py-2 font-medium transition-colors ${
-                  activeTab === 'posts'
-                    ? 'icon-primary border-b-2 border-primary'
-                    : 'app-text-muted app-hover-text'
-                }`}
+                className="px-3 sm:px-4 py-2.5 transition-colors border-b-2 rounded-t min-w-0"
+                style={{
+                  color: activeTab === 'posts' ? colors.primary : colors.onSurfaceVariant,
+                  borderBottomColor: activeTab === 'posts' ? colors.primary : 'transparent',
+                  marginBottom: '-1px',
+                }}
+                onMouseEnter={(e) => { if (activeTab !== 'posts') e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
               >
-                المنشورات ({posts.length})
+                <LabelLarge as="span" style={{ color: 'inherit' }}>المنشورات ({posts.length})</LabelLarge>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('products')}
-                className={`px-4 py-2 font-medium transition-colors ${
-                  activeTab === 'products'
-                    ? 'icon-primary border-b-2 border-primary'
-                    : 'app-text-muted app-hover-text'
-                }`}
+                className="px-3 sm:px-4 py-2.5 transition-colors border-b-2 rounded-t min-w-0"
+                style={{
+                  color: activeTab === 'products' ? colors.primary : colors.onSurfaceVariant,
+                  borderBottomColor: activeTab === 'products' ? colors.primary : 'transparent',
+                  marginBottom: '-1px',
+                }}
+                onMouseEnter={(e) => { if (activeTab !== 'products') e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
               >
-                المنتجات ({products.length})
+                <LabelLarge as="span" style={{ color: 'inherit' }}>المنتجات ({products.length})</LabelLarge>
               </button>
             </div>
             
             {/* Add Buttons */}
             {canManagePosts && activeTab === 'posts' && (
-              <button
+              <Button
+                variant="filled"
+                shape="full"
+                size="sm"
                 onClick={() => setShowAddPostModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
-                style={{ background: colors.primary }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                className="flex items-center gap-2 shrink-0"
               >
                 <Plus size={16} />
-                <span>إضافة منشور</span>
-              </button>
+                إضافة منشور
+              </Button>
             )}
             {canManageProducts && activeTab === 'products' && (
-              <button
+              <Button
+                variant="filled"
+                shape="full"
+                size="sm"
                 onClick={() => router.push(`/dashboard/places/${placeId}/products/new`)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-full transition-colors text-sm font-medium"
-                style={{ background: colors.secondary }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                className="flex items-center gap-2 shrink-0"
+                style={{ backgroundColor: colors.secondary, color: colors.onSecondary }}
               >
                 <Plus size={16} />
-                <span>إضافة منتج</span>
-              </button>
+                إضافة منتج
+              </Button>
             )}
           </div>
 
@@ -1135,15 +1148,18 @@ function PlacePageContent({ productId }: { productId: string | null }) {
           {activeTab === 'posts' && (
             <div>
               {posts.length === 0 ? (
-                <p className="text-center app-text-muted py-8">
+                <BodyMedium color="onSurfaceVariant" className="text-center py-8">
                   لا توجد منشورات حالياً
-                </p>
+                </BodyMedium>
               ) : (
                 <div className="space-y-3">
                   {posts.map((post) => (
                     <div
                       key={post.id}
-                      className="border app-border rounded-lg p-3 sm:p-4 relative"
+                      className="border rounded-2xl p-3 sm:p-4 relative transition-colors"
+                      style={{ borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
                       {/* Delete Button */}
                       {canManagePosts && (
@@ -1161,9 +1177,9 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       )}
                       
                       {/* Post Content */}
-                      <p className="text-sm app-text-main mb-3 whitespace-pre-wrap">
+                      <BodySmall style={{ color: colors.onSurface }} className="mb-3 whitespace-pre-wrap">
                         {post.content}
-                      </p>
+                      </BodySmall>
 
                       {/* Post Image */}
                       {post.post_type === 'image' && post.image_url && (
@@ -1199,7 +1215,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       )}
 
                       {/* Post Date */}
-                      <p className="text-xs app-text-muted mt-2">
+                      <BodySmall color="onSurfaceVariant" className="mt-2">
                         {new Date(post.created_at).toLocaleDateString('ar-EG', {
                           year: 'numeric',
                           month: 'long',
@@ -1207,7 +1223,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
-                      </p>
+                      </BodySmall>
                     </div>
                   ))}
                 </div>
@@ -1219,17 +1235,21 @@ function PlacePageContent({ productId }: { productId: string | null }) {
           {activeTab === 'products' && (
             <div>
               {products.length === 0 ? (
-                <p className="text-center app-text-muted py-8">
+                <BodyMedium color="onSurfaceVariant" className="text-center py-8">
                   لا توجد منتجات حالياً
-                </p>
+                </BodyMedium>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {products.map((product) => (
                     <div
                       key={product.id}
-                      className={`border rounded-lg p-4 transition-all relative ${
-                        productId === product.id ? 'ring-2 ring-blue-500' : ''
-                      }`}
+                      className="border rounded-2xl p-4 transition-all relative"
+                      style={{
+                        borderColor: colors.outline,
+                        ...(productId === product.id ? { boxShadow: `0 0 0 2px ${colors.primary}` } : {}),
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
                       {/* Delete Button */}
                       {canManageProducts && (
@@ -1252,25 +1272,24 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           className="w-full h-40 sm:h-48 object-cover rounded-lg mb-2 sm:mb-3"
                         />
                       )}
-                      <h3 className="font-bold text-base sm:text-lg mb-1.5 sm:mb-2 app-text-main">
+                      <TitleMedium style={{ color: colors.onSurface }} className="mb-1.5 sm:mb-2">
                         {product.name_ar}
-                      </h3>
-                      <p className="app-text-muted text-xs sm:text-sm mb-2 line-clamp-2">
-                        {product.description_ar}
-                      </p>
+                      </TitleMedium>
+                      <BodySmall color="onSurfaceVariant" className="mb-2 line-clamp-2">{product.description_ar}</BodySmall>
                       {product.price && (
-                        <p className="icon-primary font-semibold">
+                        <BodyMedium style={{ color: colors.primary }} className="font-semibold">
                           {product.price} {product.currency}
-                        </p>
+                        </BodyMedium>
                       )}
                       {product.variants && product.variants.length > 0 && (
                         <div className="mt-2">
-                          <p className="text-sm app-text-muted mb-1">المتغيرات المتاحة:</p>
+                          <BodySmall color="onSurfaceVariant" className="mb-1">المتغيرات المتاحة:</BodySmall>
                           <div className="flex flex-wrap gap-2">
                             {product.variants.map((variant) => (
                               <span
                                 key={variant.id}
-                                className="px-2 py-1 rounded text-xs app-bg-surface"
+                                className="px-2 py-1 rounded text-xs"
+                                style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}
                               >
                                 {variant.variant_name_ar}: {variant.variant_value}
                               </span>
@@ -1290,11 +1309,18 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
       {/* Add Post Modal */}
       {showAddPostModal && canManagePosts && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="app-card shadow-xl rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 app-card border-b app-border p-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold app-text-main">إضافة منشور جديد</h3>
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: colors.overlay }}>
+          <div
+            className="shadow-xl rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
+            <div
+              className="sticky top-0 p-4 flex items-center justify-between border-b"
+              style={{ backgroundColor: colors.surface, borderColor: colors.outline }}
+            >
+              <TitleLarge style={{ color: colors.onSurface }}>إضافة منشور جديد</TitleLarge>
               <button
+                type="button"
                 onClick={() => {
                   setShowAddPostModal(false)
                   setPostData({ content: '', post_type: 'text', image_url: '', video_url: '' })
@@ -1302,8 +1328,9 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   setVideoTitle('')
                   setVideoUploadMethod('link')
                 }}
-                className="transition-colors hover:opacity-70"
+                className="transition-colors hover:opacity-70 p-2 rounded-full"
                 style={{ color: colors.onSurfaceVariant }}
+                aria-label="إغلاق"
               >
                 <X size={24} />
               </button>
@@ -1312,40 +1339,41 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             <div className="p-6 space-y-4">
               {/* Post Type Selection */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
-                  نوع المنشور
-                </label>
+                <LabelMedium style={{ color: colors.onSurfaceVariant }} className="block mb-2">نوع المنشور</LabelMedium>
                 <div className="flex gap-2">
                   <button
+                    type="button"
                     onClick={() => setPostData({ ...postData, post_type: 'text', image_url: '', video_url: '' })}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    className="px-4 py-2 rounded-xl transition-colors"
+                    style={
                       postData.post_type === 'text'
-                        ? 'text-white'
-                        : 'app-bg-surface app-text-main'
-                    }`}
-                    style={postData.post_type === 'text' ? { background: 'var(--primary-color)' } : {}}
+                        ? { background: colors.primary, color: colors.onPrimary }
+                        : { background: colors.surfaceContainer, color: colors.onSurface }
+                    }
                   >
                     نص
                   </button>
                   <button
+                    type="button"
                     onClick={() => setPostData({ ...postData, post_type: 'image', video_url: '' })}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    className="px-4 py-2 rounded-xl transition-colors"
+                    style={
                       postData.post_type === 'image'
-                        ? 'text-white'
-                        : 'app-bg-surface app-text-main'
-                    }`}
-                    style={postData.post_type === 'image' ? { background: 'var(--primary-color)' } : {}}
+                        ? { background: colors.primary, color: colors.onPrimary }
+                        : { background: colors.surfaceContainer, color: colors.onSurface }
+                    }
                   >
                     صورة
                   </button>
                   <button
+                    type="button"
                     onClick={() => setPostData({ ...postData, post_type: 'video', image_url: '' })}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    className="px-4 py-2 rounded-xl transition-colors"
+                    style={
                       postData.post_type === 'video'
-                        ? 'text-white'
-                        : 'app-bg-surface app-text-main'
-                    }`}
-                    style={postData.post_type === 'video' ? { background: 'var(--primary-color)' } : {}}
+                        ? { background: colors.primary, color: colors.onPrimary }
+                        : { background: colors.surfaceContainer, color: colors.onSurface }
+                    }
                   >
                     فيديو
                   </button>
@@ -1354,18 +1382,16 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
               {/* Content */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.onSurfaceVariant }}>
-                  المحتوى
-                </label>
+                <LabelMedium style={{ color: colors.onSurfaceVariant }} className="block mb-2">المحتوى</LabelMedium>
                 <textarea
                   value={postData.content}
                   onChange={(e) => setPostData({ ...postData, content: e.target.value })}
                   placeholder="اكتب محتوى المنشور هنا..."
                   rows={6}
-                  className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                  style={{ borderColor: 'var(--border-color)' }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                  className="w-full px-4 py-2 rounded-2xl border-2 transition-colors focus:outline-none"
+                  style={{ backgroundColor: colors.surface, borderColor: colors.outline, color: colors.onSurface }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = colors.primary }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = colors.outline }}
                 />
               </div>
 
@@ -1380,7 +1406,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       <img
                         src={postData.image_url}
                         alt="Preview"
-                        className="max-w-full h-64 object-contain rounded-lg border app-border"
+                        className="max-w-full h-64 object-contain rounded-lg border"
+                        style={{ borderColor: colors.outline }}
                       />
                       <button
                         onClick={() => setPostData({ ...postData, image_url: '' })}
@@ -1394,11 +1421,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       </button>
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer app-border app-hover-bg">
-                      <ImageIcon className="w-8 h-8 mb-2" style={{ color: 'var(--text-muted)' }} />
-                      <span className="text-sm app-text-muted">
+                    <label
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors hover:opacity-90"
+                      style={{ borderColor: colors.outline, backgroundColor: colors.surfaceContainer }}
+                    >
+                      <ImageIcon className="w-8 h-8 mb-2" style={{ color: colors.onSurfaceVariant }} />
+                      <BodySmall color="onSurfaceVariant" className="text-sm">
                         {uploadingImage ? 'جاري الرفع...' : 'انقر لرفع صورة'}
-                      </span>
+                      </BodySmall>
                       <input
                         type="file"
                         accept="image/*"
@@ -1426,12 +1456,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           setSelectedVideoFile(null)
                           setVideoTitle('')
                         }}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          videoUploadMethod === 'link'
-                            ? 'text-white'
-                            : 'app-bg-surface app-text-main'
-                        }`}
-                        style={videoUploadMethod === 'link' ? { background: 'var(--primary-color)' } : {}}
+                        className="px-4 py-2 rounded-lg transition-colors"
+                        style={videoUploadMethod === 'link' ? { background: colors.primary, color: colors.onPrimary } : { background: colors.surfaceContainer, color: colors.onSurface }}
                       >
                         رابط YouTube
                       </button>
@@ -1440,12 +1466,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           setVideoUploadMethod('upload')
                           setPostData({ ...postData, video_url: '' })
                         }}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          videoUploadMethod === 'upload'
-                            ? 'text-white'
-                            : 'app-bg-surface app-text-main'
-                        }`}
-                        style={videoUploadMethod === 'upload' ? { background: 'var(--primary-color)' } : {}}
+                        className="px-4 py-2 rounded-lg transition-colors"
+                        style={videoUploadMethod === 'upload' ? { background: colors.primary, color: colors.onPrimary } : { background: colors.surfaceContainer, color: colors.onSurface }}
                       >
                         رفع من الجهاز
                       </button>
@@ -1463,10 +1485,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         value={postData.video_url}
                         onChange={(e) => setPostData({ ...postData, video_url: e.target.value })}
                         placeholder="https://www.youtube.com/watch?v=..."
-                        className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                  style={{ borderColor: 'var(--border-color)' }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        className="w-full px-4 py-2 rounded-2xl border-2 transition-colors focus:outline-none"
+                  style={{ backgroundColor: colors.surface, borderColor: colors.outline, color: colors.onSurface }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = colors.primary }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = colors.outline }}
                       />
                     </div>
                   )}
@@ -1481,15 +1503,15 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         </label>
                         {selectedVideoFile ? (
                           <div className="space-y-2">
-                            <div className="flex items-center gap-2 p-3 app-bg-surface rounded-lg">
+                            <div className="flex items-center gap-2 p-3 rounded-lg" style={{ backgroundColor: colors.surfaceContainer }}>
                               <Video size={20} style={{ color: colors.onSurfaceVariant }} />
                               <div className="flex-1">
-                                <p className="text-sm font-medium app-text-main">
+                                <BodySmall style={{ color: colors.onSurface }} className="font-medium">
                                   {selectedVideoFile!.name}
-                                </p>
-                                <p className="text-xs app-text-muted">
+                                </BodySmall>
+                                <BodySmall color="onSurfaceVariant" className="text-xs">
                                   الحجم: {(selectedVideoFile!.size / (1024 * 1024)).toFixed(2)} MB
-                                </p>
+                                </BodySmall>
                               </div>
                               <button
                                 onClick={() => {
@@ -1505,8 +1527,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             <button
                               onClick={handleVideoUpload}
                               disabled={uploadingVideo || !videoTitle.trim()}
-                              className="w-full px-4 py-2 text-white rounded-lg transition-colors font-medium disabled:cursor-not-allowed"
-                              style={{ background: (uploadingVideo || !videoTitle.trim()) ? 'var(--text-muted)' : 'var(--secondary-color)' }}
+                              className="w-full px-4 py-2 rounded-lg transition-colors font-medium disabled:cursor-not-allowed"
+                              style={{ background: (uploadingVideo || !videoTitle.trim()) ? colors.onSurfaceVariant : colors.secondary, color: (uploadingVideo || !videoTitle.trim()) ? colors.onSurface : colors.onSecondary }}
                               onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '0.9')}
                               onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '1')}
                             >
@@ -1514,14 +1536,17 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             </button>
                           </div>
                         ) : (
-                          <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer app-border app-hover-bg">
+                          <label
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors hover:opacity-90"
+                          style={{ borderColor: colors.outline, backgroundColor: colors.surfaceContainer }}
+                        >
                             <Upload className="w-8 h-8 mb-2" style={{ color: colors.onSurfaceVariant }} />
-                            <span className="text-sm app-text-muted">
+                            <BodySmall color="onSurfaceVariant" className="text-sm">
                               انقر لاختيار فيديو
-                            </span>
-                            <span className="text-xs app-text-muted mt-1">
+                            </BodySmall>
+                            <BodySmall color="onSurfaceVariant" className="text-xs mt-1">
                               الحد الأقصى: 2GB
-                            </span>
+                            </BodySmall>
                             <input
                               type="file"
                               accept="video/*"
@@ -1544,15 +1569,15 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                             value={videoTitle}
                             onChange={(e) => setVideoTitle(e.target.value)}
                             placeholder="أدخل عنوان الفيديو"
-                            className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                  style={{ borderColor: 'var(--border-color)' }}
-                  onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                  onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                            className="w-full px-4 py-2 rounded-2xl border-2 transition-colors focus:outline-none"
+                  style={{ backgroundColor: colors.surface, borderColor: colors.outline, color: colors.onSurface }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = colors.primary }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = colors.outline }}
                             maxLength={100}
                           />
-                          <p className="text-xs app-text-muted mt-1">
+                          <BodySmall color="onSurfaceVariant" className="mt-1">
                             {videoTitle.length}/100
-                          </p>
+                          </BodySmall>
                         </div>
                       )}
                     </div>
@@ -1565,8 +1590,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 <button
                   onClick={handleSavePost}
                   disabled={uploadingImage || uploadingVideo || !postData.content.trim() || (postData.post_type === 'video' && videoUploadMethod === 'upload' && !postData.video_url)}
-                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors font-medium disabled:cursor-not-allowed"
-                  style={{ background: (uploadingImage || uploadingVideo || !postData.content.trim() || (postData.post_type === 'video' && videoUploadMethod === 'upload' && !postData.video_url)) ? 'var(--text-muted)' : 'var(--primary-color)' }}
+                  className="flex-1 px-4 py-2 rounded-lg transition-colors font-medium disabled:cursor-not-allowed"
+                  style={{ background: (uploadingImage || uploadingVideo || !postData.content.trim() || (postData.post_type === 'video' && videoUploadMethod === 'upload' && !postData.video_url)) ? colors.onSurfaceVariant : colors.primary, color: colors.onPrimary }}
                   onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '0.9')}
                   onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '1')}
                 >
@@ -1580,7 +1605,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     setVideoTitle('')
                     setVideoUploadMethod('link')
                   }}
-                  className="px-4 py-2 rounded-lg transition-colors app-bg-surface app-hover-bg app-text-main"
+                  className="px-4 py-2 rounded-xl transition-colors"
+                  style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}
                 >
                   إلغاء
                 </button>
@@ -1593,13 +1619,15 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       {/* Image Enlargement Modal */}
       {enlargedImage && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: colors.overlay }}
           onClick={() => setEnlargedImage(null)}
         >
           <div className="relative max-w-7xl max-h-full">
             <button
               onClick={() => setEnlargedImage(null)}
-              className="absolute -top-12 right-0 text-white hover:opacity-70 transition-opacity"
+              className="absolute -top-12 right-0 hover:opacity-70 transition-opacity"
+              style={{ color: colors.onPrimary }}
               aria-label="إغلاق"
             >
               <X size={32} />
@@ -1619,14 +1647,18 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 z-40"
+            style={{ backgroundColor: colors.overlay }}
             onClick={() => setShowProductPicker(false)}
           />
           {/* Bottom Sheet */}
-          <div className="fixed bottom-0 left-0 right-0 app-card rounded-t-2xl shadow-2xl z-50 max-h-[80vh] flex flex-col animate-slide-up">
+          <div
+          className="fixed bottom-0 left-0 right-0 rounded-t-2xl shadow-2xl z-50 max-h-[80vh] flex flex-col animate-slide-up"
+          style={{ backgroundColor: colors.surface, borderTop: `1px solid ${colors.outline}` }}
+        >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-12 h-1 rounded-full" style={{ background: 'var(--border-color)' }} />
+              <div className="w-12 h-1 rounded-full" style={{ background: colors.outline }} />
             </div>
             
             {/* Header */}
@@ -1635,7 +1667,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 <h3 className="text-lg font-bold" style={{ color: colors.onSurfaceVariant }}>اختر منتج للمشاركة</h3>
                 <button
                   onClick={() => setShowProductPicker(false)}
-                  className="p-2 rounded-full transition-colors app-hover-bg"
+                  className="p-2 rounded-full transition-colors hover:opacity-80"
+                  style={{ color: colors.onSurfaceVariant }}
                 >
                   <X size={20} />
                 </button>
@@ -1653,11 +1686,13 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         setSelectedProduct(product)
                         setShowProductPicker(false)
                       }}
-                      className="p-3 border-2 rounded-lg text-right hover:app-hover-bg transition-all"
+                      className="p-3 border-2 rounded-xl text-right transition-all hover:opacity-90"
                       style={{
                         borderColor: selectedProduct?.id === product.id ? colors.primary : colors.outline,
-                        backgroundColor: selectedProduct?.id === product.id ? `${colors.primary}10` : 'transparent',
+                        backgroundColor: selectedProduct?.id === product.id ? `rgba(${colors.primaryRgb}, 0.1)` : 'transparent',
                       }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = selectedProduct?.id === product.id ? `rgba(${colors.primaryRgb}, 0.15)` : colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = selectedProduct?.id === product.id ? `rgba(${colors.primaryRgb}, 0.1)` : 'transparent' }}
                     >
                       {product.images && product.images.length > 0 && (
                         <img
@@ -1680,7 +1715,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               ) : (
                 <div className="text-center py-8">
                   <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurfaceVariant }} />
-                  <p className="app-text-muted">لا توجد منتجات متاحة</p>
+                  <BodyMedium color="onSurfaceVariant">لا توجد منتجات متاحة</BodyMedium>
                 </div>
               )}
             </div>

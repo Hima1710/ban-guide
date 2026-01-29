@@ -13,5 +13,7 @@ export { useMessages } from './useMessages'
 export { useProducts } from './useProducts'
 export { useAdminManager } from './useAdminManager'
 export { useAffiliateManager } from './useAffiliateManager'
+export { useUnifiedFeed } from './useUnifiedFeed'
+export type { EntityType, UnifiedFeedItem, PlaceFeedItem, PostFeedItem, ProductFeedItem, UseUnifiedFeedOptions, UseUnifiedFeedReturn } from './useUnifiedFeed'
 
 // Add other hooks as they are created

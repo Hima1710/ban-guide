@@ -2,115 +2,47 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
-import { showError, showSuccess, showConfirm, showLoading, closeLoading } from '@/components/SweetAlert'
+import { useAdminManager } from '@/hooks'
+import { showError, showConfirm } from '@/components/SweetAlert'
+import { LoadingSpinner } from '@/components/common'
+import { Card } from '@/components/common'
+import { HeadlineLarge, BodySmall, TitleLarge, Button } from '@/components/m3'
+import Link from 'next/link'
 import { Check, X, Eye } from 'lucide-react'
 
 export default function AdminSubscriptionsPage() {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [subscriptions, setSubscriptions] = useState<any[]>([])
+  const { colors } = useTheme()
+  const {
+    isAdmin,
+    loading: adminLoading,
+    subscriptions,
+    subscriptionsLoading,
+    loadSubscriptions,
+    approveSubscription,
+    rejectSubscription,
+  } = useAdminManager({ autoLoadSubscriptions: true })
+
   const [selectedSubscription, setSelectedSubscription] = useState<any>(null)
   const [showImageModal, setShowImageModal] = useState(false)
 
   useEffect(() => {
-    checkAdmin()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (user) {
-      loadSubscriptions()
-    }
-  }, [user])
-
-  const checkAdmin = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-
-      setUser(user)
-
-      // Check if user is admin
-      const { data: profileData, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (error) {
-        console.error('Error loading profile:', error)
-        router.push('/dashboard')
-        return
-      }
-
-      if (!profileData?.is_admin) {
-        showError('ليس لديك صلاحيات للوصول إلى لوحة الإدارة')
-        router.push('/dashboard')
-        return
-      }
-    } catch (error: any) {
-      showError(error.message)
+    if (!adminLoading && !isAdmin) {
+      showError('ليس لديك صلاحيات للوصول إلى هذه الصفحة')
       router.push('/dashboard')
-    } finally {
-      setLoading(false)
     }
-  }
-
-  const loadSubscriptions = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select('*, package:packages(*), user:user_profiles(*)')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      
-      setSubscriptions(data || [])
-    } catch (error: any) {
-      console.error('Error loading subscriptions:', error)
-      showError(error.message || 'حدث خطأ في تحميل الاشتراكات')
-    }
-  }
+  }, [isAdmin, adminLoading, router])
 
   const handleApprove = async (subscription: any) => {
     const confirmed = await showConfirm(
       `هل أنت متأكد من الموافقة على اشتراك ${subscription.user?.full_name || subscription.user?.email || 'المستخدم'} في باقة ${subscription.package?.name_ar || ''}؟`
     )
-
     if (!confirmed.isConfirmed) return
-
-    showLoading('جاري الموافقة على الاشتراك...')
-    try {
-      const { error } = await supabase
-        .from('user_subscriptions')
-        .update({
-          status: 'approved',
-          is_active: true,
-        })
-        .eq('id', subscription.id)
-
-      if (error) {
-        console.error('❌ [APPROVE ERROR]', error)
-        throw error
-      }
-
-      closeLoading()
-      showSuccess('تم الموافقة على الاشتراك بنجاح!')
-      
-      // Reload subscriptions after a short delay to ensure DB is updated
-      await new Promise(resolve => setTimeout(resolve, 500))
-      await loadSubscriptions()
-    } catch (error: any) {
-      console.error('❌ [APPROVE ERROR]', error)
-      closeLoading()
-      showError(error.message || 'حدث خطأ في الموافقة على الاشتراك')
+    const ok = await approveSubscription(subscription.id)
+    if (ok) {
+      setShowImageModal(false)
+      setSelectedSubscription(null)
     }
   }
 
@@ -118,229 +50,267 @@ export default function AdminSubscriptionsPage() {
     const confirmed = await showConfirm(
       `هل أنت متأكد من رفض اشتراك ${subscription.user?.full_name || subscription.user?.email || 'المستخدم'} في باقة ${subscription.package?.name_ar || ''}؟`
     )
-
     if (!confirmed.isConfirmed) return
-
-    showLoading('جاري رفض الاشتراك...')
-    try {
-      const { error } = await supabase
-        .from('user_subscriptions')
-        .update({
-          status: 'rejected',
-          is_active: false,
-        })
-        .eq('id', subscription.id)
-
-      if (error) {
-        console.error('❌ [REJECT ERROR]', error)
-        throw error
-      }
-
-      closeLoading()
-      showSuccess('تم رفض الاشتراك بنجاح!')
-      
-      // Reload subscriptions after a short delay to ensure DB is updated
-      await new Promise(resolve => setTimeout(resolve, 500))
-      await loadSubscriptions()
-    } catch (error: any) {
-      console.error('❌ [REJECT ERROR]', error)
-      closeLoading()
-      showError(error.message || 'حدث خطأ في رفض الاشتراك')
+    const ok = await rejectSubscription(subscription.id)
+    if (ok) {
+      setShowImageModal(false)
+      setSelectedSubscription(null)
     }
   }
 
   const getStatusBadge = (status: string) => {
+    const base = 'px-3 py-1 rounded-full text-sm font-medium'
     switch (status) {
       case 'pending':
-        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-warning">قيد المراجعة</span>
+        return (
+          <span
+            className={base}
+            style={{ backgroundColor: colors.warningContainer, color: colors.warning }}
+          >
+            قيد المراجعة
+          </span>
+        )
       case 'approved':
-        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-success">موافق عليه</span>
+        return (
+          <span
+            className={base}
+            style={{ backgroundColor: colors.successContainer, color: colors.success }}
+          >
+            موافق عليه
+          </span>
+        )
       case 'rejected':
-        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-danger">مرفوض</span>
+        return (
+          <span
+            className={base}
+            style={{ backgroundColor: colors.errorContainer, color: colors.error }}
+          >
+            مرفوض
+          </span>
+        )
       default:
-        return <span className="px-3 py-1 rounded-full text-sm font-medium badge-muted">غير معروف</span>
+        return (
+          <span
+            className={base}
+            style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurfaceVariant }}
+          >
+            غير معروف
+          </span>
+        )
     }
   }
 
-  if (loading) {
+  if (adminLoading || subscriptionsLoading) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: colors.background }}
       >
-        <div 
-          className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: colors.primary }}
-        ></div>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
   }
 
+  if (!isAdmin) {
+    return null
+  }
+
   return (
-    <div 
+    <div
       className="min-h-screen py-8"
       style={{ backgroundColor: colors.background }}
     >
       <div className="container mx-auto px-4">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2 app-text-main">مراجعة الاشتراكات</h1>
-          <p className="app-text-muted">مراجعة وتأكيد طلبات الاشتراك في الباقات</p>
+          <Link
+            href="/admin"
+            className="mb-4 inline-block hover:underline"
+            style={{ color: colors.primary }}
+          >
+            ← العودة للوحة الإدارة
+          </Link>
+          <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>
+            مراجعة الاشتراكات
+          </HeadlineLarge>
+          <BodySmall color="onSurfaceVariant">
+            مراجعة وتأكيد طلبات الاشتراك في الباقات
+          </BodySmall>
         </div>
 
-        {/* All Subscriptions */}
-        <div>
-          <h2 className="text-xl font-bold mb-4 app-text-main">جميع الاشتراكات ({subscriptions.length})</h2>
-          <div className="app-card shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full" >
-                <thead className="app-bg-surface">
-                  <tr >
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">المستخدم</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">الباقة</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">المبلغ</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">الحالة</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">تاريخ الطلب</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">تاريخ الانتهاء</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider app-text-muted">الإيصال</th>
-                  </tr>
-                </thead>
-                <tbody >
-                  {subscriptions.map((subscription) => (
-                    <tr key={subscription.id} className="app-hover-bg" >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm app-text-main">
-                        {subscription.user?.full_name || subscription.user?.email || 'مستخدم'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm app-text-main">
-                        {subscription.package?.name_ar || 'باقة غير معروفة'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm app-text-main">
-                        {subscription.amount_paid} EGP
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(subscription.status)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm app-text-muted">
-                        {new Date(subscription.created_at).toLocaleDateString('ar-EG')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm app-text-muted">
-                        {subscription.expires_at ? (
-                          new Date(subscription.expires_at).toLocaleDateString('ar-EG', {
+        <Card className="shadow-lg overflow-hidden" padding="none" style={{ border: `1px solid ${colors.outline}` }}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead style={{ backgroundColor: colors.surface }}>
+                <tr>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
+                    المستخدم
+                  </th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
+                    الباقة
+                  </th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
+                    المبلغ
+                  </th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
+                    الحالة
+                  </th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
+                    تاريخ الطلب
+                  </th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
+                    تاريخ الانتهاء
+                  </th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>
+                    الإيصال
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {subscriptions.map((sub) => (
+                  <tr
+                    key={sub.id}
+                    className="transition-colors"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.surfaceContainer
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                    }}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.onSurface }}>
+                      {sub.user?.full_name || sub.user?.email || 'مستخدم'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.onSurface }}>
+                      {sub.package?.name_ar || 'باقة غير معروفة'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.onSurface }}>
+                      {sub.amount_paid} EGP
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(sub.status)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.onSurfaceVariant }}>
+                      {new Date(sub.created_at).toLocaleDateString('ar-EG')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.onSurfaceVariant }}>
+                      {sub.expires_at
+                        ? new Date(sub.expires_at).toLocaleDateString('ar-EG', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
                           })
-                        ) : (
-                          <span className="app-text-subtle">غير محدد</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {subscription.receipt_image_url ? (
-                          <button
-                            onClick={() => {
-                              setSelectedSubscription(subscription)
-                              setShowImageModal(true)
-                            }}
-                            className="flex items-center gap-1 icon-primary"
-                            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                          >
-                            <Eye size={16} />
-                            <span>عرض</span>
-                          </button>
-                        ) : (
-                          <span className="app-text-subtle">لا يوجد</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {subscriptions.length === 0 && (
-              <div className="text-center py-12 app-text-muted">
-                لا توجد اشتراكات
-              </div>
-            )}
+                        : 'غير محدد'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {sub.receipt_image_url ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedSubscription(sub)
+                            setShowImageModal(true)
+                          }}
+                          className="flex items-center gap-1 transition-opacity hover:opacity-80"
+                          style={{ color: colors.primary }}
+                        >
+                          <Eye size={16} />
+                          <span>عرض</span>
+                        </button>
+                      ) : (
+                        <span style={{ color: colors.onSurfaceVariant }}>لا يوجد</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+          {subscriptions.length === 0 && (
+            <div className="py-12 text-center" style={{ color: colors.onSurfaceVariant }}>
+              <BodySmall>لا توجد اشتراكات</BodySmall>
+            </div>
+          )}
+        </Card>
 
-        {/* Image Modal */}
         {showImageModal && selectedSubscription && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="app-card shadow-xl rounded-3xl max-w-4xl w-full p-6">
+          <div
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            style={{ backgroundColor: colors.overlay }}
+          >
+            <div
+              className="shadow-xl rounded-3xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto"
+              style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+            >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold app-text-main">صورة إيصال الدفع</h3>
+                <TitleLarge style={{ color: colors.onSurface }}>صورة إيصال الدفع</TitleLarge>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowImageModal(false)
                     setSelectedSubscription(null)
                   }}
-                  className="app-text-muted app-hover-bg rounded-full p-2"
+                  className="rounded-full p-2 transition-colors hover:opacity-80"
+                  style={{ color: colors.onSurfaceVariant }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.surfaceContainer
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }}
                 >
                   <X size={24} />
                 </button>
               </div>
-              <div className="mb-4">
-                <p className="app-text-muted mb-1">
-                  <span className="font-semibold">المستخدم:</span> {selectedSubscription.user?.full_name || selectedSubscription.user?.email || 'مستخدم'}
-                </p>
-                <p className="app-text-muted mb-1">
-                  <span className="font-semibold">الباقة:</span> {selectedSubscription.package?.name_ar || 'باقة غير معروفة'}
-                </p>
-                <p className="app-text-muted mb-1">
-                  <span className="font-semibold">المبلغ:</span> {selectedSubscription.amount_paid} EGP
-                </p>
+              <div className="mb-4 space-y-1">
+                <BodySmall color="onSurfaceVariant">
+                  <span className="font-semibold" style={{ color: colors.onSurface }}>المستخدم:</span>{' '}
+                  {selectedSubscription.user?.full_name || selectedSubscription.user?.email || 'مستخدم'}
+                </BodySmall>
+                <BodySmall color="onSurfaceVariant">
+                  <span className="font-semibold" style={{ color: colors.onSurface }}>الباقة:</span>{' '}
+                  {selectedSubscription.package?.name_ar || 'باقة غير معروفة'}
+                </BodySmall>
+                <BodySmall color="onSurfaceVariant">
+                  <span className="font-semibold" style={{ color: colors.onSurface }}>المبلغ:</span>{' '}
+                  {selectedSubscription.amount_paid} EGP
+                </BodySmall>
                 {selectedSubscription.expires_at && (
-                  <p className="app-text-muted">
-                    <span className="font-semibold">تاريخ الانتهاء:</span> {new Date(selectedSubscription.expires_at).toLocaleDateString('ar-EG', {
+                  <BodySmall color="onSurfaceVariant">
+                    <span className="font-semibold" style={{ color: colors.onSurface }}>تاريخ الانتهاء:</span>{' '}
+                    {new Date(selectedSubscription.expires_at).toLocaleDateString('ar-EG', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
                     })}
-                  </p>
+                  </BodySmall>
                 )}
               </div>
               {selectedSubscription.receipt_image_url && (
-                <div className="border rounded-3xl overflow-hidden app-border">
+                <div className="rounded-3xl overflow-hidden mb-4" style={{ border: `1px solid ${colors.outline}` }}>
                   <img
                     src={selectedSubscription.receipt_image_url}
-                    alt="Receipt"
+                    alt="إيصال"
                     className="w-full h-auto max-h-[600px] object-contain"
                   />
                 </div>
               )}
               {selectedSubscription.status === 'pending' && (
                 <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={() => {
-                      handleApprove(selectedSubscription)
-                      setShowImageModal(false)
-                      setSelectedSubscription(null)
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all font-medium hover:scale-105 active:scale-95"
-                    style={{
-                      backgroundColor: colors.success,
-                      color: colors.onPrimary,
-                    }}
+                  <Button
+                    variant="filled"
+                    onClick={() => handleApprove(selectedSubscription)}
+                    className="flex-1 gap-2"
+                    style={{ backgroundColor: colors.success, color: colors.onPrimary }}
                   >
                     <Check size={18} />
-                    <span>موافق</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleReject(selectedSubscription)
-                      setShowImageModal(false)
-                      setSelectedSubscription(null)
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all font-medium hover:scale-105 active:scale-95"
-                    style={{
-                      backgroundColor: colors.error,
-                      color: colors.onPrimary,
-                    }}
+                    موافق
+                  </Button>
+                  <Button
+                    variant="filled"
+                    onClick={() => handleReject(selectedSubscription)}
+                    className="flex-1 gap-2"
+                    style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                   >
                     <X size={18} />
-                    <span>رفض</span>
-                  </button>
+                    رفض
+                  </Button>
                 </div>
               )}
             </div>

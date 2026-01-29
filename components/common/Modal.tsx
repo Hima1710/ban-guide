@@ -2,6 +2,8 @@
 
 import { ReactNode, useEffect } from 'react'
 import { X } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
+import { TitleLarge } from '@/components/m3'
 
 interface ModalProps {
   isOpen: boolean
@@ -13,7 +15,7 @@ interface ModalProps {
 }
 
 /**
- * Reusable modal component
+ * Reusable modal component (M3 theme-aware)
  */
 export default function Modal({
   isOpen,
@@ -23,6 +25,8 @@ export default function Modal({
   size = 'md',
   closeOnOverlayClick = true,
 }: ModalProps) {
+  const { colors } = useTheme()
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -62,17 +66,23 @@ export default function Modal({
       onClick={closeOnOverlayClick ? onClose : undefined}
     >
       <div
-        className={`app-card w-full ${sizeStyles[size]} max-h-[90vh] overflow-y-auto`}
+        className={`w-full rounded-3xl ${sizeStyles[size]} max-h-[90vh] overflow-y-auto`}
+        style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4 pb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
+        <div
+          className="flex items-center justify-between mb-4 pb-4 border-b"
+          style={{ borderColor: colors.outline }}
+        >
           {title && (
-            <h2 className="text-xl font-bold app-text-main">{title}</h2>
+            <TitleLarge style={{ color: colors.onSurface }}>{title}</TitleLarge>
           )}
           <button
+            type="button"
             onClick={onClose}
             className="p-1 rounded-full hover:opacity-70 transition-opacity ml-auto"
-            style={{ color: 'var(--text-muted)' }}
+            style={{ color: colors.onSurfaceVariant }}
+            aria-label="إغلاق"
           >
             <X size={20} />
           </button>

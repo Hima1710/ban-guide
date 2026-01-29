@@ -1,61 +1,54 @@
-/**
- * Material Design 3 App Shell
- * 
- * Main layout component that provides:
- * - Responsive navigation (Sidebar on desktop, Bottom Nav on mobile)
- * - WebView detection and optimization
- * - Content area with proper spacing
- * - Theme-aware styling
- * - Safe area handling for mobile devices
- * 
- * Features:
- * - Desktop: Sidebar (right side, Arabic)
- * - Mobile/WebView: Bottom Navigation
- * - Automatic padding for navigation
- * - WebView-specific optimizations
- * - Safe area insets support
- * 
- * Usage:
- * <AppShell>
- *   <YourPageContent />
- * </AppShell>
- */
-
 'use client'
 
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, Suspense, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useWebView, applyWebViewOptimizations } from '@/lib/webview-detection'
+import SmartTopBar, { HEADER_HEIGHT } from './SmartTopBar'
 import BottomNavigation from './BottomNavigation'
+import Sidebar from './Sidebar'
+import Breadcrumbs from '@/components/Breadcrumbs'
+import ConversationsSidebar from '@/components/ConversationsSidebar'
+
+const BOTTOM_NAV_HEIGHT = 64
 
 interface AppShellProps {
   children: ReactNode
+  /** Hide top bar (e.g. auth pages) */
+  hideHeader?: boolean
+  /** Hide bottom nav and sidebar (e.g. auth pages) */
+  hideNav?: boolean
 }
 
-export default function AppShell({ children }: AppShellProps) {
+export default function AppShell({ children, hideHeader, hideNav }: AppShellProps) {
+  const pathname = usePathname()
   const { colors } = useTheme()
-  const { isWebView, platform, variant, loading, safeAreaInsets } = useWebView()
+  const { isWebView, loading, safeAreaInsets } = useWebView()
 
-  // Apply WebView optimizations on mount
+  const isAuthPage = pathname.startsWith('/auth/')
+  const showHeader = !hideHeader && !isAuthPage
+  const showNav = !hideNav && !isAuthPage
+
   useEffect(() => {
-    if (isWebView) {
-      applyWebViewOptimizations()
-    }
+    if (isWebView) applyWebViewOptimizations()
   }, [isWebView])
 
-  // Don't render until WebView detection is complete
   if (loading) {
     return (
-      <div 
+      <div
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: colors.background }}
       >
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent" 
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent"
           style={{ borderColor: colors.primary }}
         />
       </div>
     )
   }
+
+  const bottomNavHeight = showNav ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))` : '0px'
+  const headerHeight = showHeader ? HEADER_HEIGHT : 0
 
   return (
     <div
@@ -63,65 +56,64 @@ export default function AppShell({ children }: AppShellProps) {
       style={{
         backgroundColor: colors.background,
         color: colors.onBackground,
-        // Safe area insets for WebView
-        paddingTop: isWebView ? `${safeAreaInsets.top}px` : '0',
+        paddingTop: isWebView ? safeAreaInsets.top : 0,
       }}
     >
-      {/* Main Content Area */}
+      {showHeader && <SmartTopBar />}
+      {showHeader && pathname !== '/' && <Breadcrumbs />}
+
       <main
         className="min-h-screen transition-all duration-300"
         style={{
-          // Add padding for bottom nav on mobile/WebView
-          paddingBottom: 'var(--bottom-nav-height, 0px)',
+          paddingTop: showHeader ? 8 : 0,
+          paddingBottom: bottomNavHeight,
+          paddingLeft: 0,
+          paddingRight: 0,
         }}
       >
-        {children}
+        <div className="lg:pr-[280px] min-h-0 flex flex-col">
+          {children}
+        </div>
       </main>
 
-      {/* Mobile/WebView Bottom Navigation */}
-      <BottomNavigation />
+      {showNav && (
+        <>
+          <Sidebar />
+          <BottomNavigation />
+        </>
+      )}
 
-      {/* WebView Status Indicator (dev mode only) */}
+      <Suspense fallback={null}>
+        <ConversationsSidebar />
+      </Suspense>
+
       {process.env.NODE_ENV === 'development' && isWebView && (
         <div
           className="fixed top-2 left-2 px-3 py-1 rounded-full text-xs font-bold z-[9999]"
           style={{
             backgroundColor: colors.primary,
             color: colors.onPrimary,
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
           }}
         >
-          📱 WebView: {platform || 'unknown'}
+          WebView
         </div>
       )}
 
-      {/* CSS Variables for Layout */}
       <style jsx global>{`
         :root {
-          --bottom-nav-height: ${isWebView ? 'calc(64px + env(safe-area-inset-bottom))' : '0px'};
+          --header-height: ${headerHeight}px;
+          --bottom-nav-height: ${bottomNavHeight};
         }
-
-        @media (max-width: 1024px) {
-          :root {
-            --bottom-nav-height: calc(64px + env(safe-area-inset-bottom));
-          }
-        }
-
-        /* WebView-specific optimizations */
         .webview-optimized {
           -webkit-user-select: none;
           user-select: none;
           -webkit-tap-highlight-color: transparent;
-          -webkit-touch-callout: none;
         }
-
         .webview-optimized input,
         .webview-optimized textarea {
           -webkit-user-select: text;
           user-select: text;
         }
-
-        /* Safe area support */
         @supports (padding: max(0px)) {
           .webview-optimized {
             padding-left: max(0px, env(safe-area-inset-left));

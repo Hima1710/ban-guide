@@ -12,7 +12,7 @@ import { HeadlineLarge, TitleMedium, BodySmall } from '@/components/m3'
 
 export default function AdminDashboardPage() {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const {
     isAdmin,
     loading: adminLoading,
@@ -91,10 +91,10 @@ export default function AdminDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen py-8 app-bg-base">
+    <div className="min-h-screen py-8" style={{ backgroundColor: colors.background }}>
       <div className="container mx-auto px-4">
         <div className="mb-6">
-          <HeadlineLarge className="mb-2">لوحة الإدارة</HeadlineLarge>
+          <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>لوحة الإدارة</HeadlineLarge>
           <BodySmall color="onSurfaceVariant">إدارة النظام والمستخدمين</BodySmall>
         </div>
 

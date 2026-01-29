@@ -35,6 +35,7 @@ interface UseAdminManagerOptions {
   autoLoadUsers?: boolean
   autoLoadAffiliates?: boolean
   autoLoadDiscountCodes?: boolean
+  autoLoadSubscriptions?: boolean
 }
 
 interface PackageFormData {
@@ -79,7 +80,7 @@ interface AffiliateData {
 // Note: DiscountCode uses start_date/end_date, not expires_at
 
 export function useAdminManager(options: UseAdminManagerOptions = {}) {
-  const { user } = useAuthContext()
+  const { user, loading: authLoading } = useAuthContext()
   const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(true)
   
@@ -99,13 +100,19 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
   const [discountCodes, setDiscountCodes] = useState<DiscountCode[]>([])
   const [discountCodesLoading, setDiscountCodesLoading] = useState(false)
 
+  // Subscriptions state
+  const [subscriptions, setSubscriptions] = useState<any[]>([])
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(false)
+
   /**
-   * Check if the current user has admin privileges
+   * Check if the current user has admin privileges.
+   * Do not set loading=false when user is null while auth is still loading (avoids redirect before auth is ready).
    */
   const checkAdmin = useCallback(async () => {
     if (!user) {
       setIsAdmin(false)
-      setLoading(false)
+      // Only set loading false when auth has finished (so we don't redirect before AuthContext is ready)
+      if (!authLoading) setLoading(false)
       return false
     }
 
@@ -128,12 +135,21 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
       setLoading(false)
       return false
     }
-  }, [user])
+  }, [user, authLoading])
 
-  // Check admin status on mount
+  // Check admin status when user or auth loading state changes
   useEffect(() => {
+    if (authLoading) return
     checkAdmin()
-  }, [checkAdmin])
+  }, [authLoading, checkAdmin])
+
+  // When auth finishes with no user, mark admin check as done
+  useEffect(() => {
+    if (!authLoading && !user) {
+      setLoading(false)
+      setIsAdmin(false)
+    }
+  }, [authLoading, user])
 
   // Auto-load data based on options
   useEffect(() => {
@@ -150,6 +166,9 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     }
     if (options.autoLoadDiscountCodes) {
       loadDiscountCodes()
+    }
+    if (options.autoLoadSubscriptions) {
+      loadSubscriptions()
     }
   }, [isAdmin, options])
 
@@ -235,7 +254,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
   }, [isAdmin, loadPackages])
 
   /**
-   * Delete a package
+   * Delete a package (only if not used in any subscription)
    */
   const deletePackage = useCallback(async (id: string) => {
     if (!isAdmin) {
@@ -244,6 +263,17 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     }
 
     try {
+      const { count, error: countError } = await supabase
+        .from('user_subscriptions')
+        .select('id', { count: 'exact', head: true })
+        .eq('package_id', id)
+
+      if (countError) throw countError
+      if ((count ?? 0) > 0) {
+        showError('لا يمكن حذف الباقة: مستخدمة في اشتراكات حالية. أوقف أو غيّر الاشتراكات أولاً.')
+        return false
+      }
+
       const { error } = await supabase
         .from('packages')
         .delete()
@@ -567,6 +597,88 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     }
   }, [isAdmin, loadDiscountCodes])
 
+  // ============================================
+  // SUBSCRIPTIONS MANAGEMENT OPERATIONS
+  // ============================================
+
+  /**
+   * Load all subscriptions with package and user
+   */
+  const loadSubscriptions = useCallback(async () => {
+    if (!isAdmin) return
+
+    setSubscriptionsLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select('*, package:packages(*), user:user_profiles(*)')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      setSubscriptions(data || [])
+    } catch (error: any) {
+      console.error('❌ [useAdminManager] Error loading subscriptions:', error)
+      showError('فشل تحميل الاشتراكات: ' + error.message)
+    } finally {
+      setSubscriptionsLoading(false)
+    }
+  }, [isAdmin])
+
+  /**
+   * Approve a subscription
+   */
+  const approveSubscription = useCallback(async (id: string) => {
+    if (!isAdmin) {
+      showError('ليس لديك صلاحيات للموافقة على الاشتراك')
+      return false
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .update({ status: 'approved', is_active: true })
+        .eq('id', id)
+
+      if (error) throw error
+
+      showSuccess('تم الموافقة على الاشتراك بنجاح')
+      await loadSubscriptions()
+      return true
+    } catch (error: any) {
+      console.error('❌ [useAdminManager] Error approving subscription:', error)
+      showError('فشل الموافقة على الاشتراك: ' + error.message)
+      return false
+    }
+  }, [isAdmin, loadSubscriptions])
+
+  /**
+   * Reject a subscription
+   */
+  const rejectSubscription = useCallback(async (id: string) => {
+    if (!isAdmin) {
+      showError('ليس لديك صلاحيات لرفض الاشتراك')
+      return false
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .update({ status: 'rejected', is_active: false })
+        .eq('id', id)
+
+      if (error) throw error
+
+      showSuccess('تم رفض الاشتراك بنجاح')
+      await loadSubscriptions()
+      return true
+    } catch (error: any) {
+      console.error('❌ [useAdminManager] Error rejecting subscription:', error)
+      showError('فشل رفض الاشتراك: ' + error.message)
+      return false
+    }
+  }, [isAdmin, loadSubscriptions])
+
   return {
     // Admin status
     isAdmin,
@@ -603,5 +715,12 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     createDiscountCode,
     updateDiscountCode,
     deleteDiscountCode,
+
+    // Subscriptions
+    subscriptions,
+    subscriptionsLoading,
+    loadSubscriptions,
+    approveSubscription,
+    rejectSubscription,
   }
 }

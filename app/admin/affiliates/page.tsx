@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation'
 import { useAdminManager } from '@/hooks'
 import { showError, showConfirm } from '@/components/SweetAlert'
 import { LoadingSpinner, Button, Card } from '@/components/common'
+import { HeadlineLarge, BodySmall } from '@/components/m3'
 import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
 
 export default function AdminAffiliatesPage() {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const {
     isAdmin,
     loading: adminLoading,
@@ -82,7 +83,7 @@ export default function AdminAffiliatesPage() {
 
   if (adminLoading || affiliatesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
         <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
@@ -106,37 +107,44 @@ export default function AdminAffiliatesPage() {
           >
             ← العودة للوحة الإدارة
           </Link>
-          <h1 className="text-3xl font-bold app-text-main">إدارة المسوقين</h1>
+          <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>إدارة المسوقين</HeadlineLarge>
+          <BodySmall color="onSurfaceVariant">إدارة المسوقين بالعمولة والأكواد</BodySmall>
         </div>
 
-        <Card className="shadow-lg overflow-hidden" padding="none">
+        <Card className="shadow-lg overflow-hidden" padding="none" style={{ border: `1px solid ${colors.outline}` }}>
           <table className="w-full">
-            <thead className="app-bg-surface">
-              <tr >
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">المستخدم</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الكود</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">نسبة الخصم</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">نسبة العمولة</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الأرباح</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الحالة</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الإجراءات</th>
+            <thead style={{ backgroundColor: colors.surface }}>
+              <tr>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>المستخدم</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الكود</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>نسبة الخصم</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>نسبة العمولة</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الأرباح</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الحالة</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الإجراءات</th>
               </tr>
             </thead>
-            <tbody >
+            <tbody>
               {affiliates.map((affiliate) => (
-                <tr key={affiliate.id} className="app-hover-bg transition-colors" >
+                <tr
+                  key={affiliate.id}
+                  className="transition-colors"
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                >
                   <td className="px-6 py-5">
                     <div>
-                      <div className="font-semibold text-base app-text-main">
+                      <div className="font-semibold text-base" style={{ color: colors.onSurface }}>
                         {affiliate.user?.full_name || 'لا يوجد اسم'}
                       </div>
-                      <div className="text-sm app-text-muted">{affiliate.user?.email}</div>
+                      <div className="text-sm" style={{ color: colors.onSurfaceVariant }}>{affiliate.user?.email}</div>
                     </div>
                   </td>
                   <td className="px-6 py-5">
                     <button
                       onClick={() => handleUpdateCode(affiliate)}
-                      className="font-mono text-base app-text-main hover:underline"
+                      className="font-mono text-base hover:underline"
+                      style={{ color: colors.primary }}
                     >
                       {affiliate.code}
                     </button>
@@ -144,7 +152,8 @@ export default function AdminAffiliatesPage() {
                   <td className="px-6 py-5">
                     <button
                       onClick={() => handleUpdateDiscountPercentage(affiliate)}
-                      className="text-base app-text-main hover:underline"
+                      className="text-base hover:underline"
+                      style={{ color: colors.primary }}
                     >
                       {affiliate.discount_percentage}%
                     </button>
@@ -152,16 +161,17 @@ export default function AdminAffiliatesPage() {
                   <td className="px-6 py-5">
                     <button
                       onClick={() => handleUpdateCommissionPercentage(affiliate)}
-                      className="text-base app-text-main hover:underline"
+                      className="text-base hover:underline"
+                      style={{ color: colors.primary }}
                     >
                       {affiliate.commission_percentage}%
                     </button>
                   </td>
                   <td className="px-6 py-5">
                     <div>
-                      <div className="text-sm app-text-muted">الإجمالي: {affiliate.total_earnings} EGP</div>
-                      <div className="text-sm app-text-muted">المستحقات: {affiliate.pending_earnings} EGP</div>
-                      <div className="text-sm app-text-muted">المدفوع: {affiliate.paid_earnings} EGP</div>
+                      <div className="text-sm" style={{ color: colors.onSurfaceVariant }}>الإجمالي: {affiliate.total_earnings} EGP</div>
+                      <div className="text-sm" style={{ color: colors.onSurfaceVariant }}>المستحقات: {affiliate.pending_earnings} EGP</div>
+                      <div className="text-sm" style={{ color: colors.onSurfaceVariant }}>المدفوع: {affiliate.paid_earnings} EGP</div>
                     </div>
                   </td>
                   <td className="px-6 py-5">
@@ -193,7 +203,7 @@ export default function AdminAffiliatesPage() {
               ))}
               {affiliates.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center app-text-muted">
+                  <td colSpan={7} className="px-6 py-8 text-center" style={{ color: colors.onSurfaceVariant }}>
                     لا يوجد مسوقين
                   </td>
                 </tr>

@@ -54,7 +54,6 @@ export default function DashboardPage() {
   const placeIds = places.map(p => p.id)
   const { 
     messages, 
-    loading: messagesLoading, 
     unreadCount 
   } = useMessages({ 
     placeId: placeIds.length > 0 ? placeIds : undefined,
@@ -72,16 +71,19 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen app-bg-base">
+    <div className="min-h-screen" style={{ backgroundColor: colors.background }}>
       <Suspense fallback={null}>
         <YouTubeAuthHandler />
       </Suspense>
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <HeadlineLarge className="mb-4 sm:mb-6">لوحة التحكم</HeadlineLarge>
+        <HeadlineLarge className="mb-4 sm:mb-6" style={{ color: colors.onSurface }}>لوحة التحكم</HeadlineLarge>
 
         {/* User Profile Section - Mobile & Desktop */}
         {user && profile && (
-          <div className="app-card rounded-3xl shadow-lg p-4 mb-6">
+          <div
+            className="rounded-3xl shadow-lg p-4 mb-6"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
             <div className="flex items-center gap-4">
               {/* Avatar */}
               <div className="relative flex-shrink-0">
@@ -104,18 +106,15 @@ export default function DashboardPage() {
                   </div>
                 )}
                 {/* Online indicator */}
-                <div 
+                <div
                   className="absolute bottom-0 right-0 w-4 h-4 border-2 rounded-full"
-                  style={{ 
-                    backgroundColor: '#10b981',
-                    borderColor: colors.surface
-                  }}
+                  style={{ backgroundColor: colors.success, borderColor: colors.surface }}
                 />
               </div>
 
               {/* User Info */}
               <div className="flex-1 min-w-0">
-                <TitleLarge className="truncate">
+                <TitleLarge className="truncate" style={{ color: colors.onSurface }}>
                   {profile.full_name || 'مستخدم'}
                 </TitleLarge>
                 <BodySmall color="onSurfaceVariant" className="truncate">
@@ -124,25 +123,19 @@ export default function DashboardPage() {
                 {/* Badges */}
                 <div className="flex items-center gap-2 mt-1">
                   {profile.is_admin && (
-                    <LabelSmall 
+                    <LabelSmall
                       as="span"
                       className="px-2 py-0.5 rounded-full"
-                      style={{ 
-                        backgroundColor: `rgba(239, 68, 68, 0.1)`,
-                        color: colors.error
-                      }}
+                      style={{ backgroundColor: colors.errorContainer, color: colors.error }}
                     >
                       مدير
                     </LabelSmall>
                   )}
                   {profile.is_affiliate && !profile.is_admin && (
-                    <LabelSmall 
+                    <LabelSmall
                       as="span"
                       className="px-2 py-0.5 rounded-full"
-                      style={{ 
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        color: '#f59e0b'
-                      }}
+                      style={{ backgroundColor: colors.warningContainer, color: colors.warning }}
                     >
                       مسوق
                     </LabelSmall>
@@ -165,29 +158,34 @@ export default function DashboardPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="app-card shadow p-4 sm:p-6 rounded-3xl">
+          <div
+            className="shadow p-4 sm:p-6 rounded-3xl"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
             <div className="flex items-center gap-3 sm:gap-4">
-              <PackageIcon className="flex-shrink-0 sm:w-8 sm:h-8 icon-primary" size={28} />
+              <PackageIcon className="flex-shrink-0 sm:w-8 sm:h-8" size={28} style={{ color: colors.primary }} />
               <div>
                 <BodyMedium color="onSurfaceVariant">الأماكن</BodyMedium>
-                <HeadlineMedium>{places.length}</HeadlineMedium>
+                <HeadlineMedium style={{ color: colors.onSurface }}>{places.length}</HeadlineMedium>
               </div>
             </div>
           </div>
           <Link
             href="#messages"
-            className="app-card shadow p-4 sm:p-6 rounded-3xl hover:shadow-md transition-shadow cursor-pointer"
+            className="shadow p-4 sm:p-6 rounded-3xl hover:shadow-md transition-shadow cursor-pointer block"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
           >
             <div className="flex items-center gap-3 sm:gap-4">
-              <MessageSquare className="flex-shrink-0 sm:w-8 sm:h-8 icon-secondary" size={28} />
+              <MessageSquare className="flex-shrink-0 sm:w-8 sm:h-8" size={28} style={{ color: colors.secondary }} />
               <div className="flex-1 min-w-0">
                 <BodyMedium color="onSurfaceVariant">الرسائل</BodyMedium>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <HeadlineMedium>{messages.length}</HeadlineMedium>
+                  <HeadlineMedium style={{ color: colors.onSurface }}>{messages.length}</HeadlineMedium>
                   {unreadCount > 0 && (
-                    <LabelSmall 
+                    <LabelSmall
                       as="span"
-                      className="badge-error px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full"
+                      className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full"
+                      style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                     >
                       {unreadCount} غير مقروء
                     </LabelSmall>
@@ -196,12 +194,15 @@ export default function DashboardPage() {
               </div>
             </div>
           </Link>
-          <div className="app-card shadow p-4 sm:p-6 rounded-3xl sm:col-span-2 lg:col-span-1">
+          <div
+            className="shadow p-4 sm:p-6 rounded-3xl sm:col-span-2 lg:col-span-1"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
             <div className="flex items-center gap-3 sm:gap-4">
-              <TrendingUp className="flex-shrink-0 sm:w-8 sm:h-8 icon-warning" size={28} />
+              <TrendingUp className="flex-shrink-0 sm:w-8 sm:h-8" size={28} style={{ color: colors.warning }} />
               <div>
                 <BodyMedium color="onSurfaceVariant">المشاهدات</BodyMedium>
-                <HeadlineMedium>
+                <HeadlineMedium style={{ color: colors.onSurface }}>
                   {places.reduce((sum, p) => sum + p.total_views, 0)}
                 </HeadlineMedium>
               </div>
@@ -209,9 +210,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="app-card shadow p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl">
+        <div
+          className="shadow p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <TitleLarge>أماكني</TitleLarge>
+            <TitleLarge style={{ color: colors.onSurface }}>أماكني</TitleLarge>
             <Button
               variant="filled"
               size="md"
@@ -228,9 +232,12 @@ export default function DashboardPage() {
               <Link
                 key={place.id}
                 href={`/dashboard/places/${place.id}`}
-                className="block p-3 sm:p-4 border rounded-2xl transition-colors app-hover-bg app-border"
+                className="block p-3 sm:p-4 border rounded-2xl transition-colors"
+                style={{ borderColor: colors.outline }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
               >
-                <TitleMedium className="mb-1">{place.name_ar}</TitleMedium>
+                <TitleMedium className="mb-1" style={{ color: colors.onSurface }}>{place.name_ar}</TitleMedium>
                 <BodySmall color="onSurfaceVariant" className="mb-1">{place.category}</BodySmall>
                 <LabelSmall color="onSurfaceVariant" className="mt-1.5 sm:mt-2">
                   المشاهدات: {place.total_views} | اليوم: {place.today_views}
@@ -247,13 +254,18 @@ export default function DashboardPage() {
 
         {/* Messages Section */}
         {messages.length > 0 && (
-          <div id="messages" className="app-card shadow p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl">
+          <div
+            id="messages"
+            className="shadow p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
-              <TitleLarge>الرسائل الأخيرة</TitleLarge>
+              <TitleLarge style={{ color: colors.onSurface }}>الرسائل الأخيرة</TitleLarge>
               {unreadCount > 0 && (
-                <LabelSmall 
+                <LabelSmall
                   as="span"
-                  className="badge-error px-2 sm:px-3 py-1 rounded-full"
+                  className="px-2 sm:px-3 py-1 rounded-full"
+                  style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                 >
                   {unreadCount} رسالة غير مقروءة
                 </LabelSmall>
@@ -268,24 +280,29 @@ export default function DashboardPage() {
                   <Link
                     key={message.id}
                     href={`/places/${message.place_id}`}
-                    className={`block p-4 border rounded-2xl transition-colors app-border ${
-                      isUnread ? '' : 'app-hover-bg'
-                    }`}
+                    className="block p-4 border rounded-2xl transition-colors"
                     style={isUnread ? {
-                      background: 'rgba(var(--primary-color-rgb), 0.1)',
-                      borderColor: 'var(--primary-color)'
-                    } : {}}
+                      background: `rgba(${colors.primaryRgb}, 0.1)`,
+                      borderColor: colors.primary
+                    } : { borderColor: colors.outline }}
+                    onMouseEnter={(e) => {
+                      if (!isUnread) e.currentTarget.style.backgroundColor = colors.surfaceContainer
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isUnread) e.currentTarget.style.backgroundColor = 'transparent'
+                    }}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <TitleMedium className="truncate">
+                          <TitleMedium className="truncate" style={{ color: colors.onSurface }}>
                             {place?.name_ar || 'مكان غير معروف'}
                           </TitleMedium>
                           {isUnread && (
-                            <LabelSmall 
+                            <LabelSmall
                               as="span"
-                              className="badge-primary px-2 py-0.5 rounded-full flex-shrink-0"
+                              className="px-2 py-0.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: colors.primary, color: colors.onPrimary }}
                             >
                               جديد
                             </LabelSmall>
@@ -297,12 +314,12 @@ export default function DashboardPage() {
                           </BodySmall>
                         )}
                         {message.content ? (
-                          <BodySmall className="line-clamp-2">{message.content}</BodySmall>
+                          <BodySmall className="line-clamp-2" style={{ color: colors.onSurface }}>{message.content}</BodySmall>
                         ) : message.image_url ? (
                           <BodySmall color="onSurfaceVariant" className="italic">صورة</BodySmall>
                         ) : null}
                         <div className="flex items-center gap-2 mt-2">
-                          <Clock size={14} />
+                          <Clock size={14} style={{ color: colors.onSurfaceVariant }} />
                           <LabelSmall color="onSurfaceVariant">
                             {new Date(message.created_at).toLocaleString('ar-EG', {
                               year: 'numeric',
@@ -320,27 +337,34 @@ export default function DashboardPage() {
               })}
             </div>
             {messages.length > 10 && (
-              <p className="text-center text-sm app-text-muted mt-4">
+              <BodySmall color="onSurfaceVariant" className="text-center text-sm mt-4">
                 عرض {messages.length - 10} رسالة أخرى
-              </p>
+              </BodySmall>
             )}
           </div>
         )}
 
-        <div className="app-card shadow p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 app-text-main">الباقات والاشتراكات</h2>
+        <div
+          className="shadow p-6 mb-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          <TitleLarge style={{ color: colors.onSurface }} className="mb-4">الباقات والاشتراكات</TitleLarge>
           <Link
             href="/dashboard/packages"
-            className="link-primary"
+            className="font-medium hover:underline"
+            style={{ color: colors.primary }}
           >
             عرض الباقات المتاحة والاشتراك
           </Link>
         </div>
 
         {profile?.is_admin && (
-          <div className="app-card shadow p-6 mb-6">
+          <div
+            className="shadow p-6 mb-6 rounded-3xl"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold app-text-main">لوحة الإدارة</h2>
+              <TitleLarge style={{ color: colors.onSurface }}>لوحة الإدارة</TitleLarge>
               <div className="relative">
                 <Button
                   variant="filled"
@@ -351,71 +375,97 @@ export default function DashboardPage() {
                   <span>لوحة الإدارة</span>
                   <ChevronDown size={18} className={`transition-transform ${adminMenuOpen ? 'rotate-180' : ''}`} />
                 </Button>
-                
                 {adminMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-56 rounded-lg shadow-lg border z-10 overflow-hidden app-card app-border">
+                  <div
+                    className="absolute left-0 mt-2 w-56 rounded-xl shadow-lg border z-10 overflow-hidden"
+                    style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+                  >
                     <Link
                       href="/admin"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors border-b block"
+                      style={{ color: colors.onSurface, borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <Settings size={18} className="icon-error" />
+                      <Settings size={18} style={{ color: colors.error }} />
                       <span>لوحة الإدارة الرئيسية</span>
                     </Link>
                     <Link
                       href="/admin/packages"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors border-b block"
+                      style={{ color: colors.onSurface, borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <PackageIcon size={18} className="icon-primary" />
+                      <PackageIcon size={18} style={{ color: colors.primary }} />
                       <span>إدارة الباقات</span>
                     </Link>
                     <Link
                       href="/admin/users"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors border-b block"
+                      style={{ color: colors.onSurface, borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <Users size={18} className="icon-secondary" />
+                      <Users size={18} style={{ color: colors.secondary }} />
                       <span>المستخدمين</span>
                     </Link>
                     <Link
                       href="/admin/affiliates"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors border-b block"
+                      style={{ color: colors.onSurface, borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <TrendingUp size={18} className="icon-warning" />
+                      <TrendingUp size={18} style={{ color: colors.warning }} />
                       <span>المسوقين</span>
                     </Link>
                     <Link
                       href="/admin/youtube"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors border-b block"
+                      style={{ color: colors.onSurface, borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <MessageSquare size={18} className="icon-accent" />
+                      <MessageSquare size={18} style={{ color: colors.primary }} />
                       <span>إعدادات YouTube</span>
                     </Link>
                     <Link
                       href="/admin/discount-codes"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors border-b block"
+                      style={{ color: colors.onSurface, borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <PackageIcon size={18} className="icon-accent" />
+                      <PackageIcon size={18} style={{ color: colors.primary }} />
                       <span>كوبونات الخصم</span>
                     </Link>
                     <Link
                       href="/admin/subscriptions"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg border-b border-app"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors border-b block"
+                      style={{ color: colors.onSurface, borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <FileCheck size={18} className="icon-primary" />
+                      <FileCheck size={18} style={{ color: colors.primary }} />
                       <span>مراجعة الاشتراكات</span>
                     </Link>
                     <Link
                       href="/admin/settings"
                       onClick={() => setAdminMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 transition-colors app-text-main app-hover-bg"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors block"
+                      style={{ color: colors.onSurface }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      <Settings size={18} className="icon-muted" />
+                      <Settings size={18} style={{ color: colors.onSurfaceVariant }} />
                       <span>الإعدادات</span>
                     </Link>
                   </div>
@@ -426,11 +476,15 @@ export default function DashboardPage() {
         )}
 
         {profile?.is_affiliate && (
-          <div className="app-card shadow p-6 rounded-3xl">
-            <TitleLarge className="mb-4">التسويق بالعمولة</TitleLarge>
+          <div
+            className="shadow p-6 rounded-3xl"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
+            <TitleLarge style={{ color: colors.onSurface }} className="mb-4">التسويق بالعمولة</TitleLarge>
             <Link
               href="/dashboard/affiliate"
-              className="link-primary"
+              className="font-medium hover:underline"
+              style={{ color: colors.primary }}
             >
               عرض لوحة المسوق
             </Link>
@@ -438,19 +492,24 @@ export default function DashboardPage() {
         )}
 
         {/* Legal & Privacy Links */}
-        <div className="app-card shadow p-6 rounded-3xl">
-          <TitleLarge className="mb-4">القانونية والخصوصية</TitleLarge>
-          <div className="flex flex-col sm:flex-row gap-3">
+        <div
+          className="shadow p-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          <TitleLarge style={{ color: colors.onSurface }} className="mb-4">القانونية والخصوصية</TitleLarge>
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <Link
               href="/dashboard/privacy-ar"
-              className="link-primary"
+              className="font-medium hover:underline"
+              style={{ color: colors.primary }}
             >
               سياسة الخصوصية (عربي)
             </Link>
-            <span className="hidden sm:inline app-text-muted">•</span>
+            <span className="hidden sm:inline" style={{ color: colors.onSurfaceVariant }}>•</span>
             <Link
               href="/dashboard/privacy"
-              className="link-primary"
+              className="font-medium hover:underline"
+              style={{ color: colors.primary }}
             >
               Privacy Policy (English)
             </Link>

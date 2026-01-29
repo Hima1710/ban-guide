@@ -7,12 +7,13 @@ import { useAdminManager } from '@/hooks'
 import { DiscountCode } from '@/lib/types'
 import { showError, showConfirm } from '@/components/SweetAlert'
 import { LoadingSpinner, Button, Input, Card } from '@/components/common'
+import { HeadlineLarge, BodySmall } from '@/components/m3'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function AdminDiscountCodesPage() {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const {
     isAdmin,
     loading: adminLoading,
@@ -99,7 +100,7 @@ export default function AdminDiscountCodesPage() {
 
   if (adminLoading || discountCodesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
         <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
@@ -123,8 +124,11 @@ export default function AdminDiscountCodesPage() {
           >
             ← العودة للوحة الإدارة
           </Link>
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold app-text-main">إدارة أكواد الخصم</h1>
+          <div className="flex flex-wrap justify-between items-start gap-4">
+            <div>
+              <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>إدارة أكواد الخصم</HeadlineLarge>
+              <BodySmall color="onSurfaceVariant">إضافة وتعديل وحذف أكواد الخصم</BodySmall>
+            </div>
             <Button
               variant="filled"
               onClick={() => {
@@ -142,7 +146,7 @@ export default function AdminDiscountCodesPage() {
 
         {showForm && (
           <Card className="mb-6 shadow-lg">
-            <h2 className="text-2xl font-bold mb-6 app-text-main">
+            <h2 className="text-2xl font-bold mb-6" style={{ color: colors.onSurface }}>
               {editingCode ? 'تعديل كود الخصم' : 'إضافة كود خصم جديد'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -207,34 +211,40 @@ export default function AdminDiscountCodesPage() {
           </Card>
         )}
 
-        <Card className="shadow-lg overflow-hidden" padding="none">
+        <Card className="shadow-lg overflow-hidden" padding="none" style={{ border: `1px solid ${colors.outline}` }}>
           <table className="w-full">
-            <thead className="app-bg-surface">
-              <tr >
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الكود</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">نسبة الخصم</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الاستخدامات</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">تاريخ الانتهاء</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الحالة</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الإجراءات</th>
+            <thead style={{ backgroundColor: colors.surface }}>
+              <tr>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الكود</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>نسبة الخصم</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الاستخدامات</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>تاريخ الانتهاء</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الحالة</th>
+                <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الإجراءات</th>
               </tr>
             </thead>
-            <tbody >
+            <tbody>
               {discountCodes.map((code) => (
-                <tr key={code.id} className="app-hover-bg transition-colors" >
+                <tr
+                  key={code.id}
+                  className="transition-colors"
+                  style={{ borderColor: colors.outline }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                >
                   <td className="px-6 py-5">
-                    <span className="font-mono text-base font-bold app-text-main">{code.code}</span>
+                    <span className="font-mono text-base font-bold" style={{ color: colors.onSurface }}>{code.code}</span>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-base app-text-main">{code.discount_percentage}%</span>
+                    <span className="text-base" style={{ color: colors.onSurface }}>{code.discount_percentage}%</span>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-base app-text-main">
+                    <span className="text-base" style={{ color: colors.onSurface }}>
                       {code.max_uses ? `${code.used_count || 0} / ${code.max_uses}` : 'غير محدود'}
                     </span>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-sm app-text-muted">
+                    <span className="text-sm" style={{ color: colors.onSurfaceVariant }}>
                       {code.end_date ? new Date(code.end_date).toLocaleDateString('ar-EG') : '-'}
                     </span>
                   </td>
@@ -278,7 +288,7 @@ export default function AdminDiscountCodesPage() {
               ))}
               {discountCodes.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center app-text-muted">
+                  <td colSpan={6} className="px-6 py-8 text-center" style={{ color: colors.onSurfaceVariant }}>
                     لا توجد أكواد خصم
                   </td>
                 </tr>

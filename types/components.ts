@@ -44,6 +44,8 @@ export interface LoadingSpinnerProps {
 export interface PlaceCardProps {
   place: import('@/lib/types').Place
   cardStyle?: string
+  /** Carousel card size (MD3: varied sizes in carousel) */
+  size?: 'small' | 'medium' | 'large'
 }
 
 // Form field props

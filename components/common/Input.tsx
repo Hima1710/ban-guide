@@ -1,143 +1,118 @@
 /**
- * Material Design 3 Input Component
- * 
- * Features:
- * - Theme-aware colors from ThemeContext
- * - M3 shapes (rounded-2xl)
- * - Multiple variants (filled, outlined)
- * - Label and helper text support
- * - Error states
- * - Full TypeScript support
- * 
- * Usage:
- * <Input label="Name" variant="outlined" />
+ * M3-style text field: surface background, primary bottom-border on focus, floating labels.
+ * Min 48px height for touch. Dark-mode safe via CSS variables.
  */
 
 'use client'
 
-import { InputHTMLAttributes, forwardRef } from 'react'
-import { useTheme } from '@/contexts/ThemeContext'
+import { InputHTMLAttributes, forwardRef, useState } from 'react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   helperText?: string
-  /** Input variant (M3 styles) */
-  variant?: 'filled' | 'outlined'
-  /** M3 shape (border radius) */
-  shape?: 'large' | 'medium' | 'small'
 }
 
-/**
- * M3 Input Component
- */
+const MIN_TOUCH_HEIGHT = 48
+
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ 
-    label, 
-    error, 
-    helperText, 
-    variant = 'outlined',
-    shape = 'large',
-    className = '', 
-    style = {},
-    ...restProps 
-  }, ref) => {
-    const { colors } = useTheme()
-    
-    // Filter out custom props that shouldn't be passed to DOM
-    const {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      'app-card': _appCard,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      'app-text-main': _appTextMain,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      'app-text-muted': _appTextMuted,
-      ...domProps
-    } = restProps as any
+  (
+    {
+      label,
+      error,
+      helperText,
+      className = '',
+      style = {},
+      value,
+      defaultValue,
+      onFocus,
+      onBlur,
+      onChange,
+      ...restProps
+    },
+    ref
+  ) => {
+    const [focused, setFocused] = useState(false)
+    const [internalValue, setInternalValue] = useState(() =>
+      defaultValue != null ? String(defaultValue) : ''
+    )
+    const isControlled = value !== undefined
+    const hasValue =
+      (isControlled && value !== null && String(value).trim() !== '') ||
+      (!isControlled && internalValue.trim() !== '') ||
+      (defaultValue !== undefined && defaultValue !== null && String(defaultValue).trim() !== '')
 
-    // Shape styles (M3 border radius)
-    const shapeStyles = {
-      large: 'rounded-2xl',   // 16px - Modern Android aesthetic
-      medium: 'rounded-xl',   // 12px
-      small: 'rounded-lg',    // 8px
-    }
-
-    // Variant styles
-    const getVariantStyles = () => {
-      switch (variant) {
-        case 'filled':
-          return {
-            backgroundColor: colors.surfaceVariant,
-            border: 'none',
-            borderBottom: `2px solid ${error ? colors.error : colors.outline}`,
-            borderRadius: `${shape === 'large' ? '16px' : shape === 'medium' ? '12px' : '8px'} ${shape === 'large' ? '16px' : shape === 'medium' ? '12px' : '8px'} 0 0`,
-          }
-        
-        case 'outlined':
-        default:
-          return {
-            backgroundColor: 'transparent',
-            border: `2px solid ${error ? colors.error : colors.outline}`,
-          }
-      }
-    }
+    const floating = focused || hasValue
 
     return (
       <div className="w-full">
-        {label && (
-          <label 
-            className="block mb-2 text-sm font-semibold"
-            style={{ color: colors.onSurface }}
-          >
-            {label}
-          </label>
-        )}
-        
-        <input
-          ref={ref}
+        <div
           className={`
-            w-full
-            px-4 py-3
-            text-base font-medium
-            transition-all duration-200
-            focus:outline-none
-            placeholder:opacity-60
-            ${shapeStyles[shape]}
-            ${className}
+            relative rounded-extra-large overflow-hidden
+            bg-surface border-b-2
+            transition-colors duration-200
+            ${error ? 'border-error' : focused ? 'border-primary' : 'border-outline'}
           `}
-          style={{
-            ...getVariantStyles(),
-            color: colors.onSurface,
-            fontSize: '16px', // Prevent iOS zoom on focus
-            ...style,
-          }}
-          onFocus={(e) => {
-            // M3 focus state
-            e.currentTarget.style.borderColor = colors.primary
-            e.currentTarget.style.borderWidth = '2px'
-          }}
-          onBlur={(e) => {
-            // Reset border on blur
-            e.currentTarget.style.borderColor = error ? colors.error : colors.outline
-          }}
-          {...domProps}
-        />
-        
+          style={{ minHeight: MIN_TOUCH_HEIGHT }}
+        >
+          <input
+            ref={ref}
+            value={value}
+            defaultValue={defaultValue}
+            className={`
+              w-full h-full min-h-[48px]
+              pt-5 pb-3 px-4
+              bg-transparent
+              text-on-surface text-body-large font-medium
+              placeholder:text-on-surface-variant placeholder:opacity-70
+              focus:outline-none
+              ${className}
+            `}
+            style={{ fontSize: 'var(--md-sys-typescale-body-large-size)', ...style }}
+            placeholder={floating ? undefined : ' '}
+            onFocus={(e) => {
+              setFocused(true)
+              onFocus?.(e)
+            }}
+            onBlur={(e) => {
+              setFocused(false)
+              if (!isControlled) setInternalValue(e.currentTarget.value)
+              onBlur?.(e)
+            }}
+            onChange={(e) => {
+              if (!isControlled) setInternalValue(e.currentTarget.value)
+              onChange?.(e)
+            }}
+            {...restProps}
+          />
+          {label && (
+            <label
+              className={`
+                absolute left-4 pointer-events-none
+                text-on-surface-variant font-medium
+                transition-all duration-200 origin-left
+                ${floating
+                  ? 'top-1.5 text-label-small text-primary'
+                  : 'top-1/2 -translate-y-1/2 text-body-large'}
+              `}
+              style={{
+                fontSize: floating
+                  ? 'var(--md-sys-typescale-label-small-size)'
+                  : 'var(--md-sys-typescale-body-large-size)',
+              }}
+            >
+              {label}
+            </label>
+          )}
+        </div>
         {error && (
-          <p 
-            className="mt-1.5 text-xs font-medium flex items-center gap-1"
-            style={{ color: colors.error }}
-          >
-            <span className="inline-block">⚠️</span>
+          <p className="mt-1.5 text-label-small text-error flex items-center gap-1">
+            <span aria-hidden>⚠</span>
             {error}
           </p>
         )}
-        
         {helperText && !error && (
-          <p 
-            className="mt-1.5 text-xs"
-            style={{ color: colors.onSurface, opacity: 0.7 }}
-          >
+          <p className="mt-1.5 text-label-small text-on-surface-variant opacity-80">
             {helperText}
           </p>
         )}

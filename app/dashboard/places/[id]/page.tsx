@@ -12,6 +12,8 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import YouTubeUpload from '@/components/YouTubeUpload'
 import { useTheme } from '@/contexts/ThemeContext'
+import { HeadlineLarge, TitleLarge, TitleMedium, BodyMedium, BodySmall, LabelMedium, Button } from '@/components/m3'
+import { Input } from '@/components/common'
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false })
 const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false })
@@ -277,16 +279,16 @@ export default function PlaceDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: 'var(--primary-color)' }}></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: colors.primary }} />
       </div>
     )
   }
 
   if (!place) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="app-text-muted">المكان غير موجود</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <BodyMedium color="onSurfaceVariant">المكان غير موجود</BodyMedium>
       </div>
     )
   }
@@ -294,13 +296,14 @@ export default function PlaceDetailsPage() {
   const videoId = place.video_url ? place.video_url.replace('watch?v=', 'embed/') : null
 
   return (
-    <div className="min-h-screen py-8 app-bg-base">
+    <div className="min-h-screen py-8" style={{ backgroundColor: colors.background }}>
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-6 flex justify-between items-center">
           <Link
             href="/dashboard"
-            className="hover:underline flex items-center gap-2 icon-primary"
+            className="hover:underline flex items-center gap-2"
+            style={{ color: colors.primary }}
           >
             ← العودة للوحة التحكم
           </Link>
@@ -309,72 +312,67 @@ export default function PlaceDetailsPage() {
               <>
                 <Link
                   href={`/dashboard/places/${placeId}/employees`}
-                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                  style={{ background: 'var(--accent)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: colors.primary, color: colors.onPrimary }}
                 >
                   <Users size={18} />
                   إدارة الموظفين
                 </Link>
                 <Link
                   href={`/dashboard/places/${placeId}/posts`}
-                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                  style={{ background: 'var(--secondary-color)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: colors.secondary, color: colors.onSecondary }}
                 >
                   <FileText size={18} />
                   إدارة المنشورات
                 </Link>
-                <button
-                  onClick={handleStartEdit}
-                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors badge-primary"
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
+                <Button variant="filled" shape="large" onClick={handleStartEdit} className="flex items-center gap-2">
                   <Edit size={18} />
                   تعديل المعلومات
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="filled"
+                  shape="large"
                   onClick={handleDelete}
-                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors badge-error"
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  className="flex items-center gap-2"
+                  style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                 >
                   <Trash2 size={18} />
                   حذف المكان
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button
+                <Button
+                  variant="filled"
+                  shape="large"
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                  style={{ background: 'var(--secondary-color)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  className="flex items-center gap-2"
+                  style={{ backgroundColor: colors.secondary, color: colors.onSecondary }}
                 >
                   <Save size={18} />
                   حفظ التعديلات
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="filled-tonal"
+                  shape="large"
                   onClick={handleCancelEdit}
-                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                  style={{ background: 'var(--text-muted)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  className="flex items-center gap-2"
+                  style={{ backgroundColor: colors.surfaceVariant, color: colors.onSurfaceVariant }}
                 >
                   <X size={18} />
                   إلغاء
-                </button>
+                </Button>
               </>
             )}
           </div>
         </div>
 
         {/* Place Info */}
-        <div className="app-card shadow-lg p-6 mb-6">
+        <div
+          className="shadow-lg p-6 mb-6 rounded-2xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
           <div className="flex flex-col md:flex-row gap-6">
             {/* Logo */}
             <div className="flex-shrink-0">
@@ -384,16 +382,18 @@ export default function PlaceDetailsPage() {
                     <img
                       src={editData.logo_url || place.logo_url || ''}
                       alt={editData.name_ar || place.name_ar}
-                      className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 app-border"
+                      className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2"
+                      style={{ borderColor: colors.outline }}
                     />
                   )}
-                  <label className="flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors app-border"
-                    
-                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                  <label
+                    className="flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors"
+                    style={{ borderColor: colors.outline }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = colors.primary }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = colors.outline }}
                   >
-                    <Upload size={24} className="mb-2 icon-muted" />
-                    <span className="text-xs text-center px-2 app-text-muted">رفع صورة</span>
+                    <Upload size={24} className="mb-2" style={{ color: colors.onSurfaceVariant }} />
+                    <BodySmall color="onSurfaceVariant" className="text-center px-2">رفع صورة</BodySmall>
                     <input
                       type="file"
                       accept="image/*"
@@ -408,7 +408,8 @@ export default function PlaceDetailsPage() {
                   <img
                     src={place.logo_url}
                     alt={place.name_ar}
-                    className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2 app-border"
+                    className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg border-2"
+                    style={{ borderColor: colors.outline }}
                   />
                 )
               )}
@@ -417,78 +418,64 @@ export default function PlaceDetailsPage() {
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold app-text-main mb-2">
-                      اسم المكان (عربي) *
-                    </label>
-                    <input
+                    <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">اسم المكان (عربي) *</LabelMedium>
+                    <Input
                       type="text"
                       value={editData.name_ar}
                       onChange={(e) => setEditData({ ...editData, name_ar: e.target.value })}
-                      className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                      variant="outlined"
+                      shape="large"
+                      className="w-full"
                       placeholder="اسم المكان بالعربية"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold app-text-main mb-2">
-                      اسم المكان (إنجليزي)
-                    </label>
-                    <input
+                    <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">اسم المكان (إنجليزي)</LabelMedium>
+                    <Input
                       type="text"
                       value={editData.name_en}
                       onChange={(e) => setEditData({ ...editData, name_en: e.target.value })}
-                      className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                      variant="outlined"
+                      shape="large"
+                      className="w-full"
                       placeholder="اسم المكان بالإنجليزية"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold app-text-main mb-2">
-                      الوصف
-                    </label>
+                    <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">الوصف</LabelMedium>
                     <textarea
                       value={editData.description_ar}
                       onChange={(e) => setEditData({ ...editData, description_ar: e.target.value })}
                       rows={4}
-                      className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                      className="w-full px-4 py-2 rounded-2xl border-2 transition-colors focus:outline-none"
+                      style={{ backgroundColor: colors.surface, borderColor: colors.outline, color: colors.onSurface }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = colors.primary }}
+                      onBlur={(e) => { e.currentTarget.style.borderColor = colors.outline }}
                       placeholder="وصف المكان"
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold app-text-main mb-2">
-                        رقم الهاتف الأول *
-                      </label>
-                      <input
+                      <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">رقم الهاتف الأول *</LabelMedium>
+                      <Input
                         type="tel"
                         value={editData.phone_1}
                         onChange={(e) => setEditData({ ...editData, phone_1: e.target.value })}
-                        className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        variant="outlined"
+                        shape="large"
+                        className="w-full"
                         placeholder="رقم الهاتف الأول"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold app-text-main mb-2">
-                        رقم الهاتف الثاني
-                      </label>
-                      <input
+                      <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">رقم الهاتف الثاني</LabelMedium>
+                      <Input
                         type="tel"
                         value={editData.phone_2}
                         onChange={(e) => setEditData({ ...editData, phone_2: e.target.value })}
-                        className="app-input w-full px-4 py-2 rounded-lg focus:outline-none"
-                      
-                      onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-                      onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        variant="outlined"
+                        shape="large"
+                        className="w-full"
                         placeholder="رقم الهاتف الثاني (اختياري)"
                       />
                     </div>
@@ -496,18 +483,18 @@ export default function PlaceDetailsPage() {
                 </div>
               ) : (
                 <>
-                  <h1 className="text-3xl font-bold app-text-main mb-4">{place.name_ar}</h1>
+                  <HeadlineLarge style={{ color: colors.onSurface }} className="mb-4">{place.name_ar}</HeadlineLarge>
                   {place.name_en && (
-                    <p className="text-lg app-text-muted mb-2">{place.name_en}</p>
+                    <BodyMedium color="onSurfaceVariant" className="mb-2">{place.name_en}</BodyMedium>
                   )}
                   {place.description_ar && (
-                    <p className="app-text-muted mb-4">{place.description_ar}</p>
+                    <BodyMedium color="onSurfaceVariant" className="mb-4">{place.description_ar}</BodyMedium>
                   )}
                 </>
               )}
               
               {!isEditing && (
-                <div className="flex flex-wrap gap-4 text-sm app-text-muted mb-4">
+                <div className="flex flex-wrap gap-4 mb-4" style={{ color: colors.onSurfaceVariant }}>
                   <div className="flex items-center gap-2">
                     <Phone size={18} />
                     <span>{place.phone_1}</span>
@@ -530,21 +517,18 @@ export default function PlaceDetailsPage() {
               )}
 
               <div className="flex gap-2">
-                <span className="px-3 py-1 rounded-full text-sm" style={place.is_active ? {
-                  background: 'var(--status-green-bg)',
-                  color: 'var(--secondary-color)'
-                } : {
-                  background: 'var(--status-red-bg)',
-                  color: 'var(--status-error)'
-                }}>
+                <span
+                  className="px-3 py-1 rounded-full text-sm"
+                  style={place.is_active ? { background: colors.successContainer, color: colors.success } : { background: colors.errorContainer, color: colors.error }}
+                >
                   {place.is_active ? 'نشط' : 'غير نشط'}
                 </span>
                 {place.is_featured && (
-                  <span className="px-3 py-1 rounded-full text-sm" style={{ background: 'var(--status-yellow-bg)', color: 'var(--status-warning)' }}>
+                  <span className="px-3 py-1 rounded-full text-sm" style={{ background: colors.warningContainer, color: colors.warning }}>
                     مميز
                   </span>
                 )}
-                <span className="px-3 py-1 rounded-full text-sm" style={{ background: 'var(--status-blue-bg)', color: 'var(--primary-color)' }}>
+                <span className="px-3 py-1 rounded-full text-sm" style={{ background: colors.infoContainer, color: colors.primary }}>
                   {place.category}
                 </span>
               </div>
@@ -553,8 +537,11 @@ export default function PlaceDetailsPage() {
         </div>
 
         {/* Map */}
-        <div className="app-card shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 app-text-main">الموقع على الخريطة</h2>
+        <div
+          className="shadow-lg p-6 mb-6 rounded-2xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          <TitleLarge style={{ color: colors.onSurface }} className="mb-4">الموقع على الخريطة</TitleLarge>
           {isEditing ? (
             <div className="h-96 rounded-lg overflow-hidden">
               <MapPicker
@@ -575,12 +562,15 @@ export default function PlaceDetailsPage() {
         </div>
 
         {/* Video */}
-        <div className="app-card shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 app-text-main">فيديو المكان</h2>
+        <div
+          className="shadow-lg p-6 mb-6 rounded-2xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          <TitleLarge style={{ color: colors.onSurface }} className="mb-4">فيديو المكان</TitleLarge>
           {isEditing ? (
             <div className="space-y-4">
               {(editData.video_url || place.video_url) && (
-                <div className="aspect-video rounded-lg overflow-hidden app-bg-surface">
+                <div className="aspect-video rounded-lg overflow-hidden" style={{ backgroundColor: colors.surfaceContainer }}>
                   {(() => {
                     const currentVideoUrl = editData.video_url || place.video_url || ''
                     const currentVideoId = currentVideoUrl ? currentVideoUrl.replace('watch?v=', 'embed/') : null
@@ -617,9 +607,12 @@ export default function PlaceDetailsPage() {
         </div>
 
         {/* Products */}
-        <div className="app-card shadow-lg p-6 mb-6">
+        <div
+          className="shadow-lg p-6 mb-6 rounded-2xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold app-text-main">المنتجات والخدمات ({products.length})</h2>
+            <TitleLarge style={{ color: colors.onSurface }}>المنتجات والخدمات ({products.length})</TitleLarge>
             <Link
               href={`/dashboard/places/${placeId}/products/new`}
               className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105 active:scale-95"
@@ -638,7 +631,8 @@ export default function PlaceDetailsPage() {
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="border rounded-lg p-4 hover:shadow-md transition-shadow app-border"
+                  className="border rounded-xl p-4 hover:shadow-md transition-shadow"
+                  style={{ borderColor: colors.outline }}
                 >
                   {product.images && product.images.length > 0 && (
                     <img
@@ -647,16 +641,16 @@ export default function PlaceDetailsPage() {
                       className="w-full h-48 object-cover rounded-lg mb-3"
                     />
                   )}
-                  <h3 className="font-bold text-lg mb-2 app-text-main">{product.name_ar}</h3>
+                  <TitleMedium style={{ color: colors.onSurface }} className="mb-2">{product.name_ar}</TitleMedium>
                   {product.description_ar && (
-                    <p className="text-sm app-text-muted mb-2 line-clamp-2">{product.description_ar}</p>
+                    <BodySmall color="onSurfaceVariant" className="mb-2 line-clamp-2">{product.description_ar}</BodySmall>
                   )}
                   {product.price && (
-                    <p className="text-lg font-semibold mb-2 icon-primary">
+                    <BodyMedium style={{ color: colors.primary }} className="font-semibold mb-2">
                       {product.price} {product.currency}
-                    </p>
+                    </BodyMedium>
                   )}
-                  <div className="flex items-center gap-2 text-xs app-text-muted">
+                  <div className="flex items-center gap-2 text-xs" style={{ color: colors.onSurfaceVariant }}>
                     {product.videos && product.videos.length > 0 && (
                       <div className="flex items-center gap-1">
                         <Video size={14} />
@@ -674,12 +668,13 @@ export default function PlaceDetailsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 app-text-muted">
-              <Package size={48} className="mx-auto mb-4 icon-muted" />
-              <p>لا توجد منتجات بعد</p>
+            <div className="text-center py-8">
+              <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurfaceVariant }} />
+              <BodyMedium color="onSurfaceVariant">لا توجد منتجات بعد</BodyMedium>
               <Link
                 href={`/dashboard/places/${placeId}/products/new`}
-                className="inline-block mt-4 hover:underline icon-primary"
+                className="inline-block mt-4 hover:underline"
+                style={{ color: colors.primary }}
               >
                 إضافة منتج جديد
               </Link>

@@ -1,189 +1,157 @@
 @import "tailwindcss";
 
+/* ============================================
+   M3 Design Tokens – Single source of truth
+   Primary: Royal Gold #D4AF37
+   Surface: Dark Charcoal (dark), light surface (light)
+   ============================================ */
+
 :root {
-  /* Color Variables */
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --secondary: #10b981;
-  --accent: #f59e0b;
-  
-  /* Unified Design Variables for WebView */
-  --primary-color: #3b82f6;
-  --primary-color-rgb: 59, 130, 246;
-  --secondary-color: #10b981;
-  --bg-color: #ffffff;
-  --text-color: #171717;
-  
-  /* Border & Divider Colors */
-  --border-color: #e5e7eb;
-  --border-color-hover: #d1d5db;
-  
-  /* Surface & Hover States */
-  --surface-color: #f9fafb;
-  --surface-hover: #f3f4f6;
-  --surface-active: #e5e7eb;
-  
-  /* Text Opacity Variants */
-  --text-muted: rgba(23, 23, 23, 0.7);
-  --text-subtle: rgba(23, 23, 23, 0.6);
-  
-  /* Status Colors (for badges, etc.) */
-  --status-online: #10b981;
-  --status-error: #ef4444;
-  --status-warning: #f59e0b;
-  
-  /* Status Background Colors (light versions) */
-  --status-blue-bg: #eff6ff;
-  --status-green-bg: #f0fdf4;
-  --status-yellow-bg: #fefce8;
-  --status-red-bg: #fef2f2;
-  
-  /* Overlay Colors */
+  /* M3 Primary – Royal Gold */
+  --color-primary: #D4AF37;
+  --color-primary-rgb: 212, 175, 55;
+  --color-on-primary: #1c1c1e;
+  --color-primary-container: #2d2d2d;
+  --color-on-primary-container: #f5f5f5;
+
+  /* M3 Surface & Background */
+  --color-background: #ffffff;
+  --color-on-background: #1c1c1e;
+  --color-surface: #f5f5f5;
+  --color-surface-dim: #f0f0f0;
+  --color-surface-bright: #fafafa;
+  --color-on-surface: #1c1c1e;
+  --color-on-surface-variant: #5c5c5e;
+  --color-outline: #e5e5e7;
+  --color-outline-variant: #d1d1d6;
+
+  /* M3 Semantic */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-success: #2e7d32;
+  --color-on-success: #ffffff;
+  --color-warning: #e65100;
+  --color-on-warning: #ffffff;
+
+  /* Aliases for compatibility */
+  --background: var(--color-background);
+  --foreground: var(--color-on-background);
+  --primary: var(--color-primary);
+  --primary-color: var(--color-primary);
+  --primary-color-rgb: var(--color-primary-rgb);
+  --text-color: var(--color-on-background);
+  --border-color: var(--color-outline);
+  --border-color-hover: var(--color-outline-variant);
+  --surface-color: var(--color-surface);
+  --surface-hover: var(--color-surface-dim);
+  --surface-active: var(--color-outline-variant);
+  --text-muted: rgba(28, 28, 30, 0.7);
+  --text-subtle: rgba(28, 28, 30, 0.6);
+  --bg-color: var(--color-background);
+  --secondary-color: var(--color-success);
+  --accent: var(--color-primary);
+  --status-online: var(--color-success);
+  --status-error: var(--color-error);
+  --status-warning: var(--color-warning);
   --overlay-bg: rgba(0, 0, 0, 0.5);
   --overlay-bg-light: rgba(0, 0, 0, 0.3);
-  
-  /* Shadow */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  
-  /* Spacing Variables */
+
+  /* Spacing & Rounding – M3 */
   --main-padding: 16px;
   --section-padding: 24px;
   --element-gap: 12px;
-  --border-radius: 8px;
-  --border-radius-lg: 12px;
-  
-  /* Mobile-friendly System Fonts */
-  --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  --font-mono-system: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', 'Courier New', monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-extra-large: 24px;
+  --border-radius: var(--radius-sm);
+  --border-radius-lg: var(--radius-md);
 
-  /* Material Design 3 Type Scale */
-  /* Display - For large, high-impact text */
+  /* Fonts */
+  --font-system: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Roboto Mono', monospace;
+
+  /* M3 Type Scale */
   --md-sys-typescale-display-large-size: 57px;
   --md-sys-typescale-display-large-line-height: 64px;
   --md-sys-typescale-display-large-weight: 400;
-
   --md-sys-typescale-display-medium-size: 45px;
   --md-sys-typescale-display-medium-line-height: 52px;
   --md-sys-typescale-display-medium-weight: 400;
-
   --md-sys-typescale-display-small-size: 36px;
   --md-sys-typescale-display-small-line-height: 44px;
   --md-sys-typescale-display-small-weight: 400;
-
-  /* Headline - For high-emphasis text */
   --md-sys-typescale-headline-large-size: 32px;
   --md-sys-typescale-headline-large-line-height: 40px;
   --md-sys-typescale-headline-large-weight: 400;
-
   --md-sys-typescale-headline-medium-size: 28px;
   --md-sys-typescale-headline-medium-line-height: 36px;
   --md-sys-typescale-headline-medium-weight: 400;
-
   --md-sys-typescale-headline-small-size: 24px;
   --md-sys-typescale-headline-small-line-height: 32px;
   --md-sys-typescale-headline-small-weight: 400;
-
-  /* Title - For medium-emphasis text */
   --md-sys-typescale-title-large-size: 22px;
   --md-sys-typescale-title-large-line-height: 28px;
   --md-sys-typescale-title-large-weight: 500;
-
   --md-sys-typescale-title-medium-size: 16px;
   --md-sys-typescale-title-medium-line-height: 24px;
   --md-sys-typescale-title-medium-weight: 600;
-
   --md-sys-typescale-title-small-size: 14px;
   --md-sys-typescale-title-small-line-height: 20px;
   --md-sys-typescale-title-small-weight: 600;
-
-  /* Body - For regular text */
   --md-sys-typescale-body-large-size: 16px;
   --md-sys-typescale-body-large-line-height: 24px;
   --md-sys-typescale-body-large-weight: 400;
-
   --md-sys-typescale-body-medium-size: 14px;
   --md-sys-typescale-body-medium-line-height: 20px;
   --md-sys-typescale-body-medium-weight: 400;
-
   --md-sys-typescale-body-small-size: 12px;
   --md-sys-typescale-body-small-line-height: 16px;
   --md-sys-typescale-body-small-weight: 400;
-
-  /* Label - For UI elements */
   --md-sys-typescale-label-large-size: 14px;
   --md-sys-typescale-label-large-line-height: 20px;
   --md-sys-typescale-label-large-weight: 600;
-
   --md-sys-typescale-label-medium-size: 12px;
   --md-sys-typescale-label-medium-line-height: 16px;
   --md-sys-typescale-label-medium-weight: 600;
-
   --md-sys-typescale-label-small-size: 11px;
   --md-sys-typescale-label-small-line-height: 16px;
   --md-sys-typescale-label-small-weight: 600;
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    
-    /* Dark Mode Color Variables */
-    --bg-color: #1a1a1a;
-    --text-color: #e5e5e5;
-    
-    /* Dark Mode Borders */
-    --border-color: #374151;
-    --border-color-hover: #4b5563;
-    
-    /* Dark Mode Surfaces */
-    --surface-color: #111827;
-    --surface-hover: #1f2937;
-    --surface-active: #374151;
-    
-    /* Dark Mode Text Opacity */
-    --text-muted: rgba(229, 229, 229, 0.7);
-    --text-subtle: rgba(229, 229, 229, 0.6);
-    
-    /* Adjusted primary color for better visibility on dark backgrounds */
-    --primary-color: #60a5fa; /* Lighter blue */
-    --primary-color-rgb: 96, 165, 250;
-    --primary-dark: #3b82f6;
-    
-    /* Keep secondary and accent for consistency */
-    --secondary-color: #34d399; /* Slightly brighter green */
-    --accent: #fbbf24; /* Slightly brighter yellow */
-    
-    /* Dark Mode Status Backgrounds */
-    --status-blue-bg: rgba(59, 130, 246, 0.1);
-    --status-green-bg: rgba(16, 185, 129, 0.1);
-    --status-yellow-bg: rgba(245, 158, 11, 0.1);
-    --status-red-bg: rgba(239, 68, 68, 0.1);
-    
-    /* Dark Mode Overlay */
-    --overlay-bg: rgba(0, 0, 0, 0.7);
-    --overlay-bg-light: rgba(0, 0, 0, 0.5);
-  }
-}
+/* Light/dark theme is applied by ThemeContext (single source). :root above = default light. */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--color-primary);
+  --color-on-primary: var(--color-on-primary);
+  --color-background: var(--color-background);
+  --color-on-background: var(--color-on-background);
+  --color-surface: var(--color-surface);
+  --color-on-surface: var(--color-on-surface);
+  --color-outline: var(--color-outline);
+  --color-error: var(--color-error);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --radius-extra-large: var(--radius-extra-large);
+  --font-sans: var(--font-system);
+  --font-mono: var(--font-mono);
 }
+
+/* ============================================
+   Base
+   ============================================ */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Cairo', var(--font-system), Arial, Helvetica, sans-serif;
-  /* WebView: Disable text selection for better mobile experience */
+  font-family: var(--font-system);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+  font-weight: var(--md-sys-typescale-body-large-weight);
+  letter-spacing: 0.5px;
   -webkit-user-select: none;
   user-select: none;
-  /* Smooth transition between light and dark modes */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -191,20 +159,16 @@ body {
   box-sizing: border-box;
 }
 
-/* WebView-specific fixes */
-/* Remove tap highlight on all interactive elements */
 button,
 a,
 input,
 textarea,
 select,
-[role="button"],
-[onclick] {
+[role="button"] {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
 }
 
-/* Re-enable text selection for input fields and text areas */
 input,
 textarea,
 [contenteditable="true"] {
@@ -212,7 +176,6 @@ textarea,
   user-select: text;
 }
 
-/* Re-enable text selection for readable content */
 p,
 span,
 div[class*="text"],
@@ -222,32 +185,32 @@ section {
   user-select: text;
 }
 
-/* Smooth scrolling for main content area (iOS momentum scrolling) */
 main {
-  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Custom scrollbar */
+/* ============================================
+   Scrollbar
+   ============================================ */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: var(--color-outline-variant);
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--color-on-surface-variant);
 }
 
-/* Hide scrollbar for featured places */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -257,7 +220,10 @@ main {
   display: none;
 }
 
-/* Line clamp utility */
+/* ============================================
+   Utilities
+   ============================================ */
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -266,28 +232,25 @@ main {
 }
 
 /* ============================================
-   UNIFIED BUTTON & INPUT STYLES (WebView Optimized)
+   Buttons & inputs – use tokens only
    ============================================ */
 
-/* Global Button Styles using CSS Variables */
 button,
 input[type="button"],
 input[type="submit"],
 [role="button"] {
   background: var(--primary-color);
-  color: white;
+  color: var(--color-on-primary);
   border: none;
   border-radius: var(--border-radius);
   padding: var(--main-padding);
-  font-size: 16px; /* Prevent iOS zoom on focus */
+  font-size: var(--md-sys-typescale-body-large-size);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  /* WebView tap highlight removed above */
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Button Pressed Effect for WebView */
 button:active,
 input[type="button"]:active,
 input[type="submit"]:active,
@@ -296,7 +259,6 @@ input[type="submit"]:active,
   opacity: 0.9;
 }
 
-/* Button Hover States */
 button:hover:not(:disabled),
 input[type="button"]:hover:not(:disabled),
 input[type="submit"]:hover:not(:disabled),
@@ -304,7 +266,6 @@ input[type="submit"]:hover:not(:disabled),
   opacity: 0.9;
 }
 
-/* Button Disabled State */
 button:disabled,
 input[type="button"]:disabled,
 input[type="submit"]:disabled,
@@ -314,13 +275,11 @@ input[type="submit"]:disabled,
   transform: none;
 }
 
-/* Secondary Button Variant */
 button.secondary,
 [role="button"].secondary {
   background: var(--secondary-color);
 }
 
-/* Input & Form Elements using CSS Variables */
 input[type="text"],
 input[type="number"],
 input[type="email"],
@@ -333,58 +292,54 @@ input[type="date"],
 input[type="time"],
 textarea,
 select {
-  font-size: 16px; /* Critical: Prevents iOS WebView auto-zoom (must be >= 16px) */
+  font-size: var(--md-sys-typescale-body-large-size);
   font-weight: 500;
   color: var(--text-color);
   background-color: var(--bg-color);
-  border: 2px solid #d1d5db; /* gray-300 - can be customized with CSS variable if needed */
+  border: 2px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: var(--main-padding);
   width: 100%;
   transition: border-color 0.2s ease;
 }
 
-/* Input Focus States */
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--primary-color);
-  background-color: var(--bg-color);
 }
 
 input::placeholder,
 textarea::placeholder {
-  font-size: 16px; /* Match input font-size to prevent layout shift */
+  font-size: var(--md-sys-typescale-body-large-size);
   font-weight: 400;
-  color: #6b7280; /* gray-500 - darker for better contrast */
+  color: var(--color-on-surface-variant);
   opacity: 1;
 }
 
-/* Ensure numbers in number inputs are visible */
 input[type="number"] {
   font-weight: 600;
-  color: var(--text-color);
 }
 
-/* Label Styles */
 label {
   color: var(--text-color);
   font-weight: 600;
-  font-size: 16px; /* Consistent sizing */
+  font-size: var(--md-sys-typescale-body-large-size);
 }
 
-
-/* Disabled states */
 input:disabled,
 textarea:disabled,
 select:disabled {
-  color: #6b7280; /* gray-500 */
-  background-color: #f3f4f6; /* gray-100 */
+  color: var(--color-on-surface-variant);
+  background-color: var(--color-surface-dim);
   cursor: not-allowed;
 }
 
-/* Material Design 3 Typography - Headings */
+/* ============================================
+   M3 Typography – headings & body
+   ============================================ */
+
 h1 {
   font-size: var(--md-sys-typescale-headline-large-size);
   line-height: var(--md-sys-typescale-headline-large-line-height);
@@ -427,14 +382,6 @@ h6 {
   letter-spacing: 0.1px;
 }
 
-/* Body text using M3 Type Scale */
-body {
-  font-size: var(--md-sys-typescale-body-large-size);
-  line-height: var(--md-sys-typescale-body-large-line-height);
-  font-weight: var(--md-sys-typescale-body-large-weight);
-  letter-spacing: 0.5px;
-}
-
 p {
   font-size: var(--md-sys-typescale-body-large-size);
   line-height: var(--md-sys-typescale-body-large-line-height);
@@ -442,7 +389,7 @@ p {
   letter-spacing: 0.5px;
 }
 
-/* M3 Typography Utility Classes */
+/* M3 type utility classes */
 .text-display-large {
   font-size: var(--md-sys-typescale-display-large-size);
   line-height: var(--md-sys-typescale-display-large-line-height);
@@ -541,29 +488,32 @@ p {
   letter-spacing: 0.5px;
 }
 
-/* Leaflet map styles */
+/* ============================================
+   Leaflet
+   ============================================ */
+
 .leaflet-container {
-  font-family: 'Cairo', Arial, Helvetica, sans-serif;
+  font-family: var(--font-system);
   z-index: 0;
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .leaflet-popup-content {
-  margin: 12px;
-  font-family: 'Cairo', Arial, Helvetica, sans-serif;
+  margin: var(--element-gap);
+  font-family: var(--font-system);
 }
 
 .leaflet-control-zoom {
   border: none !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .leaflet-control-zoom a {
-  background-color: white !important;
-  color: #333 !important;
+  background-color: var(--color-surface-bright) !important;
+  color: var(--color-on-surface) !important;
   border: none !important;
   width: 30px !important;
   height: 30px !important;
@@ -573,10 +523,13 @@ p {
 }
 
 .leaflet-control-zoom a:hover {
-  background-color: #f0f0f0 !important;
+  background-color: var(--color-surface-dim) !important;
 }
 
-/* Bottom Sheet Animation */
+/* ============================================
+   Animations
+   ============================================ */
+
 @keyframes slide-up {
   from {
     transform: translateY(100%);
@@ -592,39 +545,103 @@ p {
   animation: slide-up 0.3s ease-out;
 }
 
+/* Skeleton shimmer (BanSkeleton) */
+@keyframes skeleton-shimmer {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+.skeleton-shimmer {
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
 /* ============================================
-   CSS VARIABLE UTILITY CLASSES
-   Use these classes instead of hardcoded Tailwind colors
+   M3 utility classes (tokens only)
    ============================================ */
 
-/* Background Utilities */
 .bg-primary { background-color: var(--primary-color) !important; }
-.bg-secondary { background-color: var(--secondary-color) !important; }
-.bg-surface { background-color: var(--bg-color) !important; }
+.bg-surface { background-color: var(--surface-color) !important; }
+.bg-surface-bright { background-color: var(--color-surface-bright) !important; }
 .bg-base { background-color: var(--background) !important; }
-
-/* Text Utilities */
 .text-primary { color: var(--primary-color) !important; }
-.text-secondary { color: var(--secondary-color) !important; }
 .text-content { color: var(--text-color) !important; }
 .text-foreground { color: var(--foreground) !important; }
-
-/* Border Utilities */
 .border-primary { border-color: var(--primary-color) !important; }
-.border-secondary { border-color: var(--secondary-color) !important; }
-
-/* Spacing Utilities */
 .p-main { padding: var(--main-padding) !important; }
 .p-section { padding: var(--section-padding) !important; }
 .gap-element { gap: var(--element-gap) !important; }
-
-/* Border Radius Utilities */
 .rounded-main { border-radius: var(--border-radius) !important; }
 .rounded-section { border-radius: var(--border-radius-lg) !important; }
+.rounded-extra-large { border-radius: var(--radius-extra-large) !important; }
 
-/* ============================================
-   TOGGLE SWITCH STYLES (Dark Mode Compatible)
-   ============================================ */
+.app-card {
+  background: var(--background) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--border-radius-lg) !important;
+  color: var(--text-color) !important;
+}
+
+.app-input {
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  padding: var(--main-padding) !important;
+}
+
+.app-input:focus {
+  outline: none !important;
+  border-color: var(--primary-color) !important;
+}
+
+.app-text-main { color: var(--text-color) !important; }
+.app-text-muted { color: var(--text-muted) !important; }
+.app-text-subtle { color: var(--text-subtle) !important; }
+.app-bg-surface { background: var(--surface-color) !important; }
+.app-bg-base { background: var(--bg-color) !important; }
+.app-border { border-color: var(--border-color) !important; }
+.app-border-hover { border-color: var(--border-color-hover) !important; }
+
+.app-hover-bg {
+  background: transparent !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.app-hover-bg:hover {
+  background: var(--surface-hover) !important;
+}
+
+.icon-primary { color: var(--primary-color); }
+.icon-muted { color: var(--text-muted); }
+.icon-error { color: var(--color-error); }
+.icon-warning { color: var(--color-warning); }
+
+.badge-primary {
+  background: var(--primary-color);
+  color: var(--color-on-primary);
+}
+
+.badge-error {
+  background: var(--color-error);
+  color: var(--color-on-error);
+}
+
+.badge-success {
+  background: var(--color-success);
+  color: var(--color-on-success);
+}
+
+.badge-warning {
+  background: var(--color-warning);
+  color: var(--color-on-warning);
+}
+
+.message-unread {
+  background: rgba(var(--primary-color-rgb), 0.1);
+  border-color: var(--primary-color);
+}
+
 .toggle-switch {
   position: relative;
   display: inline-flex;
@@ -657,145 +674,18 @@ p {
 
 .toggle-switch.checked::after {
   transform: translateX(20px);
-  background-color: white;
-  border-color: white;
+  background-color: var(--color-on-primary);
+  border-color: var(--color-on-primary);
 }
 
-/* Toggle switch with focus ring */
 .toggle-switch:focus-within {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* Hover state */
 .toggle-switch:hover:not(.checked) {
   background-color: var(--border-color-hover);
 }
 
-/* ============================================
-   UNIFIED UI BRIDGE - Utility Classes
-   Use these instead of hardcoded Tailwind colors
-   ============================================ */
-
-/* Card/Surface Components */
-.app-card {
-  background: var(--background) !important;
-  border-color: var(--border-color) !important;
-  border-radius: var(--border-radius-lg) !important;
-  color: var(--text-color) !important;
-}
-
-/* Input Elements */
-.app-input {
-  background-color: var(--bg-color) !important;
-  color: var(--text-color) !important;
-  border-color: var(--border-color) !important;
-  border-radius: var(--border-radius) !important;
-  padding: var(--main-padding) !important;
-}
-
-.app-input:focus {
-  outline: none !important;
-  border-color: var(--primary-color) !important;
-  background-color: var(--bg-color) !important;
-}
-
-/* Text Utilities */
-.app-text-main {
-  color: var(--text-color) !important;
-}
-
-.app-text-muted {
-  color: var(--text-muted) !important;
-}
-
-.app-text-subtle {
-  color: var(--text-subtle) !important;
-}
-
-/* Background Utilities */
-.app-bg-surface {
-  background: var(--surface-color) !important;
-}
-
-.app-bg-base {
-  background: var(--bg-color) !important;
-}
-
-/* Border Utilities */
-.app-border {
-  border-color: var(--border-color) !important;
-}
-
-.app-border-hover {
-  border-color: var(--border-color-hover) !important;
-}
-
-/* Hover Background */
-.app-hover-bg {
-  background: transparent !important;
-  transition: background-color 0.2s ease !important;
-}
-
-.app-hover-bg:hover {
-  background: var(--surface-hover) !important;
-}
-
-/* Icon Colors */
-.icon-primary { color: var(--primary-color); }
-.icon-secondary { color: var(--secondary-color); }
-.icon-warning { color: var(--status-warning); }
-.icon-error { color: var(--status-error); }
-.icon-accent { color: var(--accent); }
-.icon-muted { color: var(--text-muted); }
-
-/* Badge Styles */
-.badge-error {
-  background: var(--status-error);
-  color: white;
-}
-
-.badge-primary {
-  background: var(--primary-color);
-  color: white;
-}
-
-.badge-warning {
-  background: var(--status-yellow-bg);
-  color: var(--status-warning);
-}
-
-.badge-success {
-  background: var(--status-green-bg);
-  color: var(--secondary-color);
-}
-
-.badge-danger {
-  background: var(--status-red-bg);
-  color: var(--status-error);
-}
-
-.badge-muted {
-  background: var(--surface-color);
-  color: var(--text-color);
-}
-
-/* Message Card Styles */
-.message-unread {
-  background: rgba(var(--primary-color-rgb), 0.1);
-  border-color: var(--primary-color);
-}
-
-/* Border utilities */
-.border-app { border-color: var(--border-color); }
-.border-primary { border-color: var(--primary-color); }
-
-/* Background utilities */
-.bg-primary { background: var(--primary-color); }
-.bg-secondary { background: var(--secondary-color); }
-.bg-surface { background: var(--surface-color); }
-.app-surface { background: var(--surface-color); }
-
-/* Link Colors */
 .link-primary { color: var(--primary-color); }
 .link-primary:hover { text-decoration: underline; }

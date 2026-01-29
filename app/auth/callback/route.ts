@@ -77,6 +77,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // إعادة التوجيه لصفحة تسجيل الدخول لعرض الإيميل المستلم ثم الداشبورد
-  return NextResponse.redirect(new URL('/auth/login?success=1', requestUrl.origin))
+  // التوجيه إلى الصفحة الرئيسية بعد تسجيل الدخول
+  return NextResponse.redirect(new URL('/', requestUrl.origin))
 }

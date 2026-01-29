@@ -84,7 +84,7 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
                 strokeWidth={isActive ? 2.8 : 2}
                 className="flex-shrink-0 transition-all duration-200"
                 style={{
-                  filter: isActive ? 'drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3))' : 'none',
+                  filter: isActive ? `drop-shadow(0 2px 4px rgba(${colors.primaryRgb}, 0.3))` : 'none',
                 }}
               />
 
@@ -108,7 +108,7 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
                       style={{
                         backgroundColor: colors.error,
                         color: colors.onPrimary,
-                        boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
+                        boxShadow: `0 2px 4px ${colors.error}40`,
                       }}
                     >
                       {item.badge}
@@ -146,19 +146,22 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="hidden lg:flex flex-col fixed right-0 top-16 bottom-0 border-l app-bg-main z-40 transition-all duration-300"
+      className="hidden lg:flex flex-col fixed right-0 bottom-0 border-l z-40 transition-all duration-300"
       style={{
+        top: 'var(--header-height, 56px)',
         width: collapsed ? '80px' : '280px',
         borderColor: colors.outline,
+        backgroundColor: colors.background,
       }}
     >
       {/* Collapse Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -left-3 top-4 w-6 h-6 rounded-full border flex items-center justify-center app-bg-main transition-all hover:scale-110"
+        className="absolute -left-3 top-4 w-6 h-6 rounded-full border flex items-center justify-center transition-all hover:scale-110"
         style={{
           borderColor: colors.outline,
           color: colors.onSurface,
+          backgroundColor: colors.background,
         }}
       >
         {collapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}

@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useAdminManager } from '@/hooks'
 import { showError, showSuccess } from '@/components/SweetAlert'
+import { LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
-import { Save, Globe, Eye } from 'lucide-react'
+import { Save, Globe } from 'lucide-react'
+import { HeadlineLarge, TitleLarge, BodyMedium, BodySmall, LabelMedium, Button } from '@/components/m3'
+import { Input } from '@/components/common'
 
 export default function AdminSettingsPage() {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
-  const [loading, setLoading] = useState(true)
+  const { colors } = useTheme()
+  const { isAdmin, loading: adminLoading } = useAdminManager()
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({
     siteName: 'دليل المحلات والصيدليات',
@@ -24,42 +27,22 @@ export default function AdminSettingsPage() {
   })
 
   useEffect(() => {
-    checkAdmin()
-    loadSettings()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const checkAdmin = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.is_admin) {
+    if (!adminLoading && !isAdmin) {
       showError('ليس لديك صلاحيات للوصول إلى هذه الصفحة')
       router.push('/dashboard')
-      return
     }
+  }, [isAdmin, adminLoading, router])
 
-    setLoading(false)
-  }
+  useEffect(() => {
+    if (isAdmin) loadSettings()
+  }, [isAdmin])
 
-  const loadSettings = async () => {
+  const loadSettings = () => {
     try {
-      // Load settings from localStorage or database
-      const savedSettings = localStorage.getItem('admin_settings')
-      if (savedSettings) {
-        setSettings(JSON.parse(savedSettings))
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error)
+      const saved = localStorage.getItem('admin_settings')
+      if (saved) setSettings(JSON.parse(saved))
+    } catch (e) {
+      console.error('Error loading settings:', e)
     }
   }
 
@@ -83,18 +66,16 @@ export default function AdminSettingsPage() {
     }))
   }
 
-  if (loading) {
+  if (adminLoading) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div 
-          className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: colors.primary }}
-        ></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
+  }
+
+  if (!isAdmin) {
+    return null
   }
 
   return (
@@ -106,72 +87,91 @@ export default function AdminSettingsPage() {
         <div className="mb-6">
           <Link
             href="/admin"
-            className="hover:underline mb-4 inline-block"
+            className="mb-4 inline-block hover:underline"
             style={{ color: colors.primary }}
           >
             ← العودة للوحة الإدارة
           </Link>
-          <h1 className="text-3xl font-bold" app-text-main>إعدادات النظام</h1>
-          <p className="mt-2" app-text-muted>إدارة إعدادات النظام العامة</p>
+          <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>إعدادات النظام</HeadlineLarge>
+          <BodySmall color="onSurfaceVariant">إدارة إعدادات النظام العامة</BodySmall>
         </div>
 
         <div className="space-y-6">
           {/* General Settings */}
-          <div className="rounded-lg shadow-lg p-6" app-card>
+          <div
+            className="rounded-2xl shadow-lg p-6"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
             <div className="flex items-center gap-3 mb-4">
-              <Globe size={24} className="icon-primary" />
-              <h2 className="text-xl font-bold" app-text-main>الإعدادات العامة</h2>
+              <Globe size={24} style={{ color: colors.primary }} />
+              <TitleLarge style={{ color: colors.onSurface }}>الإعدادات العامة</TitleLarge>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2" app-text-main>
+                <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">
                   اسم الموقع
-                </label>
-                <input
+                </LabelMedium>
+                <Input
                   type="text"
                   value={settings.siteName}
                   onChange={(e) => handleChange('siteName', e.target.value)}
-                  className="app-input w-full px-6 py-3 rounded-full focus:outline-none focus:border-primary transition-colors"
+                  variant="outlined"
+                  shape="large"
+                  className="w-full"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 app-text-main">
+                <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">
                   وصف الموقع
-                </label>
+                </LabelMedium>
                 <textarea
                   value={settings.siteDescription}
                   onChange={(e) => handleChange('siteDescription', e.target.value)}
                   rows={3}
-                  className="app-input w-full px-6 py-3 rounded-full focus:outline-none focus:border-primary transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl border-2 transition-colors focus:outline-none"
+                  style={{
+                    backgroundColor: colors.surface,
+                    borderColor: colors.outline,
+                    color: colors.onSurface,
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = colors.primary
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = colors.outline
+                  }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2" app-text-main>
+                <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">
                   البريد الإلكتروني للموقع
-                </label>
-                <input
+                </LabelMedium>
+                <Input
                   type="email"
                   value={settings.siteEmail}
                   onChange={(e) => handleChange('siteEmail', e.target.value)}
-                  className="app-input w-full px-6 py-3 rounded-full focus:outline-none focus:border-primary transition-colors"
+                  variant="outlined"
+                  shape="large"
+                  className="w-full"
                 />
               </div>
             </div>
           </div>
 
           {/* System Settings */}
-          <div className="rounded-3xl shadow-lg p-6 app-card">
+          <div
+            className="rounded-3xl shadow-lg p-6"
+            style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          >
             <div className="flex items-center gap-3 mb-4">
-              <Eye size={24} className="icon-accent" />
-              <h2 className="text-xl font-bold app-text-main">إعدادات النظام</h2>
+              <Eye size={24} style={{ color: colors.primary }} />
+              <TitleLarge style={{ color: colors.onSurface }}>إعدادات النظام</TitleLarge>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-semibold" app-text-main>
-                    وضع الصيانة
-                  </label>
-                  <p className="text-xs" app-text-muted>إغلاق الموقع للصيانة (للمستخدمين العاديين فقط)</p>
+                  <LabelMedium style={{ color: colors.onSurface }} className="block">وضع الصيانة</LabelMedium>
+                  <BodySmall color="onSurfaceVariant" className="text-xs">إغلاق الموقع للصيانة (للمستخدمين العاديين فقط)</BodySmall>
                 </div>
                 <label className="cursor-pointer">
                   <input
@@ -185,10 +185,8 @@ export default function AdminSettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-semibold app-text-main">
-                    السماح بالتسجيل
-                  </label>
-                  <p className="text-xs app-text-muted">السماح للمستخدمين الجدد بالتسجيل</p>
+                  <LabelMedium style={{ color: colors.onSurface }} className="block">السماح بالتسجيل</LabelMedium>
+                  <BodySmall color="onSurfaceVariant" className="text-xs">السماح للمستخدمين الجدد بالتسجيل</BodySmall>
                 </div>
                 <label className="cursor-pointer">
                   <input
@@ -202,10 +200,8 @@ export default function AdminSettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-semibold" app-text-main>
-                    تفعيل الإشعارات
-                  </label>
-                  <p className="text-xs" app-text-muted>إرسال إشعارات للمستخدمين</p>
+                  <LabelMedium style={{ color: colors.onSurface }} className="block">تفعيل الإشعارات</LabelMedium>
+                  <BodySmall color="onSurfaceVariant" className="text-xs">إرسال إشعارات للمستخدمين</BodySmall>
                 </div>
                 <label className="cursor-pointer">
                   <input
@@ -219,10 +215,8 @@ export default function AdminSettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-semibold" app-text-main>
-                    تفعيل التحليلات
-                  </label>
-                  <p className="text-xs" app-text-muted>تتبع إحصائيات الموقع</p>
+                  <LabelMedium style={{ color: colors.onSurface }} className="block">تفعيل التحليلات</LabelMedium>
+                  <BodySmall color="onSurfaceVariant" className="text-xs">تتبع إحصائيات الموقع</BodySmall>
                 </div>
                 <label className="cursor-pointer">
                   <input
@@ -239,18 +233,17 @@ export default function AdminSettingsPage() {
 
           {/* Save Button */}
           <div className="flex justify-end">
-            <button
-              onClick={handleSave}
+            <Button
+              variant="filled"
+              shape="full"
+              loading={saving}
               disabled={saving}
-              className="px-6 py-3 rounded-full disabled:cursor-not-allowed disabled:opacity-50 transition-all flex items-center gap-2 font-semibold hover:scale-105 active:scale-95"
-              style={{
-                backgroundColor: saving ? colors.surfaceVariant : colors.primary,
-                color: colors.onPrimary,
-              }}
+              onClick={handleSave}
+              className="flex items-center gap-2"
             >
               <Save size={20} />
               {saving ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Bell, Check, CheckCheck, X } from 'lucide-react'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useTheme, type ThemeColors } from '@/contexts/ThemeContext'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Notification } from '@/lib/types/database'
 import { useRouter } from 'next/navigation'
@@ -11,19 +11,31 @@ interface NotificationBellProps {
   userId: string | undefined
 }
 
-// Notification type icons and colors
-const getNotificationStyle = (type: string) => {
-  const styles: Record<string, { icon: string; color: string }> = {
-    message: { icon: '💬', color: '#3B82F6' },
-    subscription: { icon: '💳', color: '#10B981' },
-    employee_request: { icon: '👥', color: '#F59E0B' },
-    post: { icon: '📝', color: '#8B5CF6' },
-    product: { icon: '🛍️', color: '#EC4899' },
-    system: { icon: '⚙️', color: '#6B7280' },
-    promotion: { icon: '🎁', color: '#EF4444' },
-    payment: { icon: '💰', color: '#10B981' }
+const getNotificationStyle = (type: string, colors: ThemeColors): { icon: string; color: string } => {
+  const icons: Record<string, string> = {
+    message: '💬',
+    subscription: '💳',
+    employee_request: '👥',
+    post: '📝',
+    product: '🛍️',
+    system: '⚙️',
+    promotion: '🎁',
+    payment: '💰',
   }
-  return styles[type] || styles.system
+  const colorMap: Record<string, string> = {
+    message: colors.info,
+    subscription: colors.success,
+    employee_request: colors.warning,
+    post: colors.secondary,
+    product: colors.primary,
+    system: colors.onSurfaceVariant,
+    promotion: colors.error,
+    payment: colors.success,
+  }
+  return {
+    icon: icons[type] ?? icons.system,
+    color: colorMap[type] ?? colors.onSurfaceVariant,
+  }
 }
 
 // Format time ago
@@ -122,7 +134,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
             style={{
               backgroundColor: colors.error,
               color: colors.onPrimary,
-              boxShadow: `0 2px 8px rgba(239, 68, 68, 0.3)`
+              boxShadow: `0 2px 8px ${colors.error}40`
             }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -218,7 +230,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
             ) : (
               <div className="divide-y" style={{ borderColor: colors.outline }}>
                 {notifications.map((notification) => {
-                  const style = getNotificationStyle(notification.type)
+                  const style = getNotificationStyle(notification.type, colors)
                   const isUnread = !notification.is_read
 
                   return (
@@ -247,6 +259,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                           className="w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0"
                           style={{ 
                             backgroundColor: `${style.color}20`,
+                            color: style.color,
                           }}
                         >
                           {notification.icon || style.icon}

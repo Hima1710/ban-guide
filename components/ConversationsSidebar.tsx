@@ -84,9 +84,10 @@ export default function ConversationsSidebar() {
       {/* Desktop Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="hidden lg:flex fixed w-14 h-14 text-white rounded-full shadow-lg transition-all z-[70] items-center justify-center relative"
+        className="hidden lg:flex fixed w-14 h-14 rounded-full shadow-lg transition-all z-[70] items-center justify-center relative"
         style={{ 
-          background: 'var(--primary-color)',
+          background: colors.primary,
+          color: colors.onPrimary,
           top: '5.5rem',
           left: '1rem'
         }}
@@ -112,8 +113,8 @@ export default function ConversationsSidebar() {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed bottom-4 right-4 w-14 h-14 text-white rounded-full shadow-lg transition-all z-50 flex items-center justify-center relative"
-        style={{ background: 'var(--primary-color)' }}
+        className="lg:hidden fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg transition-all z-50 flex items-center justify-center relative"
+        style={{ background: colors.primary, color: colors.onPrimary }}
         aria-label="فتح/إغلاق المحادثات"
       >
         <MessageCircle size={24} />
@@ -134,28 +135,32 @@ export default function ConversationsSidebar() {
       {/* Backdrop for Desktop - covers everything including Sidebar */}
       {isOpen && (
         <div
-          className="hidden lg:block fixed inset-0 bg-black bg-opacity-50 z-[55]"
+          className="hidden lg:block fixed inset-0 z-[55]"
+          style={{ backgroundColor: colors.overlay }}
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full app-bg-main shadow-lg transition-transform duration-300 z-[65] ${
+        className={`fixed top-0 right-0 h-full shadow-lg transition-transform duration-300 z-[65] ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         } w-full lg:w-96`}
         style={{
           paddingTop: 'var(--header-height)',
           height: '100vh',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          backgroundColor: colors.background,
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b app-border sticky top-0 app-bg-main z-10">
-          <h2 className="text-xl font-bold app-text-main">المحادثات</h2>
+        <div className="flex items-center justify-between p-4 border-b sticky top-0 z-10" style={{ borderColor: colors.outline, backgroundColor: colors.background }}>
+          <h2 className="text-xl font-bold" style={{ color: colors.onSurface }}>المحادثات</h2>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 rounded-full transition-colors app-hover-bg"
+            className="p-2 rounded-full transition-colors"
+            style={{ color: colors.onSurfaceVariant }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
             aria-label="إغلاق"
           >
             <X size={20} />
@@ -167,8 +172,8 @@ export default function ConversationsSidebar() {
           <div className="p-4">
             {conversations.length === 0 ? (
               <div className="text-center py-8">
-                <MessageCircle size={48} className="mx-auto mb-4 app-text-muted" />
-                <p className="app-text-muted">لا توجد محادثات بعد</p>
+                <MessageCircle size={48} className="mx-auto mb-4" style={{ color: colors.onSurfaceVariant }} />
+                <p style={{ color: colors.onSurfaceVariant }}>لا توجد محادثات بعد</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -180,7 +185,10 @@ export default function ConversationsSidebar() {
                     <div
                       key={`${conv.senderId}-${conv.placeId}`}
                       onClick={() => selectConversation(conv.senderId, conv.placeId)}
-                      className="p-3 rounded-lg cursor-pointer transition-all app-hover-bg border app-border"
+                      className="p-3 rounded-lg cursor-pointer transition-all border"
+                      style={{ borderColor: colors.outline }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
                       <div className="flex items-start gap-3">
                         {conv.partnerAvatar ? (
@@ -191,15 +199,15 @@ export default function ConversationsSidebar() {
                           />
                         ) : (
                           <div
-                            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                            style={{ background: 'var(--primary-color)' }}
+                            className="w-12 h-12 rounded-full flex items-center justify-center font-bold"
+                            style={{ background: colors.primary, color: colors.onPrimary }}
                           >
                             {conv.partnerName?.[0]?.toUpperCase() || '?'}
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <p className="font-semibold app-text-main truncate">
+                            <p className="font-semibold truncate" style={{ color: colors.onSurface }}>
                               {conv.partnerName}
                             </p>
                             {conv.unreadCount > 0 && (
@@ -214,10 +222,10 @@ export default function ConversationsSidebar() {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm app-text-muted mb-1 truncate">
+                          <p className="text-sm mb-1 truncate" style={{ color: colors.onSurfaceVariant }}>
                             {conv.placeName}
                           </p>
-                          <p className="text-xs app-text-subtle line-clamp-1">
+                          <p className="text-xs line-clamp-1" style={{ color: colors.onSurfaceVariant }}>
                             {conv.lastMessage}
                           </p>
                         </div>
@@ -234,13 +242,14 @@ export default function ConversationsSidebar() {
         {selectedConversation && selectedPlaceId && (
           <div className="flex flex-col h-full">
             {/* Conversation Header */}
-            <div className="p-3 border-b app-border backdrop-blur-sm app-bg-surface">
+            <div className="p-3 border-b backdrop-blur-sm" style={{ borderColor: colors.outline, backgroundColor: colors.surface }}>
               <button
                 onClick={() => {
                   selectConversation(null, null)
                   setReplyingTo(null)
                 }}
-                className="mb-2 text-sm app-text-link hover:underline"
+                className="mb-2 text-sm hover:underline"
+                style={{ color: colors.primary }}
               >
                 ← العودة للمحادثات
               </button>
@@ -253,17 +262,17 @@ export default function ConversationsSidebar() {
                   />
                 ) : (
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{ background: 'var(--primary-color)' }}
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold"
+                    style={{ background: colors.primary, color: colors.onPrimary }}
                   >
                     {(selectedConv?.partnerName || selectedSenderInfo?.full_name || 'U')[0]?.toUpperCase()}
                   </div>
                 )}
                 <div className="flex-1">
-                  <p className="font-semibold app-text-main">
+                  <p className="font-semibold" style={{ color: colors.onSurface }}>
                     {selectedConv?.partnerName || selectedSenderInfo?.full_name || selectedSenderInfo?.email || 'مستخدم'}
                   </p>
-                  <p className="text-sm app-text-muted">
+                  <p className="text-sm" style={{ color: colors.onSurfaceVariant }}>
                     {selectedConv?.placeName || selectedPlaceInfo?.name_ar || 'مكان'}
                   </p>
                 </div>
@@ -271,14 +280,20 @@ export default function ConversationsSidebar() {
                   <div className="flex gap-2">
                     <Link
                       href={`/dashboard/places/${selectedPlaceId}/employees`}
-                      className="p-2 rounded-full app-hover-bg"
+                      className="p-2 rounded-full transition-colors"
+                      style={{ color: colors.onSurfaceVariant }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                       title="الموظفون"
                     >
                       <Users size={18} />
                     </Link>
                     <Link
                       href={`/dashboard/places/${selectedPlaceId}/products/new`}
-                      className="p-2 rounded-full app-hover-bg"
+                      className="p-2 rounded-full transition-colors"
+                      style={{ color: colors.onSurfaceVariant }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                       title="المنتجات"
                     >
                       <Package size={18} />
@@ -287,8 +302,8 @@ export default function ConversationsSidebar() {
                 )}
               </div>
               {isEmployee && currentEmployee && (
-                <div className="mt-2 p-2 rounded text-xs" style={{ background: 'rgba(var(--primary-color-rgb), 0.1)' }}>
-                  <p className="app-text-main">
+                <div className="mt-2 p-2 rounded text-xs" style={{ background: `rgba(${colors.primaryRgb}, 0.1)` }}>
+                  <p style={{ color: colors.onSurface }}>
                     أنت موظف في هذا المكان
                   </p>
                 </div>
@@ -296,7 +311,7 @@ export default function ConversationsSidebar() {
             </div>
 
             {/* Messages */}
-            <div className="overflow-y-auto p-3 backdrop-blur-sm app-bg-surface" style={{ height: '400px', flexShrink: 1 }}>
+            <div className="overflow-y-auto p-3 backdrop-blur-sm" style={{ height: '400px', flexShrink: 1, backgroundColor: colors.surface }}>
               {conversationMessages.length > 0 ? (
                 <div>
                   {conversationMessages.map((message) => (
@@ -310,7 +325,7 @@ export default function ConversationsSidebar() {
                   ))}
                 </div>
               ) : (
-                <p className="text-center app-text-muted text-sm">
+                <p className="text-center text-sm" style={{ color: colors.onSurfaceVariant }}>
                   لا توجد رسائل
                 </p>
               )}
@@ -336,8 +351,8 @@ export default function ConversationsSidebar() {
 
             {/* Product Picker */}
             {showProductPicker && products.length > 0 && (
-              <div className="p-3 border-t app-border" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                <p className="text-sm font-semibold mb-2 app-text-main">اختر منتج:</p>
+              <div className="p-3 border-t" style={{ maxHeight: '200px', overflowY: 'auto', borderColor: colors.outline }}>
+                <p className="text-sm font-semibold mb-2" style={{ color: colors.onSurface }}>اختر منتج:</p>
                 <div className="space-y-2">
                   {products.map((product) => (
                     <div
@@ -346,11 +361,17 @@ export default function ConversationsSidebar() {
                         setSelectedProduct(product)
                         setShowProductPicker(false)
                       }}
-                      className={`p-2 rounded-lg cursor-pointer border-2 transition-all ${
-                        selectedProduct?.id === product.id
-                          ? 'border-[var(--primary-color)] bg-[rgba(var(--primary-color-rgb),0.1)]'
-                          : 'app-border app-hover-bg'
-                      }`}
+                      className="p-2 rounded-lg cursor-pointer border-2 transition-all"
+                      style={{
+                        borderColor: selectedProduct?.id === product.id ? colors.primary : colors.outline,
+                        backgroundColor: selectedProduct?.id === product.id ? `rgba(${colors.primaryRgb}, 0.1)` : 'transparent',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (selectedProduct?.id !== product.id) e.currentTarget.style.backgroundColor = colors.surfaceContainer
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedProduct?.id !== product.id) e.currentTarget.style.backgroundColor = 'transparent'
+                      }}
                     >
                       <div className="flex items-center gap-2">
                         {product.images && product.images.length > 0 && (
@@ -361,8 +382,8 @@ export default function ConversationsSidebar() {
                           />
                         )}
                         <div className="flex-1">
-                          <p className="text-sm font-semibold app-text-main">{product.name_ar}</p>
-                          <p className="text-xs app-text-muted">
+                          <p className="text-sm font-semibold" style={{ color: colors.onSurface }}>{product.name_ar}</p>
+                          <p className="text-xs" style={{ color: colors.onSurfaceVariant }}>
                             {product.price ? `${product.price} ${product.currency || 'IQD'}` : 'السعر غير محدد'}
                           </p>
                         </div>
@@ -376,8 +397,8 @@ export default function ConversationsSidebar() {
             {/* Selected Product Preview */}
             {selectedProduct && (
               <div 
-                className="p-2 border-t app-border"
-                style={{ backgroundColor: colors.warningContainer }}
+                className="p-2 border-t"
+                style={{ backgroundColor: colors.warningContainer, borderColor: colors.outline }}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1">
@@ -388,11 +409,12 @@ export default function ConversationsSidebar() {
                         className="w-8 h-8 object-cover rounded"
                       />
                     )}
-                    <p className="text-xs app-text-main truncate">{selectedProduct.name_ar}</p>
+                    <p className="text-xs truncate" style={{ color: colors.onSurface }}>{selectedProduct.name_ar}</p>
                   </div>
                   <button
                     onClick={() => setSelectedProduct(null)}
-                    className="text-xs app-text-link hover:underline"
+                    className="text-xs hover:underline"
+                    style={{ color: colors.primary }}
                   >
                     إزالة
                   </button>
@@ -405,10 +427,11 @@ export default function ConversationsSidebar() {
 
       {/* Overlay for mobile */}
       {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-[60]"
-          onClick={() => setIsOpen(false)}
-        />
+<div
+        className="lg:hidden fixed inset-0 z-[60]"
+        style={{ backgroundColor: colors.overlay }}
+        onClick={() => setIsOpen(false)}
+      />
       )}
     </>
   )

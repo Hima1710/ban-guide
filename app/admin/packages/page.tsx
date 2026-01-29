@@ -5,14 +5,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Package } from '@/lib/types'
 import { useAdminManager } from '@/hooks'
-import { showError } from '@/components/SweetAlert'
+import { showError, showConfirm } from '@/components/SweetAlert'
 import { Button, Input, Card, LoadingSpinner } from '@/components/common'
+import { HeadlineLarge, BodySmall } from '@/components/m3'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function AdminPackagesPage() {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const {
     isAdmin,
     loading: adminLoading,
@@ -24,6 +25,7 @@ export default function AdminPackagesPage() {
   } = useAdminManager({ autoLoadPackages: true })
 
   const [showForm, setShowForm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [editingPackage, setEditingPackage] = useState<Package | null>(null)
   const [formData, setFormData] = useState({
     name_ar: '',
@@ -48,15 +50,18 @@ export default function AdminPackagesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    const success = editingPackage
-      ? await updatePackage(editingPackage.id, formData)
-      : await createPackage(formData)
-
-    if (success) {
-      setShowForm(false)
-      setEditingPackage(null)
-      resetForm()
+    setSubmitting(true)
+    try {
+      const success = editingPackage
+        ? await updatePackage(editingPackage.id, formData)
+        : await createPackage(formData)
+      if (success) {
+        setShowForm(false)
+        setEditingPackage(null)
+        resetForm()
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -93,23 +98,14 @@ export default function AdminPackagesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    const confirmed = await (window as any).Swal.fire({
-      icon: 'warning',
-      title: 'تأكيد الحذف',
-      text: 'هل أنت متأكد من حذف هذه الباقة؟',
-      showCancelButton: true,
-      confirmButtonText: 'نعم',
-      cancelButtonText: 'لا',
-    })
-
-    if (confirmed.isConfirmed) {
-      await deletePackage(id)
-    }
+    const confirmed = await showConfirm('هل أنت متأكد من حذف هذه الباقة؟')
+    if (!confirmed.isConfirmed) return
+    await deletePackage(id)
   }
 
   if (adminLoading || packagesLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
         <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
@@ -133,8 +129,11 @@ export default function AdminPackagesPage() {
           >
             ← العودة للوحة الإدارة
           </Link>
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold app-text-main">إدارة الباقات</h1>
+          <div className="flex flex-wrap justify-between items-start gap-4">
+            <div>
+              <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>إدارة الباقات</HeadlineLarge>
+              <BodySmall color="onSurfaceVariant">إضافة وتعديل وحذف الباقات</BodySmall>
+            </div>
             <Button
               variant="filled"
               onClick={() => {
@@ -152,7 +151,7 @@ export default function AdminPackagesPage() {
 
         {showForm && (
           <Card className="mb-6 shadow-lg">
-            <h2 className="text-2xl font-bold mb-6 app-text-main">
+            <h2 className="text-2xl font-bold mb-6" style={{ color: colors.onSurface }}>
               {editingPackage ? 'تعديل الباقة' : 'إضافة باقة جديدة'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -232,13 +231,18 @@ export default function AdminPackagesPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5 app-text-main">
+                  <label className="block text-sm font-medium mb-1.5" style={{ color: colors.onSurface }}>
                     نمط الكارت
                   </label>
                   <select
                     value={formData.card_style}
                     onChange={(e) => setFormData({ ...formData, card_style: e.target.value })}
-                    className="app-input w-full text-base"
+                    className="w-full text-base rounded-extra-large px-4 py-2.5 border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0"
+                    style={{
+                      backgroundColor: colors.surface,
+                      borderColor: colors.outline,
+                      color: colors.onSurface,
+                    }}
                   >
                     <option value="default">افتراضي</option>
                     <option value="silver">فضي</option>
@@ -254,20 +258,21 @@ export default function AdminPackagesPage() {
                     onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
                     className="w-6 h-6 rounded focus:ring-2 accent-primary"
                   />
-                  <label htmlFor="is_featured" className="text-base font-semibold app-text-main cursor-pointer">
+                  <label htmlFor="is_featured" className="text-base font-semibold cursor-pointer" style={{ color: colors.onSurface }}>
                     باقة مميزة (تظهر في الأعلى)
                   </label>
                 </div>
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit">
-                  {editingPackage ? 'تحديث الباقة' : 'إضافة الباقة'}
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? 'جاري الحفظ...' : editingPackage ? 'تحديث الباقة' : 'إضافة الباقة'}
                 </Button>
                 <Button
                   type="button"
                   variant="outlined"
                   onClick={() => setShowForm(false)}
+                  disabled={submitting}
                 >
                   إلغاء
                 </Button>
@@ -276,61 +281,85 @@ export default function AdminPackagesPage() {
           </Card>
         )}
 
-        <Card className="shadow-lg overflow-hidden" padding="none">
-          <table className="w-full">
-            <thead className="app-bg-surface">
-              <tr >
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الاسم</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">السعر</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الأماكن</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الأولوية</th>
-                <th className="px-6 py-4 text-right text-base font-bold app-text-main">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody >
-              {packages.map((pkg) => (
-                <tr key={pkg.id} className="app-hover-bg transition-colors" >
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div>
-                      <div className="font-semibold text-base app-text-main">{pkg.name_ar}</div>
-                      <div className="text-sm app-text-muted mt-1">{pkg.name_en}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <span className="text-base font-bold icon-primary">{pkg.price} EGP</span>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <span className="text-base app-text-main">{pkg.max_places}</span>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <span className="text-base app-text-main">{pkg.priority}</span>
-                  </td>
-                  <td className="px-6 py-5 whitespace-nowrap">
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outlined"
-                        size="sm"
-                        onClick={() => handleEdit(pkg)}
-                        className="!p-2"
-                        title="تعديل"
-                      >
-                        <Edit size={18} />
-                      </Button>
-                      <Button
-                        variant="filled"
-                        size="sm"
-                        onClick={() => handleDelete(pkg.id)}
-                        className="!p-2"
-                        title="حذف"
-                      >
-                        <Trash2 size={18} />
-                      </Button>
-                    </div>
-                  </td>
+        <Card className="shadow-lg overflow-hidden" padding="none" style={{ border: `1px solid ${colors.outline}` }}>
+          {packages.length === 0 ? (
+            <div className="py-16 text-center" style={{ color: colors.onSurfaceVariant }}>
+              <p className="text-lg font-medium mb-2">لا توجد باقات</p>
+              <p className="text-sm mb-4">أضف باقة جديدة لتبدأ</p>
+              <Button
+                variant="filled"
+                onClick={() => {
+                  setShowForm(true)
+                  setEditingPackage(null)
+                  resetForm()
+                }}
+                className="flex items-center gap-2 mx-auto"
+              >
+                <Plus size={20} />
+                إضافة باقة جديدة
+              </Button>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead style={{ backgroundColor: colors.surface }}>
+                <tr>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الاسم</th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>السعر</th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الأماكن</th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الأولوية</th>
+                  <th className="px-6 py-4 text-right text-base font-bold" style={{ color: colors.onSurface }}>الإجراءات</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {packages.map((pkg) => (
+                  <tr
+                    key={pkg.id}
+                    className="transition-colors"
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                  >
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div>
+                        <div className="font-semibold text-base" style={{ color: colors.onSurface }}>{pkg.name_ar}</div>
+                        <div className="text-sm mt-1" style={{ color: colors.onSurfaceVariant }}>{pkg.name_en}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <span className="text-base font-bold" style={{ color: colors.primary }}>{pkg.price} EGP</span>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <span className="text-base" style={{ color: colors.onSurface }}>{pkg.max_places}</span>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <span className="text-base" style={{ color: colors.onSurface }}>{pkg.priority}</span>
+                    </td>
+                    <td className="px-6 py-5 whitespace-nowrap">
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outlined"
+                          size="sm"
+                          onClick={() => handleEdit(pkg)}
+                          className="!p-2"
+                          title="تعديل"
+                        >
+                          <Edit size={18} />
+                        </Button>
+                        <Button
+                          variant="filled"
+                          size="sm"
+                          onClick={() => handleDelete(pkg.id)}
+                          className="!p-2"
+                          title="حذف"
+                        >
+                          <Trash2 size={18} />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </Card>
       </div>
     </div>

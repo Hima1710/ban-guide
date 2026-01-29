@@ -35,31 +35,30 @@ export default function ChatInput({
   }
 
   return (
-    <div className="border-t p-3 app-bg-surface app-border">
-      {/* Reply preview */}
+    <div className="border-t p-3" style={{ backgroundColor: colors.surface, borderColor: colors.outline }}>
       {replyingTo && (
         <div
           className="mb-2 p-2 rounded border-r-2 flex items-start justify-between gap-2"
           style={{
-            background: 'rgba(var(--primary-color-rgb), 0.1)',
-            borderColor: 'var(--primary-color)',
+            background: `rgba(${colors.primaryRgb}, 0.1)`,
+            borderColor: colors.primary,
           }}
         >
           <div className="flex-1 min-w-0">
-            <p className="text-xs app-text-muted mb-0.5">
+            <p className="text-xs mb-0.5" style={{ color: colors.onSurfaceVariant }}>
               الرد على: {replyingTo.sender?.full_name || 'مستخدم'}
             </p>
             {replyingTo.content && (
-              <p className="text-sm app-text-main truncate">{replyingTo.content}</p>
+              <p className="text-sm truncate" style={{ color: colors.onSurface }}>{replyingTo.content}</p>
             )}
             {replyingTo.image_url && !replyingTo.content && (
-              <p className="text-sm app-text-muted italic">صورة</p>
+              <p className="text-sm italic" style={{ color: colors.onSurfaceVariant }}>صورة</p>
             )}
           </div>
           <button
             onClick={onCancelReply}
             className="p-1 rounded transition-colors hover:opacity-70"
-            style={{ color: 'var(--text-muted)' }}
+            style={{ color: colors.onSurfaceVariant }}
           >
             <X size={14} />
           </button>
@@ -91,13 +90,13 @@ export default function ChatInput({
       {isRecording && (
         <div
           className="mb-2 p-2 rounded flex items-center gap-2"
-          style={{ background: 'rgba(var(--status-error-rgb), 0.1)' }}
+          style={{ background: colors.errorContainer }}
         >
           <div
             className="w-3 h-3 rounded-full animate-pulse"
-            style={{ background: 'var(--status-error)' }}
+            style={{ background: colors.error }}
           />
-          <span className="text-sm app-text-main">{formatRecordingTime(recordingTime)}</span>
+          <span className="text-sm" style={{ color: colors.onSurface }}>{formatRecordingTime(recordingTime)}</span>
         </div>
       )}
 
@@ -108,7 +107,7 @@ export default function ChatInput({
           {/* Image button */}
           <label
             className="p-2 rounded transition-colors cursor-pointer hover:opacity-70"
-            style={{ color: 'var(--primary-color)' }}
+            style={{ color: colors.primary }}
           >
             <ImageIcon size={20} />
             <input
@@ -127,7 +126,7 @@ export default function ChatInput({
           <button
             onClick={onProductSelect}
             className="p-2 rounded transition-colors hover:opacity-70"
-            style={{ color: 'var(--secondary-color)' }}
+            style={{ color: colors.secondary }}
             disabled={disabled}
           >
             <Package size={20} />
@@ -138,7 +137,7 @@ export default function ChatInput({
             <button
               onClick={onStartRecording}
               className="p-2 rounded transition-colors hover:opacity-70"
-              style={{ color: 'var(--accent)' }}
+              style={{ color: colors.primary }}
               disabled={disabled}
             >
               <Mic size={20} />
@@ -147,7 +146,7 @@ export default function ChatInput({
             <button
               onClick={onStopRecording}
               className="p-2 rounded transition-colors hover:opacity-70"
-              style={{ color: 'var(--status-error)' }}
+              style={{ color: colors.error }}
             >
               <Square size={20} />
             </button>
@@ -161,11 +160,14 @@ export default function ChatInput({
           onKeyPress={handleKeyPress}
           placeholder={placeholder}
           disabled={disabled}
-          className="flex-1 app-input p-2 rounded resize-none"
+          className="flex-1 p-2 rounded resize-none"
           style={{
             minHeight: '40px',
             maxHeight: '120px',
-            fontSize: '16px', // Prevent iOS zoom
+            fontSize: '16px',
+            backgroundColor: colors.surface,
+            border: `1px solid ${colors.outline}`,
+            color: colors.onSurface,
           }}
           rows={1}
         />
@@ -175,7 +177,7 @@ export default function ChatInput({
           onClick={onSend}
           disabled={disabled || (!value.trim() && !selectedImage)}
           className="p-2 rounded transition-colors disabled:opacity-50"
-          style={{ color: 'var(--primary-color)' }}
+          style={{ color: colors.primary }}
         >
           <Send size={20} />
         </button>

@@ -213,11 +213,11 @@ export function getNavigationForRole(role: UserRole): NavigationItem[] {
  * Get navigation items for bottom nav (mobile)
  * Excludes desktopOnly items, max 5 items
  */
+/** Bottom nav: max 4 items (Home, Search, Messages, Profile) */
 export function getBottomNavigation(role: UserRole): NavigationItem[] {
   const items = getNavigationForRole(role)
     .filter(item => !item.desktopOnly)
-    .slice(0, 5) // Bottom nav max 5 items
-
+    .slice(0, 4)
   return items
 }
 

@@ -1,14 +1,7 @@
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-      {/* Main Content */}
-      <div className="flex-1">
-        {children}
-      </div>
+    <div className="flex-1 min-h-0 p-4 md:p-6 overflow-auto">
+      {children}
     </div>
   )
 }

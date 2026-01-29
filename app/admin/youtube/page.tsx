@@ -5,12 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 import { showSuccess, showError } from '@/components/SweetAlert'
+import { LoadingSpinner } from '@/components/common'
+import { HeadlineLarge, BodySmall } from '@/components/m3'
+import Link from 'next/link'
 import { CheckCircle, AlertCircle, ExternalLink, Copy } from 'lucide-react'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function YouTubeAuthHandler({ onAuthCheck }: { onAuthCheck: () => void }) {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -39,7 +42,7 @@ function YouTubeAuthHandler({ onAuthCheck }: { onAuthCheck: () => void }) {
 
 export default function AdminYouTubePage() {
   const router = useRouter()
-  const { colors, isDark } = useTheme()
+  const { colors } = useTheme()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -156,37 +159,29 @@ export default function AdminYouTubePage() {
 
   if (loading) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div 
-          className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: colors.primary }}
-        ></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <LoadingSpinner size="lg" text="جاري التحميل..." />
       </div>
     )
   }
 
   return (
-    <div 
-      className="min-h-screen py-8"
-      style={{ backgroundColor: colors.background }}
-    >
+    <div className="min-h-screen py-8" style={{ backgroundColor: colors.background }}>
       <Suspense fallback={null}>
         <YouTubeAuthHandler onAuthCheck={checkYouTubeAuth} />
       </Suspense>
       <div className="container mx-auto px-4 max-w-4xl">
-        <h1 
-          className="text-3xl font-bold mb-6"
-          style={{ color: colors.onSurfaceVariant }}
-        >
-          إعدادات YouTube
-        </h1>
+        <div className="mb-6">
+          <Link href="/admin" className="mb-4 inline-block hover:underline" style={{ color: colors.primary }}>
+            ← العودة للوحة الإدارة
+          </Link>
+          <HeadlineLarge className="mb-2" style={{ color: colors.onSurface }}>إعدادات YouTube</HeadlineLarge>
+          <BodySmall color="onSurfaceVariant">ربط حساب YouTube لرفع الفيديوهات</BodySmall>
+        </div>
 
-        <div 
+        <div
           className="shadow-lg p-6 space-y-6 rounded-3xl"
-          style={{ backgroundColor: colors.surface }}
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
         >
           <div>
             <h2 

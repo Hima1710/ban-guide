@@ -9,9 +9,23 @@ import { showError, showSuccess, showConfirm } from '@/components/SweetAlert'
 import { Check, Crown, Star, Upload, X } from 'lucide-react'
 import { Input, LoadingSpinner } from '@/components/common'
 import Link from 'next/link'
+import { useTheme } from '@/contexts/ThemeContext'
+import {
+  HeadlineLarge,
+  HeadlineMedium,
+  HeadlineSmall,
+  TitleLarge,
+  TitleMedium,
+  BodyMedium,
+  BodySmall,
+  LabelLarge,
+  LabelMedium,
+  Button,
+} from '@/components/m3'
 
 export default function PackagesPage() {
   const router = useRouter()
+  const { colors } = useTheme()
   const { user, loading: authLoading } = useAuth(true)
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
@@ -309,27 +323,21 @@ export default function PackagesPage() {
   }
 
   const getCardStyle = (pkg: Package): React.CSSProperties => {
-    if (pkg.is_featured) {
+    if (pkg.is_featured || pkg.card_style === 'gold') {
       return {
-        border: '2px solid var(--status-warning)',
-        background: 'linear-gradient(to bottom right, var(--status-yellow-bg), rgba(245, 158, 11, 0.1))'
-      }
-    }
-    if (pkg.card_style === 'gold') {
-      return {
-        border: '2px solid var(--status-warning)',
-        background: 'linear-gradient(to bottom right, var(--status-yellow-bg), rgba(245, 158, 11, 0.1))'
+        border: `2px solid ${colors.warning}`,
+        background: `linear-gradient(to bottom right, ${colors.warningContainer}, rgba(${colors.primaryRgb}, 0.08))`,
       }
     }
     if (pkg.card_style === 'silver') {
       return {
-        border: '1px solid var(--border-color)',
-        background: 'linear-gradient(to bottom right, var(--surface-color), var(--bg-color))'
+        border: `1px solid ${colors.outline}`,
+        background: `linear-gradient(to bottom right, ${colors.surface}, ${colors.background})`,
       }
     }
     return {
-      border: '1px solid var(--border-color)',
-      background: 'var(--background)'
+      border: `1px solid ${colors.outline}`,
+      background: colors.surface,
     }
   }
 
@@ -342,57 +350,67 @@ export default function PackagesPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 app-bg-base">
+    <div className="min-h-screen py-8" style={{ backgroundColor: colors.background }}>
       <div className="container mx-auto px-4">
         <div className="mb-6">
           <Link
             href="/dashboard"
-            className="mb-4 inline-block icon-primary"
+            className="mb-4 inline-block"
+            style={{ color: colors.primary }}
           >
             ← العودة للوحة التحكم
           </Link>
-          <h1 className="text-3xl font-bold app-text-main">الباقات المتاحة</h1>
-          <p className="app-text-muted mt-2">اختر الباقة المناسبة لك</p>
+          <HeadlineLarge className="mb-2">الباقات المتاحة</HeadlineLarge>
+          <BodyMedium color="onSurfaceVariant">اختر الباقة المناسبة لك</BodyMedium>
         </div>
 
         {currentSubscription && (
-          <div className="rounded-lg p-4 mb-6 border" style={{ background: 'var(--status-blue-bg)', borderColor: 'var(--primary-color)' }}>
+          <div
+            className="rounded-3xl p-4 mb-6 border"
+            style={{ background: colors.infoContainer, borderColor: colors.primary }}
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold icon-primary">
+                <TitleMedium style={{ color: colors.primary }}>
                   اشتراكك الحالي: {(currentSubscription.package as Package)?.name_ar}
-                </p>
-                <p className="text-sm" style={{ color: 'var(--primary-color)', opacity: 0.8 }}>
+                </TitleMedium>
+                <BodySmall color="onSurfaceVariant" className="mt-1">
                   ينتهي في: {new Date(currentSubscription.expires_at).toLocaleDateString('ar-EG')}
-                </p>
+                </BodySmall>
               </div>
-              <span className="px-3 py-1 text-white rounded-full text-sm" style={{ background: 'var(--secondary-color)' }}>
-                نشط
+              <span
+                className="px-3 py-1 rounded-full"
+                style={{ background: colors.secondary, color: colors.onSecondary }}
+              >
+                <LabelMedium as="span">نشط</LabelMedium>
               </span>
             </div>
           </div>
         )}
 
         {/* Discount Code Input */}
-        <div className="app-card shadow-md p-4 mb-6">
+        <div
+          className="shadow-md p-4 mb-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
           <div className="flex items-center gap-4">
-            <label className="text-sm font-semibold app-text-main whitespace-nowrap">
-              كود الخصم:
-            </label>
+            <LabelMedium className="whitespace-nowrap">كود الخصم:</LabelMedium>
             <Input
               type="text"
               value={discountCode}
               onChange={(e) => handleDiscountCodeChange(e.target.value)}
               placeholder="أدخل كود الخصم (اختياري)"
-              className="app-input flex-1 px-4 py-2 rounded-lg focus:outline-none"
-              
-              onFocus={(e) => e.currentTarget.style.borderColor = 'var(--primary-color)'}
-              onBlur={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
+              variant="outlined"
+              shape="large"
+              className="flex-1"
             />
             {selectedDiscount && (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-semibold" style={{ background: 'var(--status-green-bg)', color: 'var(--secondary-color)' }}>
+              <div
+                className="flex items-center gap-2 px-3 py-1 rounded-xl"
+                style={{ background: colors.successContainer, color: colors.success }}
+              >
                 <Check size={16} />
-                خصم {selectedDiscount.discount_percentage}%
+                <LabelMedium as="span">خصم {selectedDiscount.discount_percentage}%</LabelMedium>
               </div>
             )}
           </div>
@@ -401,157 +419,167 @@ export default function PackagesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {packages.map((pkg) => {
             const isCurrentPackage = currentSubscription?.package_id === pkg.id
+            const disabled = isCurrentPackage || !!currentSubscription
             return (
               <div
                 key={pkg.id}
-                className="rounded-lg shadow-lg p-6 relative"
+                className="rounded-2xl shadow-lg p-6 relative"
                 style={getCardStyle(pkg)}
               >
                 {pkg.is_featured && (
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1" style={{ background: 'var(--status-warning)', color: '#000' }}>
+                  <div
+                    className="absolute top-4 left-4 px-3 py-1 rounded-full flex items-center gap-1"
+                    style={{ background: colors.warningContainer, color: colors.warning }}
+                  >
                     <Star size={12} />
-                    مميز
+                    <LabelMedium as="span">مميز</LabelMedium>
                   </div>
                 )}
-                
+
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold mb-2 app-text-main">{pkg.name_ar}</h3>
-                  <p className="app-text-muted text-sm mb-4">{pkg.name_en}</p>
+                  <HeadlineSmall className="mb-2" style={{ color: colors.onSurface }}>
+                    {pkg.name_ar}
+                  </HeadlineSmall>
+                  <BodySmall color="onSurfaceVariant" className="mb-4">{pkg.name_en}</BodySmall>
                   {selectedDiscount ? (
                     <div>
-                      <div className="text-2xl font-bold line-through mb-1 app-text-subtle">
+                      <TitleMedium className="line-through mb-1" style={{ color: colors.onSurfaceVariant }}>
                         {pkg.price} <span className="text-sm">EGP</span>
-                      </div>
-                      <div className="text-4xl font-bold mb-2 icon-secondary">
+                      </TitleMedium>
+                      <HeadlineMedium className="mb-2" style={{ color: colors.secondary }}>
                         {(pkg.price - (pkg.price * selectedDiscount.discount_percentage) / 100).toFixed(2)} <span className="text-lg">EGP</span>
-                      </div>
-                      <div className="text-sm font-semibold icon-secondary">
+                      </HeadlineMedium>
+                      <LabelLarge style={{ color: colors.secondary }}>
                         خصم {selectedDiscount.discount_percentage}%
-                      </div>
+                      </LabelLarge>
                     </div>
                   ) : (
-                    <div className="text-4xl font-bold mb-2 icon-primary">
+                    <HeadlineMedium className="mb-2" style={{ color: colors.primary }}>
                       {pkg.price} <span className="text-lg">EGP</span>
-                    </div>
+                    </HeadlineMedium>
                   )}
                 </div>
 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center gap-2">
-                    <Check size={18} className="icon-secondary" />
-                    <span className="text-sm app-text-main">{pkg.max_places} مكان/خدمة</span>
+                    <Check size={18} style={{ color: colors.secondary, flexShrink: 0 }} />
+                    <BodySmall style={{ color: colors.onSurface }}>{pkg.max_places} مكان/خدمة</BodySmall>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check size={18} className="icon-secondary" />
-                    <span className="text-sm">{pkg.max_product_images} صورة لكل منتج</span>
+                    <Check size={18} style={{ color: colors.secondary, flexShrink: 0 }} />
+                    <BodySmall style={{ color: colors.onSurface }}>{pkg.max_product_images} صورة لكل منتج</BodySmall>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check size={18} className="icon-secondary" />
-                    <span className="text-sm">{pkg.max_product_videos} فيديو لكل منتج</span>
+                    <Check size={18} style={{ color: colors.secondary, flexShrink: 0 }} />
+                    <BodySmall style={{ color: colors.onSurface }}>{pkg.max_product_videos} فيديو لكل منتج</BodySmall>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check size={18} className="icon-secondary" />
-                    <span className="text-sm">{pkg.max_place_videos} فيديو للمكان</span>
+                    <Check size={18} style={{ color: colors.secondary, flexShrink: 0 }} />
+                    <BodySmall style={{ color: colors.onSurface }}>{pkg.max_place_videos} فيديو للمكان</BodySmall>
                   </div>
                   {pkg.is_featured && (
                     <div className="flex items-center gap-2">
-                      <Crown size={18} className="icon-warning" />
-                      <span className="text-sm">ظهور مميز في الصفحة الرئيسية</span>
+                      <Crown size={18} style={{ color: colors.warning, flexShrink: 0 }} />
+                      <BodySmall style={{ color: colors.onSurface }}>ظهور مميز في الصفحة الرئيسية</BodySmall>
                     </div>
                   )}
                 </div>
 
-                <button
+                <Button
+                  variant="filled"
+                  shape="large"
+                  fullWidth
+                  disabled={disabled}
                   onClick={() => handleSubscribeClick(pkg)}
-                  disabled={isCurrentPackage || !!currentSubscription}
-                  className="w-full py-3 rounded-lg font-semibold transition-colors text-white"
-                  style={isCurrentPackage || currentSubscription ? {
-                    background: 'var(--surface-color)',
-                    color: 'var(--text-muted)',
-                    cursor: 'not-allowed'
-                  } : {
-                    background: 'var(--primary-color)'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isCurrentPackage && !currentSubscription) {
-                      e.currentTarget.style.opacity = '0.9'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isCurrentPackage && !currentSubscription) {
-                      e.currentTarget.style.opacity = '1'
-                    }
-                  }}
+                  style={disabled ? { background: colors.surfaceVariant, color: colors.onSurfaceVariant } : undefined}
                 >
                   {isCurrentPackage
                     ? 'الباقة الحالية'
                     : currentSubscription
                     ? 'لديك اشتراك نشط'
                     : 'اشترك الآن'}
-                </button>
+                </Button>
               </div>
             )
           })}
         </div>
 
         {packages.length === 0 && (
-          <div className="text-center py-12 app-text-muted">
-            لا توجد باقات متاحة حالياً
+          <div className="text-center py-12">
+            <BodyMedium color="onSurfaceVariant">لا توجد باقات متاحة حالياً</BodyMedium>
           </div>
         )}
 
         {/* Receipt Upload Modal */}
         {showReceiptModal && selectedPackage && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="app-card shadow-xl max-w-md w-full p-6">
+          <div
+            className="fixed inset-0 flex items-center justify-center z-50 p-4"
+            style={{ backgroundColor: colors.overlay }}
+          >
+            <div
+              className="shadow-xl max-w-md w-full p-6 rounded-3xl"
+              style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+            >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold app-text-main">رفع إيصال الدفع</h2>
+                <TitleLarge style={{ color: colors.onSurface }}>رفع إيصال الدفع</TitleLarge>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowReceiptModal(false)
                     setReceiptFile(null)
                     setReceiptPreview(null)
                   }}
-                  className="app-text-muted app-hover-bg"
+                  className="p-2 rounded-full transition-opacity hover:opacity-80"
+                  style={{ color: colors.onSurfaceVariant }}
+                  aria-label="إغلاق"
                 >
                   <X size={24} />
                 </button>
               </div>
 
               <div className="mb-4">
-                <p className="app-text-muted mb-2">الباقة: <span className="font-semibold">{selectedPackage.name_ar}</span></p>
-                <p className="app-text-muted">المبلغ: <span className="font-semibold">{selectedPackage.price} EGP</span></p>
+                <BodyMedium color="onSurfaceVariant" className="mb-2">
+                  الباقة: <span style={{ color: colors.onSurface, fontWeight: 600 }}>{selectedPackage.name_ar}</span>
+                </BodyMedium>
+                <BodyMedium color="onSurfaceVariant">
+                  المبلغ: <span style={{ color: colors.onSurface, fontWeight: 600 }}>{selectedPackage.price} EGP</span>
+                </BodyMedium>
               </div>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium app-text-main mb-2">
-                  رفع صورة إيصال الدفع <span className="icon-error">*</span>
-                  <span className="block text-xs app-text-muted mt-1">(إلزامي - مطلوب للموافقة على الاشتراك)</span>
-                </label>
+                <LabelMedium style={{ color: colors.onSurface }} className="block mb-2">
+                  رفع صورة إيصال الدفع <span style={{ color: colors.error }}>*</span>
+                </LabelMedium>
+                <BodySmall color="onSurfaceVariant" className="block mb-2">(إلزامي - مطلوب للموافقة على الاشتراك)</BodySmall>
                 {receiptPreview ? (
                   <div className="relative">
                     <img
                       src={receiptPreview}
                       alt="Receipt preview"
-                      className="w-full h-64 object-contain border rounded-lg app-border"
+                      className="w-full h-64 object-contain rounded-2xl"
+                      style={{ border: `1px solid ${colors.outline}` }}
                     />
                     <button
+                      type="button"
                       onClick={handleRemoveReceipt}
-                      className="absolute top-2 left-2 text-white p-2 rounded-full badge-error"
-                      onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                      onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                      className="absolute top-2 left-2 p-2 rounded-full transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: colors.error, color: colors.onPrimary }}
+                      aria-label="إزالة الصورة"
                     >
                       <X size={20} />
                     </button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer app-hover-bg" style={{ borderColor: 'var(--border-color)', background: 'var(--surface-color)' }}>
+                  <label
+                    className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-2xl cursor-pointer transition-opacity hover:opacity-90"
+                    style={{ borderColor: colors.outline, backgroundColor: colors.surfaceContainer }}
+                  >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload size={48} className="mb-2 icon-muted" />
-                      <p className="mb-2 text-sm app-text-muted">
-                        <span className="font-semibold">اضغط للرفع</span> أو اسحب الصورة هنا
-                      </p>
-                      <p className="text-xs app-text-muted">PNG, JPG, GIF (MAX. 10MB)</p>
+                      <Upload size={48} className="mb-2" style={{ color: colors.onSurfaceVariant }} />
+                      <BodyMedium color="onSurfaceVariant" className="mb-2">
+                        <span style={{ color: colors.onSurface, fontWeight: 600 }}>اضغط للرفع</span> أو اسحب الصورة هنا
+                      </BodyMedium>
+                      <BodySmall color="onSurfaceVariant">PNG, JPG, GIF (MAX. 10MB)</BodySmall>
                     </div>
                     <input
                       type="file"
@@ -564,38 +592,29 @@ export default function PackagesPage() {
               </div>
 
               <div className="flex gap-3">
-                <button
+                <Button
+                  variant="filled-tonal"
+                  shape="large"
+                  fullWidth
+                  disabled={uploadingReceipt}
                   onClick={() => {
                     setShowReceiptModal(false)
                     setReceiptFile(null)
                     setReceiptPreview(null)
                   }}
-                  className="flex-1 px-4 py-2 rounded-lg transition-colors"
-                  style={{ background: 'var(--surface-color)', color: 'var(--text-color)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                  disabled={uploadingReceipt}
                 >
                   إلغاء
-                </button>
-                <button
-                  onClick={() => handleSubscribe(selectedPackage)}
+                </Button>
+                <Button
+                  variant="filled"
+                  shape="large"
+                  fullWidth
+                  loading={uploadingReceipt}
                   disabled={!receiptFile || uploadingReceipt}
-                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
-                  style={{ background: receiptFile && !uploadingReceipt ? 'var(--primary-color)' : 'var(--surface-color)' }}
-                  onMouseEnter={(e) => {
-                    if (receiptFile && !uploadingReceipt) {
-                      e.currentTarget.style.opacity = '0.9'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (receiptFile && !uploadingReceipt) {
-                      e.currentTarget.style.opacity = '1'
-                    }
-                  }}
+                  onClick={() => handleSubscribe(selectedPackage)}
                 >
                   {uploadingReceipt ? 'جاري الرفع...' : 'إرسال الطلب'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -2,6 +2,9 @@
 
 import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
+import { TitleLarge, BodyMedium } from '@/components/m3'
+import { Button } from '@/components/common'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -85,131 +88,119 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback
       }
-
-      // Default fallback UI based on level
       const { level = 'component' } = this.props
-      const { error, errorInfo } = this.state
-
-      // Global level - full screen error
-      if (level === 'global') {
-        return (
-          <div className="min-h-screen flex items-center justify-center app-bg-main p-4">
-            <div className="max-w-md w-full text-center">
-              <div className="mb-6">
-                <AlertTriangle size={64} className="mx-auto text-red-500 mb-4" />
-                <h1 className="text-2xl font-bold mb-2 app-text-main">
-                  عذراً، حدث خطأ غير متوقع
-                </h1>
-                <p className="app-text-muted mb-4">
-                  نعتذر عن الإزعاج. يرجى المحاولة مرة أخرى.
-                </p>
-              </div>
-
-              {process.env.NODE_ENV === 'development' && error && (
-                <div className="mb-6 text-left p-4 rounded app-bg-surface border app-border">
-                  <p className="text-sm font-mono text-red-600 mb-2">
-                    {error.toString()}
-                  </p>
-                  {errorInfo && (
-                    <details className="text-xs app-text-muted">
-                      <summary className="cursor-pointer mb-2">Component Stack</summary>
-                      <pre className="whitespace-pre-wrap overflow-x-auto">
-                        {errorInfo.componentStack}
-                      </pre>
-                    </details>
-                  )}
-                </div>
-              )}
-
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={this.handleReload}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold transition-opacity hover:opacity-90"
-                  style={{ background: 'var(--primary-color)' }}
-                >
-                  <RefreshCcw size={20} />
-                  إعادة تحميل الصفحة
-                </button>
-                <button
-                  onClick={this.handleGoHome}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg app-text-main font-semibold app-bg-surface app-border border transition-colors app-hover-bg"
-                >
-                  <Home size={20} />
-                  العودة للصفحة الرئيسية
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      // Section level - inline error
-      if (level === 'section') {
-        return (
-          <div className="p-6 rounded-lg app-bg-surface border app-border">
-            <div className="flex items-start gap-4">
-              <AlertTriangle size={24} className="text-yellow-500 flex-shrink-0 mt-1" />
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold mb-2 app-text-main">
-                  فشل في تحميل هذا القسم
-                </h3>
-                <p className="app-text-muted mb-4 text-sm">
-                  حدث خطأ أثناء تحميل هذا الجزء من الصفحة
-                </p>
-
-                {process.env.NODE_ENV === 'development' && error && (
-                  <div className="mb-4 p-3 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                    <p className="text-sm font-mono text-red-600 dark:text-red-400">
-                      {error.toString()}
-                    </p>
-                  </div>
-                )}
-
-                <button
-                  onClick={this.handleReset}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-opacity hover:opacity-90"
-                  style={{ background: 'var(--primary-color)' }}
-                >
-                  <RefreshCcw size={16} />
-                  إعادة المحاولة
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      // Component level - minimal error
       return (
-        <div className="p-4 rounded app-bg-surface border border-yellow-500/30">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle size={16} className="text-yellow-500" />
-            <p className="text-sm font-semibold app-text-main">فشل في التحميل</p>
-          </div>
-          
-          {process.env.NODE_ENV === 'development' && error && (
-            <p className="text-xs text-red-600 dark:text-red-400 mb-2 font-mono">
-              {error.message}
-            </p>
-          )}
-          
-          <button
-            onClick={this.handleReset}
-            className="text-xs app-text-link hover:underline"
-          >
-            إعادة المحاولة
-          </button>
-        </div>
+        <ErrorBoundaryFallback
+          level={level}
+          error={this.state.error}
+          errorInfo={this.state.errorInfo}
+          onReset={this.handleReset}
+          onReload={this.handleReload}
+          onGoHome={this.handleGoHome}
+        />
       )
     }
-
-    // No error, render children
     return this.props.children
   }
+}
+
+function ErrorBoundaryFallback({
+  level,
+  error,
+  errorInfo,
+  onReset,
+  onReload,
+  onGoHome,
+}: {
+  level: string
+  error: Error | null
+  errorInfo: ErrorInfo | null
+  onReset: () => void
+  onReload: () => void
+  onGoHome: () => void
+}) {
+  const { colors } = useTheme()
+
+  if (level === 'global') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: colors.background }}>
+        <div className="max-w-md w-full text-center">
+          <div className="mb-6">
+            <AlertTriangle size={64} className="mx-auto mb-4" style={{ color: colors.error }} />
+            <TitleLarge style={{ color: colors.onSurface }} className="mb-2">عذراً، حدث خطأ غير متوقع</TitleLarge>
+            <BodyMedium color="onSurfaceVariant" className="mb-4">نعتذر عن الإزعاج. يرجى المحاولة مرة أخرى.</BodyMedium>
+          </div>
+          {process.env.NODE_ENV === 'development' && error && (
+            <div className="mb-6 text-left p-4 rounded" style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}>
+              <p className="text-sm font-mono mb-2" style={{ color: colors.error }}>{error.toString()}</p>
+              {errorInfo && (
+                <details className="text-xs" style={{ color: colors.onSurfaceVariant }}>
+                  <summary className="cursor-pointer mb-2">Component Stack</summary>
+                  <pre className="whitespace-pre-wrap overflow-x-auto">{errorInfo.componentStack}</pre>
+                </details>
+              )}
+            </div>
+          )}
+          <div className="flex flex-col gap-3">
+            <Button variant="filled" shape="large" fullWidth onClick={onReload} className="justify-center gap-2">
+              <RefreshCcw size={20} />
+              إعادة تحميل الصفحة
+            </Button>
+            <Button variant="filled-tonal" shape="large" fullWidth onClick={onGoHome} className="justify-center gap-2" style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}>
+              <Home size={20} />
+              العودة للصفحة الرئيسية
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (level === 'section') {
+    return (
+      <div className="p-6 rounded-lg" style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}>
+        <div className="flex items-start gap-4">
+          <AlertTriangle size={24} className="flex-shrink-0 mt-1" style={{ color: colors.warning }} />
+          <div className="flex-1">
+            <TitleLarge style={{ color: colors.onSurface }} className="mb-2">فشل في تحميل هذا القسم</TitleLarge>
+            <BodyMedium color="onSurfaceVariant" className="mb-4 text-sm">حدث خطأ أثناء تحميل هذا الجزء من الصفحة</BodyMedium>
+            {process.env.NODE_ENV === 'development' && error && (
+              <div className="mb-4 p-3 rounded" style={{ backgroundColor: colors.errorContainer, border: `1px solid ${colors.error}` }}>
+                <p className="text-sm font-mono" style={{ color: colors.error }}>{error.toString()}</p>
+              </div>
+            )}
+            <Button variant="filled" shape="large" size="sm" onClick={onReset} className="gap-2">
+              <RefreshCcw size={16} />
+              إعادة المحاولة
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-4 rounded" style={{ backgroundColor: colors.surface, border: `1px solid ${colors.warning}` }}>
+      <div className="flex items-center gap-2 mb-2">
+        <AlertTriangle size={16} style={{ color: colors.warning }} />
+        <BodyMedium style={{ color: colors.onSurface }} className="font-semibold">فشل في التحميل</BodyMedium>
+      </div>
+      {process.env.NODE_ENV === 'development' && error && (
+        <p className="text-xs mb-2 font-mono" style={{ color: colors.error }}>{error.message}</p>
+      )}
+      <button
+        type="button"
+        onClick={onReset}
+        className="text-xs hover:underline"
+        style={{ color: colors.primary }}
+      >
+        إعادة المحاولة
+      </button>
+    </div>
+  )
 }
 
 /**

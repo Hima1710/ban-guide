@@ -432,7 +432,7 @@ export default function PlacePostsPage() {
         {showAddModal && (
           <div 
             className="fixed inset-0 flex items-center justify-center z-50 p-4"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+            style={{ backgroundColor: colors.overlay }}
           >
             <div 
               className="rounded-3xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"

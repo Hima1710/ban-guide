@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { getLocationInfo, LocationInfo } from '@/lib/geocoding'
 import { MapPin, Loader2, Navigation } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
+import { BodySmall } from '@/components/m3'
 
 // Dynamically import Leaflet components to avoid SSR issues
 const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), { ssr: false })
@@ -59,6 +61,7 @@ function MapController({ setMapRef }: { setMapRef: (map: any) => void }) {
 }
 
 export default function MapPicker({ latitude, longitude, onLocationChange }: MapPickerProps) {
+  const { colors } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [markerPosition, setMarkerPosition] = useState<[number, number]>([latitude, longitude])
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null)
@@ -197,10 +200,13 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
 
   if (!mounted) {
     return (
-      <div className="w-full h-full flex items-center justify-center rounded-lg app-bg-surface">
+      <div
+        className="w-full h-full flex items-center justify-center rounded-lg"
+        style={{ backgroundColor: colors.surface }}
+      >
         <div className="text-center">
-          <Loader2 className="animate-spin mx-auto mb-2" size={24} style={{ color: 'var(--primary-color)' }} />
-          <p className="app-text-muted">جاري تحميل الخريطة...</p>
+          <Loader2 className="animate-spin mx-auto mb-2" size={24} style={{ color: colors.primary }} />
+          <BodySmall color="onSurfaceVariant">جاري تحميل الخريطة...</BodySmall>
         </div>
       </div>
     )
@@ -209,19 +215,24 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
   return (
     <div className="w-full h-full relative">
       {loadingLocation && (
-        <div className="absolute top-2 left-2 z-[1000] px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 app-card">
-          <Loader2 className="animate-spin" size={16} style={{ color: 'var(--primary-color)' }} />
-          <span className="text-sm app-text-main">جاري تحديد موقعك...</span>
+        <div
+          className="absolute top-2 left-2 z-[1000] px-3 py-2 rounded-lg shadow-lg flex items-center gap-2"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          <Loader2 className="animate-spin" size={16} style={{ color: colors.primary }} />
+          <BodySmall style={{ color: colors.onSurface }}>جاري تحديد موقعك...</BodySmall>
         </div>
       )}
 
       {/* Button to get current location */}
       <button
+        type="button"
         onClick={handleGetCurrentLocation}
         disabled={loadingLocation}
-        className="absolute bottom-4 left-4 z-[1000] text-white p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center"
-        style={{ 
-          background: loadingLocation ? 'var(--text-muted)' : 'var(--primary-color)'
+        className="absolute bottom-4 left-4 z-[1000] p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center"
+        style={{
+          background: loadingLocation ? colors.onSurfaceVariant : colors.primary,
+          color: colors.onPrimary,
         }}
         onMouseEnter={(e) => {
           if (!loadingLocation) {
@@ -264,29 +275,29 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
           <Popup className="min-w-[250px]">
             <div className="text-right">
               <div className="flex items-start gap-2 mb-2">
-                <MapPin className="mt-1 flex-shrink-0" size={18} style={{ color: 'var(--primary-color)' }} />
+                <MapPin className="mt-1 flex-shrink-0" size={18} style={{ color: colors.primary }} />
                 <div className="flex-1">
-                  <p className="font-semibold text-lg mb-1 app-text-main">الموقع المحدد</p>
+                  <BodySmall style={{ color: colors.onSurface, fontWeight: 600 }} className="text-lg mb-1">الموقع المحدد</BodySmall>
                   {locationInfo ? (
                     <div className="space-y-1">
-                      <p className="text-sm font-medium app-text-main">{locationInfo.fullAddress}</p>
+                      <BodySmall style={{ color: colors.onSurface }} className="text-sm">{locationInfo.fullAddress}</BodySmall>
                       {locationInfo.district && (
-                        <p className="text-xs app-text-muted">المنطقة: {locationInfo.district}</p>
+                        <BodySmall color="onSurfaceVariant" className="text-xs">المنطقة: {locationInfo.district}</BodySmall>
                       )}
                       {locationInfo.city && (
-                        <p className="text-xs app-text-muted">المدينة: {locationInfo.city}</p>
+                        <BodySmall color="onSurfaceVariant" className="text-xs">المدينة: {locationInfo.city}</BodySmall>
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm app-text-muted">جاري جلب معلومات الموقع...</p>
+                    <BodySmall color="onSurfaceVariant" className="text-sm">جاري جلب معلومات الموقع...</BodySmall>
                   )}
                 </div>
               </div>
-              <div className="mt-2 pt-2 border-t app-border">
-                <p className="text-xs app-text-muted">
+              <div className="mt-2 pt-2 border-t" style={{ borderColor: colors.outline }}>
+                <BodySmall color="onSurfaceVariant" className="text-xs">
                   الإحداثيات: {markerPosition[0].toFixed(6)}, {markerPosition[1].toFixed(6)}
-                </p>
-                <p className="text-xs app-text-subtle mt-1">اسحب العلامة أو انقر على الخريطة لتغيير الموقع</p>
+                </BodySmall>
+                <BodySmall color="onSurfaceVariant" className="text-xs mt-1 block">اسحب العلامة أو انقر على الخريطة لتغيير الموقع</BodySmall>
               </div>
             </div>
           </Popup>
