@@ -48,6 +48,7 @@ export default function LoginPage() {
         }
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
         const redirectTo = `${siteUrl}/auth/callback`
+        // WebView: بعد هذا الاستدعاء سيتم توجيه المتصفح إلى Google OAuth. تطبيق Android يجب ألا يعترض تنقل accounts.google.com / supabase حتى يكتمل الدخول. راجع WEBVIEW_AUTH_ANDROID.md
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: { redirectTo, queryParams: { login_hint: email } },
