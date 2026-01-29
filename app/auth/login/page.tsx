@@ -25,17 +25,18 @@ export default function LoginPage() {
   const [receivedEmail, setReceivedEmail] = useState<string | null>(null)
 
   useEffect(() => {
-    const handleGoogleAccountSelected = async (e: CustomEvent<{ email: string; accessToken?: string; idToken?: string }>) => {
-      const email = e.detail?.email
+    const handleGoogleAccountSelected = async (e: Event) => {
+      const ev = e as CustomEvent<{ email: string; accessToken?: string; idToken?: string }>
+      const email = ev.detail?.email
       if (!email) return
       setReceivedEmail(email)
       setLoading(true)
       try {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
         const redirectTo = `${siteUrl}/auth/callback`
-        if (e.detail?.accessToken || e.detail?.idToken) {
+        if (ev.detail?.accessToken || ev.detail?.idToken) {
           const { error } = await supabase.auth.setSession({
-            access_token: e.detail.accessToken || '',
+            access_token: ev.detail.accessToken || '',
             refresh_token: '',
           } as any)
           if (error) throw error
@@ -53,8 +54,8 @@ export default function LoginPage() {
         setLoading(false)
       }
     }
-    window.addEventListener('googleAccountSelected', handleGoogleAccountSelected as EventListener)
-    return () => window.removeEventListener('googleAccountSelected', handleGoogleAccountSelected as EventListener)
+    window.addEventListener('googleAccountSelected', handleGoogleAccountSelected)
+    return () => window.removeEventListener('googleAccountSelected', handleGoogleAccountSelected)
   }, [router])
 
   useEffect(() => {
