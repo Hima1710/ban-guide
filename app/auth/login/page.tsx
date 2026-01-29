@@ -7,12 +7,7 @@ import { showError, showSuccess } from '@/components/SweetAlert'
 import { Card, Button } from '@/components/common'
 import { useTheme } from '@/contexts/ThemeContext'
 
-declare global {
-  interface Window {
-    receiveEmailFromNative?: (email: string) => void
-    Android?: { onEmailReceived?: () => void }
-  }
-}
+const ANDROID_AUTH_REDIRECT = 'ban-app://auth-callback'
 
 function GoogleIcon() {
   return (
@@ -29,81 +24,10 @@ export default function LoginPage() {
   const router = useRouter()
   const { colors } = useTheme()
   const [loading, setLoading] = useState(false)
-  const [receivedEmail, setReceivedEmail] = useState<string | null>(null)
-
-  useEffect(() => {
-    window.receiveEmailFromNative = async (injectedEmail: string) => {
-      const email = injectedEmail?.trim()
-      if (!email) return
-      setReceivedEmail(email)
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          showSuccess('تم تسجيل الدخول بنجاح')
-          if (typeof window.Android !== 'undefined' && window.Android.onEmailReceived) {
-            window.Android.onEmailReceived()
-          }
-          router.push('/')
-          return
-        }
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-        const redirectTo = `${siteUrl}/auth/callback`
-        // WebView: بعد هذا الاستدعاء سيتم توجيه المتصفح إلى Google OAuth. تطبيق Android يجب ألا يعترض تنقل accounts.google.com / supabase حتى يكتمل الدخول. راجع WEBVIEW_AUTH_ANDROID.md
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo, queryParams: { login_hint: email } },
-        })
-        if (error) throw error
-        if (typeof window.Android !== 'undefined' && window.Android.onEmailReceived) {
-          window.Android.onEmailReceived()
-        }
-      } catch (err: unknown) {
-        showError((err as Error)?.message || 'حدث خطأ في تسجيل الدخول')
-      }
-    }
-    return () => {
-      delete window.receiveEmailFromNative
-    }
-  }, [router])
-
-  useEffect(() => {
-    const handleGoogleAccountSelected = async (e: Event) => {
-      const ev = e as CustomEvent<{ email: string; accessToken?: string; idToken?: string }>
-      const email = ev.detail?.email
-      if (!email) return
-      setReceivedEmail(email)
-      setLoading(true)
-      try {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-        const redirectTo = `${siteUrl}/auth/callback`
-        if (ev.detail?.accessToken || ev.detail?.idToken) {
-          const { error } = await supabase.auth.setSession({
-            access_token: ev.detail.accessToken || '',
-            refresh_token: '',
-          } as any)
-          if (error) throw error
-          showSuccess(`تم تسجيل الدخول بنجاح: ${email}`)
-          router.push('/')
-          return
-        }
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo, queryParams: { login_hint: email } },
-        })
-        if (error) throw error
-      } catch (err: unknown) {
-        showError((err as Error)?.message || 'حدث خطأ في تسجيل الدخول')
-        setLoading(false)
-      }
-    }
-    window.addEventListener('googleAccountSelected', handleGoogleAccountSelected)
-    return () => window.removeEventListener('googleAccountSelected', handleGoogleAccountSelected)
-  }, [router])
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user?.email) {
-        setReceivedEmail(session.user.email)
         showSuccess('تم تسجيل الدخول بنجاح')
         router.push('/')
       }
@@ -114,7 +38,6 @@ export default function LoginPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
-        setReceivedEmail(session.user.email)
         showSuccess('تم تسجيل الدخول بنجاح')
         router.push('/')
       }
@@ -124,11 +47,11 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true)
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-      const redirectTo = `${siteUrl}/auth/callback`
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo },
+        options: {
+          redirectTo: ANDROID_AUTH_REDIRECT,
+        },
       })
       if (error) throw error
     } catch (err: unknown) {
@@ -140,31 +63,17 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-4 bg-surface"
       style={{ backgroundColor: colors.background }}
     >
       <Card
-        variant="elevated"
-        elevation={2}
+        variant="outlined"
         padding="lg"
-        className="w-full max-w-md rounded-extra-large"
+        className="w-full max-w-md rounded-extra-large !bg-surface border-2 border-primary shadow-[0_2px_6px_2px_rgba(0,0,0,0.1)]"
       >
         <h1 className="text-headline-medium text-on-surface text-center mb-6">
           تسجيل الدخول
         </h1>
-
-        {receivedEmail && (
-          <div
-            className="mb-6 p-4 rounded-extra-large text-center"
-            style={{
-              backgroundColor: 'var(--color-surface-dim)',
-              border: '1px solid var(--color-outline)',
-            }}
-          >
-            <p className="text-label-medium text-on-surface-variant mb-1">تم استقبال الإيميل:</p>
-            <p className="text-body-medium text-on-surface font-medium break-all">{receivedEmail}</p>
-          </div>
-        )}
 
         <Button
           variant="filled"
