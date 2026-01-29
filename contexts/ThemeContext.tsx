@@ -109,6 +109,7 @@ function getLightColors(role: UserRole): ThemeColors {
     infoContainer: '#dbeafe',
     outline: '#e5e5e7',
     outlineVariant: '#d1d1d6',
+    overlay: 'rgba(0, 0, 0, 0.5)',
   }
 }
 

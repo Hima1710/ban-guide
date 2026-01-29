@@ -36,21 +36,28 @@ export default function HomePage() {
       return
     }
     setStoriesLoading(true)
-    supabase
-      .from('follows')
-      .select('places(id, name_ar, logo_url)')
-      .eq('follower_id', user.id)
-      .then(({ data, error }) => {
+    const load = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('follows')
+          .select('places(id, name_ar, logo_url)')
+          .eq('follower_id', user.id)
         if (error) {
           setFollowedPlaces([])
           return
         }
-        const list = (data || [])
-          .map((r: { places: FollowedPlace | null }) => r.places)
-          .filter(Boolean) as FollowedPlace[]
+        type Row = { places: FollowedPlace | FollowedPlace[] | null }
+        const list = (data || []).flatMap((r: Row) => {
+          const p = (r as Row).places
+          if (!p) return []
+          return Array.isArray(p) ? p : [p]
+        }) as FollowedPlace[]
         setFollowedPlaces(list)
-      })
-      .finally(() => setStoriesLoading(false))
+      } finally {
+        setStoriesLoading(false)
+      }
+    }
+    void load()
   }, [user?.id])
 
   useEffect(() => {
@@ -135,11 +142,11 @@ export default function HomePage() {
 
       {/* Feed */}
       <main id="feed-panel" role="tabpanel" aria-label="التغذية" className="container mx-auto px-3 py-4 max-w-6xl">
-        {error && (
+        {error != null ? (
           <p className="text-body-medium text-error text-center py-4" role="alert">
             حدث خطأ في التحميل. حاول مرة أخرى.
           </p>
-        )}
+        ) : null}
 
         {loading && items.length === 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-busy="true">
