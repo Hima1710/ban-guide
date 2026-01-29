@@ -113,29 +113,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Tabs */}
+      {/* Tabs: transparent bg, gold indicator pill under active */}
       <div
         role="tablist"
         aria-label="نوع المحتوى"
-        className="sticky top-[var(--header-height,56px)] z-30 bg-surface border-b border-outline"
+        className="sticky top-[var(--header-height,56px)] z-30 bg-transparent border-b border-outline"
       >
         <div className="flex px-2">
           {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === tab.key}
-              aria-controls="feed-panel"
-              id={`tab-${tab.key}`}
-              onClick={() => setActiveTab(tab.key)}
-              className={`
-                flex-1 min-h-[48px] rounded-extra-large text-title-small font-semibold transition-colors
-                ${activeTab === tab.key ? 'bg-primary/10 text-primary' : 'text-on-surface-variant'}
-              `}
-            >
-              {tab.label}
-            </button>
+            <div key={tab.key} className="flex-1 flex flex-col items-center">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab.key}
+                aria-controls="feed-panel"
+                id={`tab-${tab.key}`}
+                onClick={() => setActiveTab(tab.key)}
+                className={`
+                  w-full min-h-[48px] rounded-extra-large text-title-small font-semibold transition-colors
+                  ${activeTab === tab.key ? 'text-primary' : 'text-on-surface-variant'}
+                `}
+              >
+                {tab.label}
+              </button>
+              {activeTab === tab.key && (
+                <span
+                  className="w-10 h-1 rounded-full bg-primary mt-0.5 shrink-0"
+                  aria-hidden
+                />
+              )}
+            </div>
           ))}
         </div>
       </div>

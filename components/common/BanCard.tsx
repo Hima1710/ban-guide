@@ -15,7 +15,7 @@ const PREMIUM_ARIA = 'معتمد / بريميوم'
 const INTERACTION_BTN_CLASS =
   'flex items-center gap-1.5 rounded-extra-large px-2 py-2 min-h-[48px] min-w-[48px] justify-center touch-manipulation'
 
-/** Card styling by tier: Premium (elevation + primary border + badge), Gold (light elevation + lighter bg), Basic (flat, outline only). */
+/** Card styling by tier: bg-surface (Dark Charcoal), Royal Gold only for borders/icons/titles. */
 function getTierCardProps(tier: SubscriptionTier) {
   switch (tier) {
     case 'premium':
@@ -27,9 +27,9 @@ function getTierCardProps(tier: SubscriptionTier) {
       }
     case 'gold':
       return {
-        variant: 'elevated' as const,
-        elevation: 1 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface-bright border border-outline shadow-[0_1px_3px_0_rgba(0,0,0,0.1)]',
+        variant: 'outlined' as const,
+        elevation: 0 as const,
+        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary shadow-none',
         showPremiumBadge: false,
       }
     default:
