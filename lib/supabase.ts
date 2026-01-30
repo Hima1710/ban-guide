@@ -32,13 +32,17 @@ function createNoopChain() {
 /** Stub client when env vars are missing — no throw, app keeps running with empty auth/data. */
 function createStubClient(): ReturnType<typeof createClient> {
   const noopChain = createNoopChain()
+  const configError = { message: 'Supabase غير مضبوط. أضف NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_ANON_KEY في إعدادات Vercel.' }
   const emptyAuth = {
     getSession: () => Promise.resolve({ data: { session: null }, error: null }),
     getUser: () => Promise.resolve({ data: { user: null }, error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     setSession: () => Promise.resolve({ data: {}, error: null }),
     signOut: () => Promise.resolve({ error: null }),
-    exchangeCodeForSession: () => Promise.resolve({ data: { session: null, user: null }, error: null }),
+    signInWithOAuth: () => Promise.resolve({ data: null, error: configError }),
+    signInWithPassword: () => Promise.resolve({ data: null, error: configError }),
+    signUp: () => Promise.resolve({ data: null, error: configError }),
+    exchangeCodeForSession: () => Promise.resolve({ data: { session: null, user: null }, error: configError }),
   }
   return {
     auth: emptyAuth,
