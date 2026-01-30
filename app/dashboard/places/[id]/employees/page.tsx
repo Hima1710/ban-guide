@@ -78,18 +78,17 @@ export default function PlaceEmployeesPage() {
       // Load user profiles for requests
       if (requestsData.length > 0) {
         const userIds = requestsData.map(r => r.user_id)
-        const { data: userProfiles } = await supabase
+        const { data: profilesData } = await supabase
           .from('user_profiles')
           .select('*')
           .in('id', userIds)
+        const userProfiles = (profilesData ?? []) as { id: string }[]
 
         // Map user profiles to requests
-        const profilesMap = new Map()
-        if (userProfiles) {
-          userProfiles.forEach(profile => {
-            profilesMap.set(profile.id, profile)
-          })
-        }
+        const profilesMap = new Map<string, { id: string }>()
+        userProfiles.forEach(profile => {
+          profilesMap.set(profile.id, profile)
+        })
 
         // Attach user profiles to requests
         requestsData.forEach(request => {
@@ -105,12 +104,13 @@ export default function PlaceEmployeesPage() {
 
   const loadEmployees = async () => {
     try {
-      const { data: employeesData, error } = await supabase
+      const { data: empData, error } = await supabase
         .from('place_employees')
         .select('*')
         .eq('place_id', placeId)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
+      const employeesData = (empData ?? []) as PlaceEmployee[]
 
       if (error) {
         console.error('Error loading employees:', error)
@@ -118,24 +118,23 @@ export default function PlaceEmployeesPage() {
       }
 
       // Load user profiles for employees
-      if (employeesData && employeesData.length > 0) {
+      if (employeesData.length > 0) {
         const userIds = employeesData.map(e => e.user_id)
-        const { data: userProfiles } = await supabase
+        const { data: profilesData2 } = await supabase
           .from('user_profiles')
           .select('*')
           .in('id', userIds)
+        const userProfilesEmp = (profilesData2 ?? []) as { id: string }[]
 
         // Map user profiles to employees
-        const profilesMap = new Map()
-        if (userProfiles) {
-          userProfiles.forEach(profile => {
-            profilesMap.set(profile.id, profile)
-          })
-        }
+        const profilesMapEmp = new Map<string, { id: string }>()
+        userProfilesEmp.forEach(profile => {
+          profilesMapEmp.set(profile.id, profile)
+        })
 
         // Attach user profiles to employees
         employeesData.forEach(employee => {
-          ;(employee as PlaceEmployee & { user?: unknown }).user = profilesMap.get(employee.user_id)
+          ;(employee as PlaceEmployee & { user?: unknown }).user = profilesMapEmp.get(employee.user_id)
         })
       }
 
