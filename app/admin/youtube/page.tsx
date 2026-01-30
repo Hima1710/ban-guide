@@ -5,6 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 import type { UserProfile } from '@/lib/types'
+
+/** صف بروفايل يحتوي حقول YouTube فقط (من .select()) */
+type YouTubeProfileRow = {
+  youtube_access_token: string | null
+  youtube_refresh_token: string | null
+  youtube_token_expiry: string | null
+} | null
 import { showSuccess, showError } from '@/components/SweetAlert'
 import { LoadingSpinner } from '@/components/common'
 import { HeadlineLarge, BodySmall } from '@/components/m3'
@@ -91,13 +98,14 @@ export default function AdminYouTubePage() {
   const checkYouTubeAuth = async () => {
     if (!user) {
       // Try to get any admin user's credentials
-      const { data: adminProfile } = await supabase
+      const { data } = await supabase
         .from('user_profiles')
         .select('youtube_access_token, youtube_refresh_token, youtube_token_expiry')
         .eq('is_admin', true)
         .not('youtube_access_token', 'is', null)
         .limit(1)
         .single()
+      const adminProfile = data as YouTubeProfileRow
 
       if (adminProfile) {
         setIsAuthenticated(true)
@@ -108,24 +116,26 @@ export default function AdminYouTubePage() {
     }
 
     // Check current user first
-    const { data: profileData } = await supabase
+    const { data: ytData } = await supabase
       .from('user_profiles')
       .select('youtube_access_token, youtube_refresh_token, youtube_token_expiry')
       .eq('id', user.id)
       .single()
+    const profileData = ytData as YouTubeProfileRow
 
     if (profileData?.youtube_access_token) {
       setIsAuthenticated(true)
       setProfile(profileData)
     } else {
       // Fallback: check any admin user
-      const { data: adminProfile } = await supabase
+      const { data: adminData } = await supabase
         .from('user_profiles')
         .select('youtube_access_token, youtube_refresh_token, youtube_token_expiry')
         .eq('is_admin', true)
         .not('youtube_access_token', 'is', null)
         .limit(1)
         .single()
+      const adminProfile = adminData as YouTubeProfileRow
 
       if (adminProfile) {
         setIsAuthenticated(true)
