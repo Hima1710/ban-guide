@@ -32,3 +32,10 @@
 3. المتصفح ينتقل إلى **Google** (accounts.google.com) → **يجب ألا يعترض التطبيق هذا التنقّل.**  
 4. المستخدم يوافق على Google، ثم يُعاد توجيهه إلى `auth/callback` ثم الرئيسية.  
 5. عندها فقط تكتمل الجلسة ويظهر المستخدم مسجّل دخولاً.
+
+## الجلسة عند تحميل ban-app://auth-callback في الويب فيو
+
+- العميل Supabase مُعدّ بـ **detectSessionInUrl: true** (الافتراضي في supabase-js) فيقرأ الـ fragment (#access_token=...) عند تحميل الصفحة ويُنشئ الجلسة.
+- **supabase.auth.onAuthStateChange** يعمل في كل التطبيق (AuthContext)؛ عند حدث **SIGNED_IN** يتم تحديث المستخدم.
+- صفحة **/auth/callback** (عميل): تستمع لـ onAuthStateChange، وعند **SIGNED_IN** تعيد التوجيه فوراً إلى **/** حتى يصل المستخدم للرئيسية بعد إكمال الدخول.
+- تأكد في تطبيق الأندرويد: عند استقبال `ban-app://auth-callback#...` إما تحميل نفس الرابط في الويب فيو (أو تحميل `https://موقعك/auth/callback#...` بنفس الـ fragment) حتى يقرأ الويب الـ fragment ويُكمل الجلسة ثم التوجيه إلى /.

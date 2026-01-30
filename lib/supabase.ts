@@ -9,7 +9,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOi
 let supabaseClient: ReturnType<typeof createClient> | ReturnType<typeof createClientComponentClient> | null = null
 let supabaseAdminClient: ReturnType<typeof createClient> | null = null
 
-// Client: use createClientComponentClient so session is read from same cookies set by auth callback (fixes WebView/post-login nav not showing user).
+// Client: createClientComponentClient (cookies) + supabase-js defaults: detectSessionInUrl: true so OAuth fragment (#access_token=...) is parsed when WebView loads ban-app://auth-callback or /auth/callback.
 // Server: plain createClient for SSR.
 export const supabase = (() => {
   if (typeof window !== 'undefined') {
