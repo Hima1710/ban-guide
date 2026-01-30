@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import type { Place, Post, Product } from '@/lib/types'
 
@@ -148,6 +148,9 @@ export function useUnifiedFeed(options: UseUnifiedFeedOptions): UseUnifiedFeedRe
   const fetchPage = useCallback(
     async (pageNum: number): Promise<{ items: UnifiedFeedItem[]; count: number }> => {
       setError(null)
+      if (!isSupabaseConfigured()) {
+        return { items: [], count: 0 }
+      }
       const from = pageNum * PAGE_SIZE
       const to = (pageNum + 1) * PAGE_SIZE - 1
 

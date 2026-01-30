@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useUnifiedFeed, type EntityType } from '@/hooks/useUnifiedFeed'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { BanCard, BanSkeleton } from '@/components/common'
 import type { PlaceFeedItem, PostFeedItem, ProductFeedItem } from '@/hooks/useUnifiedFeed'
 
@@ -30,7 +30,7 @@ export default function HomePage() {
   const { items, fetchNextPage, hasNextPage, loading, error } = useUnifiedFeed({ entityType: activeTab })
 
   useEffect(() => {
-    if (!user?.id) {
+    if (!user?.id || !isSupabaseConfigured()) {
       setFollowedPlaces([])
       setStoriesLoading(false)
       return
