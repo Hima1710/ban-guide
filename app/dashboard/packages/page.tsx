@@ -244,18 +244,17 @@ export default function PackagesPage() {
 
       if (!existingProfile) {
         // Create user profile if it doesn't exist
+        const profileRow = {
+          id: user.id,
+          email: user.email || null,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          avatar_url: user.user_metadata?.avatar_url || null,
+          is_admin: false,
+          is_affiliate: false,
+        }
         const { error: profileError } = await supabase
           .from('user_profiles')
-          .upsert({
-            id: user.id,
-            email: user.email || null,
-            full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-            avatar_url: user.user_metadata?.avatar_url || null,
-            is_admin: false,
-            is_affiliate: false,
-          }, {
-            onConflict: 'id',
-          })
+          .upsert(profileRow as never, { onConflict: 'id' })
 
         if (profileError) {
           console.error('Error creating user profile:', profileError)
