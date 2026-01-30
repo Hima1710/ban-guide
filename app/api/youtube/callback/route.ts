@@ -35,11 +35,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Find admin user (always use admin for owner account)
-    const { data: adminUsers, error: findError } = await supabaseAdmin
+    const { data, error: findError } = await supabaseAdmin
       .from('user_profiles')
       .select('id, email')
       .eq('is_admin', true)
       .limit(1)
+    const adminUsers = (data ?? []) as { id: string; email: string | null }[]
 
     if (findError) {
       console.error('Error finding admin user:', findError)
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (!adminUsers || adminUsers.length === 0) {
+    if (adminUsers.length === 0) {
       console.error('No admin user found')
       return NextResponse.redirect(
         new URL('/admin/youtube?error=no_admin_found', request.url)
