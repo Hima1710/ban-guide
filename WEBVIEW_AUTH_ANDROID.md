@@ -37,5 +37,5 @@
 
 - العميل Supabase مُعدّ بـ **detectSessionInUrl: true** (الافتراضي في supabase-js) فيقرأ الـ fragment (#access_token=...) عند تحميل الصفحة ويُنشئ الجلسة.
 - **supabase.auth.onAuthStateChange** يعمل في كل التطبيق (AuthContext)؛ عند حدث **SIGNED_IN** يتم تحديث المستخدم.
-- صفحة **/auth/callback** (عميل): تستمع لـ onAuthStateChange، وعند **SIGNED_IN** تعيد التوجيه فوراً إلى **/** حتى يصل المستخدم للرئيسية بعد إكمال الدخول.
-- تأكد في تطبيق الأندرويد: عند استقبال `ban-app://auth-callback#...` إما تحميل نفس الرابط في الويب فيو (أو تحميل `https://موقعك/auth/callback#...` بنفس الـ fragment) حتى يقرأ الويب الـ fragment ويُكمل الجلسة ثم التوجيه إلى /.
+- صفحة **/auth/complete** (عميل): تستمع لـ onAuthStateChange، وعند **SIGNED_IN** تعيد التوجيه فوراً إلى **/** حتى يصل المستخدم للرئيسية بعد إكمال الدخول. (مسار /auth/callback محجوز لـ route.ts لتبادل ?code= على السيرفر.)
+- تأكد في تطبيق الأندرويد: عند استقبال `ban-app://auth-callback#...` إما تحميل نفس الرابط في الويب فيو (أو تحميل `https://موقعك/auth/complete#...` بنفس الـ fragment) حتى يقرأ الويب الـ fragment ويُكمل الجلسة ثم التوجيه إلى /.

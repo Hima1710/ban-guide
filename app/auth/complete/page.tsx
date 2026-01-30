@@ -6,13 +6,13 @@ import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 
 /**
- * Client-side auth callback page.
- * When the Android app loads ban-app://auth-callback (or our origin/auth/callback) with
+ * Client-side auth completion page (no conflict with /auth/callback route).
+ * When the Android app loads ban-app://auth-callback (or our origin/auth/complete) with
  * the OAuth fragment (#access_token=...), the Supabase client (detectSessionInUrl: true)
  * parses the URL and establishes the session. onAuthStateChange then fires SIGNED_IN.
  * We redirect to / immediately so the user lands on the home page.
  */
-export default function AuthCallbackPage() {
+export default function AuthCompletePage() {
   const router = useRouter()
   const { colors } = useTheme()
 
