@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { EmployeeRequest, PlaceEmployee } from '@/lib/types'
+import { EmployeeRequest, PlaceEmployee, UserProfile } from '@/lib/types'
 import { showError, showSuccess } from '@/components/SweetAlert'
 import { UserPlus, CheckCircle, X, Shield, MessageSquare, Package } from 'lucide-react'
 import Link from 'next/link'
@@ -82,17 +82,17 @@ export default function PlaceEmployeesPage() {
           .from('user_profiles')
           .select('*')
           .in('id', userIds)
-        const userProfiles = (profilesData ?? []) as { id: string }[]
+        const userProfiles = (profilesData ?? []) as UserProfile[]
 
         // Map user profiles to requests
-        const profilesMap = new Map<string, { id: string }>()
+        const profilesMap = new Map<string, UserProfile>()
         userProfiles.forEach(profile => {
           profilesMap.set(profile.id, profile)
         })
 
         // Attach user profiles to requests
         requestsData.forEach(request => {
-          ;(request as EmployeeRequest & { user?: unknown }).user = profilesMap.get(request.user_id) as unknown
+          request.user = profilesMap.get(request.user_id)
         })
       }
 
@@ -124,17 +124,17 @@ export default function PlaceEmployeesPage() {
           .from('user_profiles')
           .select('*')
           .in('id', userIds)
-        const userProfilesEmp = (profilesData2 ?? []) as { id: string }[]
+        const userProfilesEmp = (profilesData2 ?? []) as UserProfile[]
 
         // Map user profiles to employees
-        const profilesMapEmp = new Map<string, { id: string }>()
+        const profilesMapEmp = new Map<string, UserProfile>()
         userProfilesEmp.forEach(profile => {
           profilesMapEmp.set(profile.id, profile)
         })
 
         // Attach user profiles to employees
         employeesData.forEach(employee => {
-          ;(employee as PlaceEmployee & { user?: unknown }).user = profilesMapEmp.get(employee.user_id) as unknown
+          employee.user = profilesMapEmp.get(employee.user_id)
         })
       }
 
