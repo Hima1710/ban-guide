@@ -33,14 +33,15 @@ function CallbackContent() {
           }
           const user = data?.user
           if (user) {
-            await supabase.from('user_profiles').upsert({
+            const profileRow = {
               id: user.id,
               email: user.email,
               full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
               avatar_url: user.user_metadata?.avatar_url || null,
               is_admin: false,
               is_affiliate: false,
-            }, { onConflict: 'id' })
+            }
+            await supabase.from('user_profiles').upsert(profileRow as never, { onConflict: 'id' })
 
             try {
               const { data: existing } = await supabase
