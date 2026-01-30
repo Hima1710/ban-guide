@@ -2,15 +2,29 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
+/**
+ * Auth callback: exchange ?code= for session, set cookies (sameSite: Lax for WebView), redirect to /.
+ */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
 
   if (code) {
     try {
-      const cookieStore = cookies()
-      const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
-      
+      const cookieStore = await cookies()
+      const supabase = createRouteHandlerClient(
+        { cookies: (() => cookieStore) as unknown as () => Promise<Awaited<ReturnType<typeof cookies>>> },
+        {
+          // sameSite: Lax so WebView can store cookies
+          cookieOptions: {
+            sameSite: 'lax',
+            path: '/',
+            domain: undefined,
+            secure: process.env.NODE_ENV === 'production',
+          },
+        }
+      )
+
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       
       if (!error) {
