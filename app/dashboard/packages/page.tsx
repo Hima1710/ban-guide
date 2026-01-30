@@ -272,11 +272,12 @@ export default function PackagesPage() {
         status: 'pending',
         is_active: false, // Will be activated after admin approval
       }
-      const { data: subscriptionData, error: subError } = await supabase
+      const { data: subData, error: subError } = await supabase
         .from('user_subscriptions')
         .insert(subscriptionRow as never)
         .select()
         .single()
+      const subscriptionData = subData as { id: string } | null
 
       if (subError) throw subError
 
