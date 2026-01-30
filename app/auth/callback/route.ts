@@ -3,16 +3,17 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
 /** Log exchangeCodeForSession errors for Logcat / debugging (PKCE or cookie sync issues). */
-function logExchangeError(error: { message?: string; status?: number; name?: string; [k: string]: unknown }) {
+function logExchangeError(error: unknown) {
+  const err = error && typeof error === 'object' ? error as Record<string, unknown> : {}
   const detail = {
-    message: error?.message,
-    status: error?.status,
-    name: error?.name,
-    ...(typeof error === 'object' && error !== null ? error : {}),
+    message: err?.message,
+    status: err?.status,
+    name: err?.name,
+    ...err,
   }
   console.error('[auth/callback] exchangeCodeForSession error:', JSON.stringify(detail, null, 2))
-  if (error?.message) console.error('[auth/callback] error.message:', error.message)
-  if (error?.status != null) console.error('[auth/callback] error.status:', error.status)
+  if (err?.message != null) console.error('[auth/callback] error.message:', err.message)
+  if (err?.status != null) console.error('[auth/callback] error.status:', err.status)
 }
 
 /**
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
     } catch (err) {
       console.error('[auth/callback] Unexpected error:', err)
       if (err && typeof err === 'object' && 'message' in err) {
-        logExchangeError(err as { message?: string; status?: number; name?: string; [k: string]: unknown })
+        logExchangeError(err)
       }
     }
   }
