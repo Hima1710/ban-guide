@@ -11,7 +11,10 @@ import { cookies } from 'next/headers'
 export async function GET() {
   try {
     const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+    // Next.js 15+ cookies() is async; auth-helpers-nextjs expects () => Promise<...> but adapter uses result sync — pass resolved store with assertion
+    const supabase = createRouteHandlerClient({
+      cookies: (() => cookieStore) as unknown as () => Promise<Awaited<ReturnType<typeof cookies>>>,
+    })
     const { data: { session }, error } = await supabase.auth.getSession()
     if (error || !session) {
       return NextResponse.json({ session: null })
