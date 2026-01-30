@@ -42,12 +42,13 @@ export default function PlaceEmployeesPage() {
     setUser(user)
 
     // Check if user owns this place
-    const { data: placeData, error } = await supabase
+    const { data: placeRow, error } = await supabase
       .from('places')
       .select('*')
       .eq('id', placeId)
       .eq('user_id', user.id)
       .single()
+    const placeData = placeRow as Record<string, unknown> | null
 
     if (error || !placeData) {
       showError('ليس لديك صلاحيات للوصول إلى هذه الصفحة')
@@ -61,12 +62,13 @@ export default function PlaceEmployeesPage() {
 
   const loadRequests = async () => {
     try {
-      const { data: requestsData, error } = await supabase
+      const { data: reqData, error } = await supabase
         .from('employee_requests')
         .select('*')
         .eq('place_id', placeId)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
+      const requestsData = (reqData ?? []) as EmployeeRequest[]
 
       if (error) {
         console.error('Error loading requests:', error)
@@ -74,7 +76,7 @@ export default function PlaceEmployeesPage() {
       }
 
       // Load user profiles for requests
-      if (requestsData && requestsData.length > 0) {
+      if (requestsData.length > 0) {
         const userIds = requestsData.map(r => r.user_id)
         const { data: userProfiles } = await supabase
           .from('user_profiles')
@@ -91,11 +93,11 @@ export default function PlaceEmployeesPage() {
 
         // Attach user profiles to requests
         requestsData.forEach(request => {
-          request.user = profilesMap.get(request.user_id)
+          ;(request as EmployeeRequest & { user?: unknown }).user = profilesMap.get(request.user_id)
         })
       }
 
-      setRequests(requestsData || [])
+      setRequests(requestsData)
     } catch (error) {
       console.error('Error loading requests:', error)
     }
@@ -133,11 +135,11 @@ export default function PlaceEmployeesPage() {
 
         // Attach user profiles to employees
         employeesData.forEach(employee => {
-          employee.user = profilesMap.get(employee.user_id)
+          ;(employee as PlaceEmployee & { user?: unknown }).user = profilesMap.get(employee.user_id)
         })
       }
 
-      setEmployees(employeesData || [])
+      setEmployees(employeesData)
     } catch (error) {
       console.error('Error loading employees:', error)
     }
