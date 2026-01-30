@@ -92,7 +92,7 @@ export default function PlaceEmployeesPage() {
 
         // Attach user profiles to requests
         requestsData.forEach(request => {
-          ;(request as EmployeeRequest & { user?: unknown }).user = profilesMap.get(request.user_id)
+          ;(request as EmployeeRequest & { user?: unknown }).user = profilesMap.get(request.user_id) as unknown
         })
       }
 
@@ -134,7 +134,7 @@ export default function PlaceEmployeesPage() {
 
         // Attach user profiles to employees
         employeesData.forEach(employee => {
-          ;(employee as PlaceEmployee & { user?: unknown }).user = profilesMapEmp.get(employee.user_id)
+          ;(employee as PlaceEmployee & { user?: unknown }).user = profilesMapEmp.get(employee.user_id) as unknown
         })
       }
 
