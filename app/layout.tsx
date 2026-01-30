@@ -54,14 +54,14 @@ export default function RootLayout({
         }}
         suppressHydrationWarning
       >
-        <ThemeProvider>
-          <ErrorBoundary level="global">
-            <AuthProvider>
+        <ErrorBoundary level="global">
+          <AuthProvider>
+            <ThemeProvider>
               <AppShell>{children}</AppShell>
               <Script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" strategy="lazyOnload" />
-            </AuthProvider>
-          </ErrorBoundary>
-        </ThemeProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

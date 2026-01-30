@@ -2,9 +2,20 @@
 
 import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react'
-import { useTheme } from '@/contexts/ThemeContext'
-import { TitleLarge, BodyMedium } from '@/components/m3'
-import { Button } from '@/components/common'
+
+/** Fixed colors for error fallback so it works without ThemeProvider (e.g. when error is caught above ThemeProvider). */
+const FALLBACK_COLORS = {
+  background: '#ffffff',
+  surface: '#f5f5f5',
+  surfaceContainer: '#e5e5e7',
+  onSurface: '#1c1c1e',
+  onSurfaceVariant: '#49454f',
+  error: '#b3261e',
+  errorContainer: '#fdecea',
+  warning: '#7d5700',
+  outline: '#79747e',
+  primary: '#6750a4',
+}
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -122,22 +133,22 @@ function ErrorBoundaryFallback({
   onReload: () => void
   onGoHome: () => void
 }) {
-  const { colors } = useTheme()
+  const c = FALLBACK_COLORS
 
   if (level === 'global') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: colors.background }}>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: c.background }}>
         <div className="max-w-md w-full text-center">
           <div className="mb-6">
-            <AlertTriangle size={64} className="mx-auto mb-4" style={{ color: colors.error }} />
-            <TitleLarge style={{ color: colors.onSurface }} className="mb-2">عذراً، حدث خطأ غير متوقع</TitleLarge>
-            <BodyMedium color="onSurfaceVariant" className="mb-4">نعتذر عن الإزعاج. يرجى المحاولة مرة أخرى.</BodyMedium>
+            <AlertTriangle size={64} className="mx-auto mb-4" style={{ color: c.error }} />
+            <p className="text-xl font-semibold mb-2" style={{ color: c.onSurface }}>عذراً، حدث خطأ غير متوقع</p>
+            <p className="text-base mb-4" style={{ color: c.onSurfaceVariant }}>نعتذر عن الإزعاج. يرجى المحاولة مرة أخرى.</p>
           </div>
           {process.env.NODE_ENV === 'development' && error && (
-            <div className="mb-6 text-left p-4 rounded" style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}>
-              <p className="text-sm font-mono mb-2" style={{ color: colors.error }}>{error.toString()}</p>
+            <div className="mb-6 text-left p-4 rounded" style={{ backgroundColor: c.surface, border: `1px solid ${c.outline}` }}>
+              <p className="text-sm font-mono mb-2" style={{ color: c.error }}>{error.toString()}</p>
               {errorInfo && (
-                <details className="text-xs" style={{ color: colors.onSurfaceVariant }}>
+                <details className="text-xs" style={{ color: c.onSurfaceVariant }}>
                   <summary className="cursor-pointer mb-2">Component Stack</summary>
                   <pre className="whitespace-pre-wrap overflow-x-auto">{errorInfo.componentStack}</pre>
                 </details>
@@ -145,14 +156,24 @@ function ErrorBoundaryFallback({
             </div>
           )}
           <div className="flex flex-col gap-3">
-            <Button variant="filled"  fullWidth onClick={onReload} className="justify-center gap-2">
+            <button
+              type="button"
+              onClick={onReload}
+              className="w-full py-3 px-4 rounded-full font-medium flex items-center justify-center gap-2"
+              style={{ backgroundColor: c.primary, color: '#fff', border: 'none', cursor: 'pointer' }}
+            >
               <RefreshCcw size={20} />
               إعادة تحميل الصفحة
-            </Button>
-            <Button variant="outlined"  fullWidth onClick={onGoHome} className="justify-center gap-2" style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}>
+            </button>
+            <button
+              type="button"
+              onClick={onGoHome}
+              className="w-full py-3 px-4 rounded-full font-medium flex items-center justify-center gap-2 border"
+              style={{ backgroundColor: c.surfaceContainer, color: c.onSurface, borderColor: c.outline, cursor: 'pointer' }}
+            >
               <Home size={20} />
               العودة للصفحة الرئيسية
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -161,21 +182,26 @@ function ErrorBoundaryFallback({
 
   if (level === 'section') {
     return (
-      <div className="p-6 rounded-lg" style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}>
+      <div className="p-6 rounded-lg" style={{ backgroundColor: c.surface, border: `1px solid ${c.outline}` }}>
         <div className="flex items-start gap-4">
-          <AlertTriangle size={24} className="flex-shrink-0 mt-1" style={{ color: colors.warning }} />
+          <AlertTriangle size={24} className="flex-shrink-0 mt-1" style={{ color: c.warning }} />
           <div className="flex-1">
-            <TitleLarge style={{ color: colors.onSurface }} className="mb-2">فشل في تحميل هذا القسم</TitleLarge>
-            <BodyMedium color="onSurfaceVariant" className="mb-4 text-sm">حدث خطأ أثناء تحميل هذا الجزء من الصفحة</BodyMedium>
+            <p className="text-xl font-semibold mb-2" style={{ color: c.onSurface }}>فشل في تحميل هذا القسم</p>
+            <p className="text-sm mb-4" style={{ color: c.onSurfaceVariant }}>حدث خطأ أثناء تحميل هذا الجزء من الصفحة</p>
             {process.env.NODE_ENV === 'development' && error && (
-              <div className="mb-4 p-3 rounded" style={{ backgroundColor: colors.errorContainer, border: `1px solid ${colors.error}` }}>
-                <p className="text-sm font-mono" style={{ color: colors.error }}>{error.toString()}</p>
+              <div className="mb-4 p-3 rounded" style={{ backgroundColor: c.errorContainer, border: `1px solid ${c.error}` }}>
+                <p className="text-sm font-mono" style={{ color: c.error }}>{error.toString()}</p>
               </div>
             )}
-            <Button variant="filled"  size="sm" onClick={onReset} className="gap-2">
+            <button
+              type="button"
+              onClick={onReset}
+              className="py-2 px-4 rounded-full text-sm font-medium flex items-center gap-2"
+              style={{ backgroundColor: c.primary, color: '#fff', border: 'none', cursor: 'pointer' }}
+            >
               <RefreshCcw size={16} />
               إعادة المحاولة
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -183,19 +209,19 @@ function ErrorBoundaryFallback({
   }
 
   return (
-    <div className="p-4 rounded" style={{ backgroundColor: colors.surface, border: `1px solid ${colors.warning}` }}>
+    <div className="p-4 rounded" style={{ backgroundColor: c.surface, border: `1px solid ${c.warning}` }}>
       <div className="flex items-center gap-2 mb-2">
-        <AlertTriangle size={16} style={{ color: colors.warning }} />
-        <BodyMedium style={{ color: colors.onSurface }} className="font-semibold">فشل في التحميل</BodyMedium>
+        <AlertTriangle size={16} style={{ color: c.warning }} />
+        <p className="text-base font-semibold" style={{ color: c.onSurface }}>فشل في التحميل</p>
       </div>
       {process.env.NODE_ENV === 'development' && error && (
-        <p className="text-xs mb-2 font-mono" style={{ color: colors.error }}>{error.message}</p>
+        <p className="text-xs mb-2 font-mono" style={{ color: c.error }}>{error.message}</p>
       )}
       <button
         type="button"
         onClick={onReset}
         className="text-xs hover:underline"
-        style={{ color: colors.primary }}
+        style={{ color: c.primary, background: 'none', border: 'none', cursor: 'pointer' }}
       >
         إعادة المحاولة
       </button>
