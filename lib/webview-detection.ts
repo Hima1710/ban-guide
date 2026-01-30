@@ -71,14 +71,29 @@ function detectWebViewFromUserAgent(): WebViewInfo {
   return { isWebView: false, platform: null, isStandalone: false, variant: 'browser' }
 }
 
+const IN_APP_STORAGE_KEY = 'ban_in_app_webview'
+
 /**
- * Check URL parameter for WebView flag
+ * Check URL parameter for WebView flag (and persist for session so navigation keeps it).
  */
 function detectWebViewFromURL(): boolean {
   if (typeof window === 'undefined') return false
-  
+
   const params = new URLSearchParams(window.location.search)
-  return params.get('webview') === 'true' || params.get('app') === 'true'
+  const fromUrl = params.get('webview') === 'true' || params.get('app') === 'true'
+  if (fromUrl) {
+    try {
+      sessionStorage.setItem(IN_APP_STORAGE_KEY, 'true')
+    } catch {
+      // ignore
+    }
+  }
+  try {
+    if (sessionStorage.getItem(IN_APP_STORAGE_KEY) === 'true') return true
+  } catch {
+    // ignore
+  }
+  return fromUrl
 }
 
 /**
