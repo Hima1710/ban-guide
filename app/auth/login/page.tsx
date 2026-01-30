@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { showError, showSuccess } from '@/components/SweetAlert'
 import { Card, Button } from '@/components/common'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useWebView } from '@/lib/webview-detection'
 
 const ANDROID_AUTH_REDIRECT = 'ban-app://auth-callback'
 
@@ -23,6 +24,7 @@ function GoogleIcon() {
 export default function LoginPage() {
   const router = useRouter()
   const { colors } = useTheme()
+  const { isWebView, platform } = useWebView()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -47,11 +49,15 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true)
+      // على المتصفح العادي (كمبيوتر/جوال) نرجع لموقعنا. داخل تطبيق أندرويد فقط نستخدم ban-app://
+      const redirectTo =
+        typeof window !== 'undefined' && isWebView && platform === 'android'
+          ? ANDROID_AUTH_REDIRECT
+          : (typeof window !== 'undefined' ? window.location.origin + '/auth/callback' : '/auth/callback')
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // تأكد أن هذا الرابط يطابق ما وضعته في Supabase وفي الأندرويد
-          redirectTo: ANDROID_AUTH_REDIRECT,
+          redirectTo,
           skipBrowserRedirect: false,
         },
       })
