@@ -1,7 +1,8 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { Place } from '@/lib/types'
 
 export async function getPlaces(featured?: boolean): Promise<Place[]> {
+  if (!isSupabaseConfigured()) return []
   let query = supabase
     .from('places')
     .select('*')
@@ -23,6 +24,7 @@ export async function getPlaces(featured?: boolean): Promise<Place[]> {
 }
 
 export async function getPlaceById(id: string): Promise<Place | null> {
+  if (!isSupabaseConfigured()) return null
   const { data, error } = await supabase
     .from('places')
     .select('*')
@@ -37,6 +39,7 @@ export async function getPlaceById(id: string): Promise<Place | null> {
 }
 
 export async function incrementPlaceView(placeId: string): Promise<void> {
+  if (!isSupabaseConfigured()) return
   const { error } = await supabase.rpc('increment_place_view', {
     place_uuid: placeId,
   } as never)
@@ -47,6 +50,7 @@ export async function incrementPlaceView(placeId: string): Promise<void> {
 }
 
 export async function recordPlaceVisit(placeId: string, visitorIp?: string): Promise<void> {
+  if (!isSupabaseConfigured()) return
   const { error } = await supabase.from('place_visits').insert({
     place_id: placeId,
     visitor_ip: visitorIp,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { Place } from '@/lib/types'
 import { getPlaces, getPlaceById } from '@/lib/api/places'
 import { validateArray, PlaceListItemSchema } from '@/types/schemas'
@@ -29,6 +29,13 @@ export function usePlaces(options: UsePlacesOptions = {}): UsePlacesReturn {
   const loadPlaces = useCallback(async () => {
     // If filtering by userId and userId is not provided yet, skip loading
     if (options.userId !== undefined && !userId) {
+      setLoading(false)
+      return
+    }
+
+    if (!isSupabaseConfigured()) {
+      setPlaces([])
+      setError(null)
       setLoading(false)
       return
     }
@@ -96,6 +103,13 @@ export function usePlace(placeId: string | null): UsePlaceReturn {
   const loadPlace = useCallback(async () => {
     if (!placeId) {
       setPlace(null)
+      setLoading(false)
+      return
+    }
+
+    if (!isSupabaseConfigured()) {
+      setPlace(null)
+      setError(null)
       setLoading(false)
       return
     }
