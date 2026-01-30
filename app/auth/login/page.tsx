@@ -47,10 +47,12 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true)
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          // تأكد أن هذا الرابط يطابق ما وضعته في Supabase وفي الأندرويد
           redirectTo: ANDROID_AUTH_REDIRECT,
+          skipBrowserRedirect: false,
         },
       })
       if (error) throw error
