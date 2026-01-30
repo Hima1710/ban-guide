@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
+/** Log exchangeCodeForSession errors for Logcat / debugging (PKCE or cookie sync issues). */
+function logExchangeError(error: { message?: string; status?: number; name?: string; [k: string]: unknown }) {
+  const detail = {
+    message: error?.message,
+    status: error?.status,
+    name: error?.name,
+    ...(typeof error === 'object' && error !== null ? error : {}),
+  }
+  console.error('[auth/callback] exchangeCodeForSession error:', JSON.stringify(detail, null, 2))
+  if (error?.message) console.error('[auth/callback] error.message:', error.message)
+  if (error?.status != null) console.error('[auth/callback] error.status:', error.status)
+}
+
 /**
  * Auth callback when Android (or web) redirects to /auth/callback?code=...
  *
@@ -9,14 +22,21 @@ import { cookies } from 'next/headers'
  * 1. Await supabase.auth.exchangeCodeForSession(code) to establish the session.
  * 2. Set the session in cookies using sameSite: 'lax' so the WebView can store them.
  * 3. After successful exchange, redirect to / with Cache-Control so the UI does a fresh load and picks up the new session.
+ *
+ * Server-side only: this handler uses a route-handler Supabase client with cookies only (no client-side
+ * PKCE verifier). If OAuth was started in an external browser, the code_verifier may be in a different
+ * context and the exchange can fail (e.g. PKCE verification). For reliable WebView auth, consider
+ * keeping the OAuth flow in the same WebView so the verifier is available, or use a server-side OAuth flow.
  */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  let exchangeSuccess = false
 
   if (code) {
     try {
       const cookieStore = await cookies()
+      // Server-side only: no client storage, no PKCE verifier from client (may fail after app-switch).
       const supabase = createRouteHandlerClient(
         { cookies: (() => cookieStore) as unknown as () => Promise<Awaited<ReturnType<typeof cookies>>> },
         {
@@ -29,9 +49,14 @@ export async function GET(request: NextRequest) {
         }
       )
 
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+      if (error) {
+        logExchangeError(error)
+      }
 
       if (!error) {
+        exchangeSuccess = true
         // Create or update user profile
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
@@ -89,17 +114,21 @@ export async function GET(request: NextRequest) {
         }
         // Short delay before redirect so cookies are committed and WebView picks up session.
         await new Promise((r) => setTimeout(r, 250))
-      } else {
-        console.error('Error exchanging code for session:', error)
       }
-    } catch (error) {
-      console.error('Unexpected error in auth callback:', error)
+    } catch (err) {
+      console.error('[auth/callback] Unexpected error:', err)
+      if (err && typeof err === 'object' && 'message' in err) {
+        logExchangeError(err as { message?: string; status?: number; name?: string; [k: string]: unknown })
+      }
     }
   }
 
   // Redirect to / with cache-busting so the client does a fresh load and picks up the new session (important for WebView/Android).
   const homeUrl = new URL('/', requestUrl.origin)
   homeUrl.searchParams.set('_', String(Date.now()))
+  if (!exchangeSuccess) {
+    homeUrl.searchParams.set('auth_error', '1')
+  }
   const response = NextResponse.redirect(homeUrl)
   // Explicitly kill all cache so WebView/browser does not serve stale page and misses new session.
   response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')

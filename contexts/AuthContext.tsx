@@ -190,6 +190,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // ✅ Force session check after redirect from /auth/callback: if we land on / with _ or auth_error and session is still null, fetch session from server and setSession (handles WebView/cookie sync).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const fromAuth = params.has('_') || params.get('auth_error') === '1'
+    if (!fromAuth || loading || user) return
+
+    const forceSessionCheck = async () => {
+      try {
+        const res = await fetch('/api/auth/session', { cache: 'no-store' })
+        const { session } = await res.json()
+        if (session?.access_token) {
+          await supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token ?? '',
+          })
+          await loadUser()
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    const t1 = setTimeout(forceSessionCheck, 400)
+    const t2 = setTimeout(forceSessionCheck, 1200)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [loading, user])
+
   const value: AuthContextType = {
     user,
     profile,
