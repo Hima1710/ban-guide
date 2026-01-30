@@ -1,0 +1,120 @@
+'use client'
+
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+
+/**
+ * Auth callback page — يعمل من جانب العميل (مهم لـ WebView/Android مع PKCE).
+ *
+ * عندما يفتح المستخدم OAuth في Chrome ثم يعود إلى التطبيق، Android يحمّل
+ * https://ban-guide.vercel.app/auth/callback?code=... داخل WebView.
+ * الـ code_verifier مخزّن في نفس الـ WebView من بداية التدفق، لذلك التبادل
+ * يجب أن يحدث هنا (عميل) وليس على السيرفر.
+ */
+function CallbackContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [status, setStatus] = useState<'exchanging' | 'done' | 'error'>('exchanging')
+
+  useEffect(() => {
+    const code = searchParams.get('code')
+    const hash = typeof window !== 'undefined' ? window.location.hash : ''
+
+    const run = async () => {
+      if (code) {
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+          if (error) {
+            console.error('[auth/callback] exchangeCodeForSession error:', error)
+            setStatus('error')
+            router.replace('/?auth_error=1')
+            return
+          }
+          const user = data?.user
+          if (user) {
+            await supabase.from('user_profiles').upsert({
+              id: user.id,
+              email: user.email,
+              full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+              avatar_url: user.user_metadata?.avatar_url || null,
+              is_admin: false,
+              is_affiliate: false,
+            }, { onConflict: 'id' })
+
+            try {
+              const { data: existing } = await supabase
+                .from('notifications')
+                .select('id')
+                .eq('user_id', user.id)
+                .limit(1)
+              const isFirst = !existing?.length
+              await supabase.rpc('send_notification', {
+                p_user_id: user.id,
+                p_title_ar: isFirst ? 'مرحباً بك في بان! 🎉' : 'مرحباً بعودتك! 👋',
+                p_title_en: isFirst ? 'Welcome to BAN! 🎉' : 'Welcome back! 👋',
+                p_message_ar: isFirst
+                  ? 'نحن سعداء بانضمامك إلينا. استكشف المحلات والصيدليات القريبة منك الآن!'
+                  : 'سعداء برؤيتك مجدداً. تحقق من التحديثات الجديدة!',
+                p_message_en: isFirst
+                  ? 'We are happy to have you join us. Explore nearby stores and pharmacies now!'
+                  : 'Happy to see you again. Check out the new updates!',
+                p_type: 'system',
+                p_link: '/dashboard',
+              })
+            } catch {
+              // لا نفشل تسجيل الدخول إذا فشل الإشعار
+            }
+          }
+          setStatus('done')
+          router.replace('/?_=' + Date.now())
+        } catch (err) {
+          console.error('[auth/callback] Unexpected error:', err)
+          setStatus('error')
+          router.replace('/?auth_error=1')
+        }
+        return
+      }
+
+      // دعم implicit/hash: #access_token=...
+      if (hash && (hash.includes('access_token=') || hash.includes('refresh_token='))) {
+        setStatus('done')
+        router.replace('/?_=' + Date.now())
+        return
+      }
+
+      setStatus('error')
+      router.replace('/?auth_error=1')
+    }
+
+    run()
+  }, [searchParams, router])
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 bg-surface">
+      {status === 'exchanging' && (
+        <p className="text-body-large text-on-surface-variant">جاري إكمال تسجيل الدخول...</p>
+      )}
+      {status === 'error' && (
+        <p className="text-body-large text-error">حدث خطأ. جرب مرة أخرى.</p>
+      )}
+      {status === 'done' && (
+        <p className="text-body-large text-on-surface-variant">تم تسجيل الدخول. جاري التحويل...</p>
+      )}
+    </div>
+  )
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-4 bg-surface">
+          <p className="text-body-large text-on-surface-variant">جاري التحميل...</p>
+        </div>
+      }
+    >
+      <CallbackContent />
+    </Suspense>
+  )
+}
