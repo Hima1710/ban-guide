@@ -116,13 +116,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
     try {
       // Check if user is an employee
-      const { data: employeeData, error: employeeError } = await supabase
+      const { data: empRow, error: employeeError } = await supabase
         .from('place_employees')
         .select('*')
         .eq('user_id', user.id)
         .eq('place_id', place.id)
         .eq('is_active', true)
         .maybeSingle()
+      const employeeData = empRow as { permissions?: 'basic' | 'messages_posts' | 'full' } | null
 
       if (employeeError) {
         console.error('Error checking employee status:', employeeError)
@@ -168,15 +169,16 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     }
 
     try {
+      const reqRow = {
+        user_id: user.id,
+        place_id: place.id,
+        phone: employeePhone.trim(),
+        status: 'pending',
+        permissions: 'basic' as const,
+      }
       const { error } = await supabase
         .from('employee_requests')
-        .insert({
-          user_id: user.id,
-          place_id: place.id,
-          phone: employeePhone.trim(),
-          status: 'pending',
-          permissions: 'basic'
-        })
+        .insert(reqRow as never)
 
       if (error) {
         console.error('Error creating employee request:', error)
@@ -412,11 +414,12 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         reply_to: messageReplyTo?.id || null,
       }
 
-      const { data: newMessageData, error } = await supabase
+      const { data: msgData, error } = await supabase
         .from('messages')
-        .insert(messageData)
+        .insert(messageData as never)
         .select('*, sender:user_profiles(*)')
         .single()
+      const newMessageData = msgData as (Message & { replied_message?: Message }) | null
 
       if (error) {
         console.error('Error sending message:', error)
@@ -549,11 +552,12 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         messageData.product_id = messageProduct.id
       }
 
-      const { data: newMessageData, error } = await supabase
+      const { data: msgData2, error } = await supabase
         .from('messages')
-        .insert(messageData)
+        .insert(messageData as never)
         .select('*, sender:user_profiles(*)')
         .single()
+      const newMessageData = msgData2 as (Message & { replied_message?: Message }) | null
 
       if (error) {
         console.error('Error sending message:', error)

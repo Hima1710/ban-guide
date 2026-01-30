@@ -93,11 +93,12 @@ async function fetchUserInteractions(
   if (!userId || entityIds.length === 0 || !INTERACTIONS_ENABLED || interactionsApiDisabled) return map
 
   const idSet = new Set(entityIds)
-  const { data, error } = await supabase
+  const { data: rows, error } = await supabase
     .from('interactions')
     .select('entity_id, interaction_type')
     .eq('user_id', userId)
     .eq('entity_type', entityType)
+  const data = rows as { entity_id: string; interaction_type: string }[] | null
 
   if (error) {
     interactionsApiDisabled = true

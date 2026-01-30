@@ -12,6 +12,7 @@ import type {
   MessageUserProfile,
   Place 
 } from '@/types'
+import type { UserProfile } from '@/lib/types'
 
 const logger = createLogger('ConversationsManager')
 
@@ -53,11 +54,12 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
 
     try {
       const placeIds = userPlaces.map(p => p.id)
-      const { data: employeesData, error } = await supabase
+      const { data: empRows, error } = await supabase
         .from('place_employees')
         .select('*')
         .in('place_id', placeIds)
         .eq('is_active', true)
+      const employeesData = empRows as PlaceEmployee[] | null
 
       if (error) {
         console.error('Error loading place employees:', error)
@@ -66,12 +68,13 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
 
       if (employeesData && employeesData.length > 0) {
         const userIds = employeesData.map(e => e.user_id)
-        const { data: userProfiles } = await supabase
+        const { data: profileRows } = await supabase
           .from('user_profiles')
           .select('*')
           .in('id', userIds)
+        const userProfiles = profileRows as UserProfile[] | null
 
-        const profilesMap = new Map()
+        const profilesMap = new Map<string, UserProfile>()
         if (userProfiles) {
           userProfiles.forEach(profile => {
             profilesMap.set(profile.id, profile)
@@ -83,7 +86,7 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
         })
       }
 
-      const employeesMap = new Map<string, any[]>()
+      const employeesMap = new Map<string, PlaceEmployee[]>()
       if (employeesData) {
         employeesData.forEach(employee => {
           const placeId = employee.place_id
@@ -134,15 +137,16 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
     try {
       const placeIds = userPlaces.map(p => p.id)
       
-      let allMessages: any[] = []
+      let allMessages: ConversationMessage[] = []
       
       if (placeIds.length > 0) {
-        const { data: ownerMessages, error: ownerError } = await supabase
+        const { data: ownerRows, error: ownerError } = await supabase
           .from('messages')
           .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
           .in('place_id', placeIds)
           .order('created_at', { ascending: true })
-      
+        const ownerMessages = ownerRows as ConversationMessage[] | null
+
         if (ownerError) {
           console.error('❌ [LOAD MESSAGES] Error loading owner messages:', ownerError)
         } else {
@@ -150,12 +154,13 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
         }
       }
       
-      const { data: clientMessages, error: clientError } = await supabase
+      const { data: clientRows, error: clientError } = await supabase
         .from('messages')
         .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
         .eq('recipient_id', userId)
         .order('created_at', { ascending: true })
-      
+      const clientMessages = clientRows as ConversationMessage[] | null
+
       if (clientError) {
         console.error('❌ [LOAD MESSAGES] Error loading client messages:', clientError)
       } else {
@@ -166,12 +171,13 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
         }
       }
       
-      const { data: sentMessages, error: sentError } = await supabase
+      const { data: sentRows, error: sentError } = await supabase
         .from('messages')
         .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
         .eq('sender_id', userId)
         .order('created_at', { ascending: true })
-      
+      const sentMessages = sentRows as ConversationMessage[] | null
+
       if (sentError) {
         console.error('❌ [LOAD MESSAGES] Error loading sent messages:', sentError)
       } else {
@@ -185,13 +191,14 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
       const data = allMessages
 
       if (data && data.length > 0) {
-        const replyIds = data.filter(m => m.reply_to).map(m => m.reply_to).filter(Boolean)
+        const replyIds = data.filter(m => m.reply_to).map(m => m.reply_to).filter(Boolean) as string[]
         if (replyIds.length > 0) {
-          const { data: repliedMessages } = await supabase
+          const { data: repliedRows } = await supabase
             .from('messages')
             .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
             .in('id', replyIds)
-          
+          const repliedMessages = repliedRows as ConversationMessage[] | null
+
           if (repliedMessages) {
             const repliedMap = new Map(repliedMessages.map(m => [m.id, m]))
             data.forEach(msg => {
@@ -332,7 +339,7 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
       const unreadIds = unreadMessages.map(m => m.id)
       const { error } = await supabase
         .from('messages')
-        .update({ is_read: true })
+        .update({ is_read: true } as never)
         .in('id', unreadIds)
       
       if (error) {
@@ -391,11 +398,12 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
       }
 
 
-      const { data, error } = await supabase
+      const { data: insertResult, error } = await supabase
         .from('messages')
-        .insert(messageData)
+        .insert(messageData as never)
         .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
         .single()
+      const data = insertResult as ConversationMessage | null
 
       if (error) {
         console.error('❌ [SEND MESSAGE] Error:', error)
@@ -407,7 +415,7 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
         data.replied_message = replyingTo
       }
 
-      setMessages(prev => [...prev, data])
+      setMessages(prev => [...prev, data!])
       setNewMessage('')
       setSelectedImage(null)
       setReplyingTo(null)
@@ -483,11 +491,12 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
         is_read: false
       }
 
-      const { data, error } = await supabase
+      const { data: insertResult, error } = await supabase
         .from('messages')
-        .insert(messageData)
+        .insert(messageData as never)
         .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
         .single()
+      const data = insertResult as ConversationMessage | null
 
       if (error) throw error
 
@@ -495,7 +504,7 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
         data.replied_message = replyingTo
       }
 
-      setMessages(prev => [...prev, data])
+      setMessages(prev => [...prev, data!])
       setReplyingTo(null)
       showSuccess('تم إرسال الرسالة الصوتية')
     } catch (error: any) {
@@ -574,23 +583,26 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
     if (payload.eventType === 'INSERT') {
       const newMessageId = payload.new.id
 
-      const { data: fullMessage, error } = await supabase
+      const { data: fullRow, error } = await supabase
         .from('messages')
         .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
         .eq('id', newMessageId)
         .single()
+      const fullMessage = fullRow as ConversationMessage | null
 
       if (error) {
         console.error('Error fetching full message:', error)
         return
       }
+      if (!fullMessage) return
 
       if (fullMessage.reply_to) {
-        const { data: repliedMessage } = await supabase
+        const { data: repliedRow } = await supabase
           .from('messages')
           .select('*, sender:user_profiles(*), place:places(id, name_ar), employee:place_employees(id, place_id, user_id), product:products(*, images:product_images(*), videos:product_videos(*), variants:product_variants(*))')
           .eq('id', fullMessage.reply_to)
           .single()
+        const repliedMessage = repliedRow as ConversationMessage | null
 
         if (repliedMessage) {
           fullMessage.replied_message = repliedMessage
@@ -660,20 +672,21 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
       }
       
       try {
-        const { data: placeData, error } = await supabase
+        const { data: placeRow, error } = await supabase
           .from('places')
           .select('user_id')
           .eq('id', openConversationPlaceId)
           .single()
-        
+        const placeData = placeRow as { user_id: string } | null
+
         if (error) {
           console.error('❌ [OPEN CONVERSATION] Error fetching place:', error)
           return
         }
-        
+
         if (placeData) {
           const placeOwnerId = placeData.user_id
-          
+
           const [placeResult, senderResult] = await Promise.all([
             supabase
               .from('places')
@@ -686,13 +699,14 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
               .eq('id', placeOwnerId)
               .single()
           ])
-          
-          if (placeResult.data) {
-            setSelectedPlaceInfo(placeResult.data)
+
+          const placeInfo = placeResult.data as { id: string; name_ar?: string } | null
+          const senderInfo = senderResult.data as MessageUserProfile | null
+          if (placeInfo) {
+            setSelectedPlaceInfo(placeInfo)
           }
-          
-          if (senderResult.data) {
-            setSelectedSenderInfo(senderResult.data)
+          if (senderInfo) {
+            setSelectedSenderInfo(senderInfo)
           }
           
           selectConversation(placeOwnerId, openConversationPlaceId)

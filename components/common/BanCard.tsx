@@ -81,7 +81,7 @@ function useInteractionToggle(
         entity_id: entityId,
         entity_type: entityType,
         interaction_type: 'like',
-      })
+      } as never)
     }
   }, [user?.id, entityId, entityType, currentLike, currentFavorite, onUpdate])
 
@@ -98,7 +98,7 @@ function useInteractionToggle(
         entity_id: entityId,
         entity_type: entityType,
         interaction_type: 'favorite',
-      })
+      } as never)
     }
   }, [user?.id, entityId, entityType, currentLike, currentFavorite, onUpdate])
 
@@ -162,7 +162,7 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
                 const next = !isFollowing
                 setIsFollowing(next)
                 if (next) {
-                  await supabase.from('follows').insert({ follower_id: user.id, place_id: item.id })
+                  await supabase.from('follows').insert({ follower_id: user.id, place_id: item.id } as never)
                 } else {
                   await supabase.from('follows').delete().eq('follower_id', user.id).eq('place_id', item.id)
                 }

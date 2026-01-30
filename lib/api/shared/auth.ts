@@ -50,11 +50,12 @@ export async function requireAuth(request: NextRequest) {
 export async function requireAdmin(request: NextRequest) {
   const user = await requireAuth(request)
   
-  const { data: profile } = await supabase
+  const { data: profileRow } = await supabase
     .from('user_profiles')
     .select('is_admin')
     .eq('id', user.id)
     .single()
+  const profile = profileRow as { is_admin?: boolean } | null
 
   if (!profile?.is_admin) {
     throw {

@@ -32,7 +32,7 @@ export async function sendNotification({
   priority = 'normal'
 }: SendNotificationParams) {
   try {
-    const { data, error } = await supabase.rpc('send_notification', {
+    const rpcParams = {
       p_user_id: userId,
       p_title_ar: titleAr,
       p_message_ar: messageAr,
@@ -40,7 +40,8 @@ export async function sendNotification({
       p_link: link || null,
       p_title_en: titleEn || null,
       p_message_en: messageEn || null
-    })
+    }
+    const { data, error } = await supabase.rpc('send_notification', rpcParams as never)
 
     if (error) throw error
 

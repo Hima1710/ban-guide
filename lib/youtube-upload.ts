@@ -41,13 +41,14 @@ async function getOwnerCredentials() {
   // If not in env, try to get from database (admin user)
   try {
     const { supabase } = await import('@/lib/supabase')
-    const { data: adminProfile, error: dbError } = await supabase
+    const { data: adminRow, error: dbError } = await supabase
       .from('user_profiles')
       .select('youtube_access_token, youtube_refresh_token, youtube_token_expiry')
       .eq('is_admin', true)
       .not('youtube_access_token', 'is', null)
       .limit(1)
       .maybeSingle()
+    const adminProfile = adminRow as { youtube_access_token: string; youtube_refresh_token: string; youtube_token_expiry?: string | null } | null
 
     if (dbError) {
       console.error('Error fetching YouTube credentials from database:', dbError)
@@ -89,23 +90,25 @@ async function refreshOwnerToken(refreshToken: string) {
   } else {
     // Update in database
     const { supabase } = await import('@/lib/supabase')
-    const { data: adminProfile } = await supabase
+    const { data: adminRow } = await supabase
       .from('user_profiles')
       .select('id')
       .eq('is_admin', true)
       .not('youtube_refresh_token', 'is', null)
       .limit(1)
       .single()
+    const adminProfile = adminRow as { id: string } | null
 
     if (adminProfile) {
+      const updatePayload = {
+        youtube_access_token: credentials.access_token,
+        youtube_token_expiry: credentials.expiry_date
+          ? new Date(credentials.expiry_date).toISOString()
+          : null,
+      }
       await supabase
         .from('user_profiles')
-        .update({
-          youtube_access_token: credentials.access_token,
-          youtube_token_expiry: credentials.expiry_date
-            ? new Date(credentials.expiry_date).toISOString()
-            : null,
-        })
+        .update(updatePayload as never)
         .eq('id', adminProfile.id)
     }
   }

@@ -39,7 +39,7 @@ export async function getPlaceById(id: string): Promise<Place | null> {
 export async function incrementPlaceView(placeId: string): Promise<void> {
   const { error } = await supabase.rpc('increment_place_view', {
     place_uuid: placeId,
-  })
+  } as never)
 
   if (error) {
     console.error('Error incrementing view:', error)
@@ -50,7 +50,7 @@ export async function recordPlaceVisit(placeId: string, visitorIp?: string): Pro
   const { error } = await supabase.from('place_visits').insert({
     place_id: placeId,
     visitor_ip: visitorIp,
-  })
+  } as never)
 
   if (error) {
     console.error('Error recording visit:', error)

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Post } from '@/lib/types'
+import { Post, Place } from '@/lib/types'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
 import { Plus, Edit, Trash2, X, Save, Image as ImageIcon, Video, FileText, Upload } from 'lucide-react'
 import Link from 'next/link'
@@ -51,11 +51,12 @@ export default function PlacePostsPage() {
     setUser(user)
 
     // Check if user owns this place or is an employee with permission
-    const { data: placeData, error: placeError } = await supabase
+    const { data: placeRow, error: placeError } = await supabase
       .from('places')
       .select('*')
       .eq('id', placeId)
       .single()
+    const placeData = placeRow as Place | null
 
     if (placeError || !placeData) {
       showError('المكان غير موجود')
@@ -73,7 +74,7 @@ export default function PlacePostsPage() {
     }
 
     // Check if user is employee with permission
-    const { data: employeeData } = await supabase
+    const { data: empRow } = await supabase
       .from('place_employees')
       .select('*')
       .eq('user_id', user.id)
@@ -81,6 +82,7 @@ export default function PlacePostsPage() {
       .eq('is_active', true)
       .in('permissions', ['messages_posts', 'full'])
       .maybeSingle()
+    const employeeData = empRow as { user_id: string } | null
 
     if (employeeData) {
       setHasPermission(true)
@@ -195,7 +197,7 @@ export default function PlacePostsPage() {
       if (editingPost) {
         const { error } = await supabase
           .from('posts')
-          .update(postPayload)
+          .update(postPayload as never)
           .eq('id', editingPost.id)
 
         if (error) throw error
@@ -203,7 +205,7 @@ export default function PlacePostsPage() {
       } else {
         const { error } = await supabase
           .from('posts')
-          .insert(postPayload)
+          .insert(postPayload as never)
 
         if (error) throw error
         showSuccess('تم إضافة المنشور بنجاح')
@@ -238,7 +240,7 @@ export default function PlacePostsPage() {
     try {
       const { error } = await supabase
         .from('posts')
-        .update({ is_active: false })
+        .update({ is_active: false } as never)
         .eq('id', postId)
 
       if (error) throw error

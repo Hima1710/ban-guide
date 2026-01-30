@@ -58,11 +58,12 @@ export default function NewProductPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data: placeData } = await supabase
+    const { data: placeRow } = await supabase
       .from('places')
       .select('subscription_id, subscription:user_subscriptions(package:packages(*))')
       .eq('id', placeId)
       .maybeSingle()
+    const placeData = placeRow as { subscription?: { package?: Package } } | null
 
     if (placeData?.subscription) {
       setSubscription((placeData.subscription as any).package)
@@ -157,17 +158,19 @@ export default function NewProductPage() {
 
     try {
       // Create product
-      const { data: product, error: productError } = await supabase
+      const productRow = {
+        place_id: placeId,
+        ...formData,
+        price: formData.price ? parseFloat(formData.price) : null,
+      }
+      const { data: productData, error: productError } = await supabase
         .from('products')
-        .insert({
-          place_id: placeId,
-          ...formData,
-          price: formData.price ? parseFloat(formData.price) : null,
-        })
+        .insert(productRow as never)
         .select()
         .single()
+      const product = productData as { id: string } | null
 
-      if (productError) throw productError
+      if (productError || !product) throw productError || new Error('فشل إنشاء المنتج')
 
       // Upload images
       if (imageUrls.length > 0) {
@@ -179,7 +182,7 @@ export default function NewProductPage() {
 
         const { error: imagesError } = await supabase
           .from('product_images')
-          .insert(imageInserts)
+          .insert(imageInserts as never)
 
         if (imagesError) throw imagesError
       }
@@ -200,7 +203,7 @@ export default function NewProductPage() {
 
         const { error: videosError } = await supabase
           .from('product_videos')
-          .insert(videoInserts)
+          .insert(videoInserts as never)
 
         if (videosError) throw videosError
       }
@@ -214,7 +217,7 @@ export default function NewProductPage() {
 
         const { error: variantsError } = await supabase
           .from('product_variants')
-          .insert(variantInserts)
+          .insert(variantInserts as never)
 
         if (variantsError) throw variantsError
       }

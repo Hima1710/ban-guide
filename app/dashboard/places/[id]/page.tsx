@@ -208,20 +208,21 @@ export default function PlaceDetailsPage() {
 
     showLoading('جاري حفظ التعديلات...')
     try {
+      const updatePayload = {
+        name_ar: editData.name_ar.trim(),
+        name_en: editData.name_en.trim() || null,
+        description_ar: editData.description_ar.trim() || null,
+        logo_url: editData.logo_url || null,
+        video_url: editData.video_url || null,
+        phone_1: editData.phone_1.trim(),
+        phone_2: editData.phone_2.trim() || null,
+        address: editData.address.trim() || null,
+        latitude: editData.latitude,
+        longitude: editData.longitude,
+      }
       const { error } = await supabase
         .from('places')
-        .update({
-          name_ar: editData.name_ar.trim(),
-          name_en: editData.name_en.trim() || null,
-          description_ar: editData.description_ar.trim() || null,
-          logo_url: editData.logo_url || null,
-          video_url: editData.video_url || null,
-          phone_1: editData.phone_1.trim(),
-          phone_2: editData.phone_2.trim() || null,
-          address: editData.address.trim() || null,
-          latitude: editData.latitude,
-          longitude: editData.longitude,
-        })
+        .update(updatePayload as never)
         .eq('id', placeId)
 
       if (error) throw error

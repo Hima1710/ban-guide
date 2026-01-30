@@ -20,12 +20,13 @@ export function useNotifications(userId: string | undefined) {
 
     try {
       // Fetch latest 10 notifications
-      const { data, error } = await supabase
+      const { data: rows, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(10)
+      const data = rows as Notification[] | null
 
       if (error) throw error
 
@@ -46,7 +47,7 @@ export function useNotifications(userId: string | undefined) {
         .update({ 
           is_read: true,
           read_at: new Date().toISOString()
-        })
+        } as never)
         .eq('id', notificationId)
 
       if (error) throw error
@@ -75,7 +76,7 @@ export function useNotifications(userId: string | undefined) {
         .update({ 
           is_read: true,
           read_at: new Date().toISOString()
-        })
+        } as never)
         .eq('user_id', userId)
         .eq('is_read', false)
 

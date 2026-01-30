@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 export async function recordSiteVisit(visitorIp?: string): Promise<void> {
   const { error } = await supabase.from('site_visits').insert({
     visitor_ip: visitorIp,
-  })
+  } as never)
 
   if (error) {
     console.error('Error recording site visit:', error)

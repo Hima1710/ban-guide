@@ -117,11 +117,12 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     }
 
     try {
-      const { data: profile, error } = await supabase
+      const { data: profileRow, error } = await supabase
         .from('user_profiles')
         .select('is_admin')
         .eq('id', user.id)
         .single()
+      const profile = profileRow as { is_admin?: boolean } | null
 
       if (error) throw error
 
@@ -212,7 +213,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('packages')
-        .insert(formData)
+        .insert(formData as never)
 
       if (error) throw error
 
@@ -238,7 +239,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('packages')
-        .update(formData)
+        .update(formData as never)
         .eq('id', id)
 
       if (error) throw error
@@ -331,7 +332,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('user_profiles')
-        .update({ is_admin: isAdmin })
+        .update({ is_admin: isAdmin } as never)
         .eq('id', userId)
 
       if (error) throw error
@@ -358,7 +359,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('user_profiles')
-        .update({ is_affiliate: isAffiliate })
+        .update({ is_affiliate: isAffiliate } as never)
         .eq('id', userId)
 
       if (error) throw error
@@ -421,7 +422,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('affiliates')
-        .insert(data)
+        .insert(data as never)
 
       if (error) throw error
 
@@ -447,7 +448,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('affiliates')
-        .update(data)
+        .update(data as never)
         .eq('id', id)
 
       if (error) throw error
@@ -529,7 +530,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('discount_codes')
-        .insert(data)
+        .insert(data as never)
 
       if (error) throw error
 
@@ -555,7 +556,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('discount_codes')
-        .update(data)
+        .update(data as never)
         .eq('id', id)
 
       if (error) throw error
@@ -637,7 +638,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('user_subscriptions')
-        .update({ status: 'approved', is_active: true })
+        .update({ status: 'approved', is_active: true } as never)
         .eq('id', id)
 
       if (error) throw error
@@ -664,7 +665,7 @@ export function useAdminManager(options: UseAdminManagerOptions = {}) {
     try {
       const { error } = await supabase
         .from('user_subscriptions')
-        .update({ status: 'rejected', is_active: false })
+        .update({ status: 'rejected', is_active: false } as never)
         .eq('id', id)
 
       if (error) throw error

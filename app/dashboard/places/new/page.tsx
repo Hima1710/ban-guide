@@ -50,12 +50,13 @@ export default function NewPlacePage() {
     setUser(user)
 
     // Check subscription
-    const { data: subData } = await supabase
+    const { data: subRow } = await supabase
       .from('user_subscriptions')
       .select('*, package:packages(*)')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .maybeSingle()
+    const subData = subRow as { package?: { max_places: number }; [key: string]: unknown } | null
 
     if (!subData) {
       showError('يجب الاشتراك في باقة أولاً')
@@ -64,12 +65,13 @@ export default function NewPlacePage() {
     }
 
     // Check if user can add more places
-    const { data: placesData } = await supabase
+    const { data: placesRow } = await supabase
       .from('places')
       .select('id')
       .eq('user_id', user.id)
+    const placesData = (placesRow ?? []) as { id: string }[]
 
-    const maxPlaces = (subData.package as any).max_places
+    const maxPlaces = (subData.package as { max_places: number })?.max_places ?? 0
     if ((placesData?.length || 0) >= maxPlaces) {
       showError(`لقد وصلت للحد الأقصى من الأماكن المسموحة في باقاتك (${maxPlaces})`)
       router.push('/dashboard')
@@ -131,19 +133,21 @@ export default function NewPlacePage() {
     showLoading('جاري إضافة المكان...')
 
     try {
-      const { data, error } = await supabase
+      const placeRow = {
+        user_id: user.id,
+        subscription_id: subscription.id,
+        ...formData,
+        logo_url: logoUrl,
+        is_featured: (subscription.package as any).is_featured || false,
+      }
+      const { data: placeData, error } = await supabase
         .from('places')
-        .insert({
-          user_id: user.id,
-          subscription_id: subscription.id,
-          ...formData,
-          logo_url: logoUrl,
-          is_featured: (subscription.package as any).is_featured || false,
-        })
+        .insert(placeRow as never)
         .select()
         .single()
+      const data = placeData as { id: string } | null
 
-      if (error) throw error
+      if (error || !data) throw error || new Error('فشل إنشاء المكان')
 
       closeLoading()
       showSuccess('تم إضافة المكان بنجاح')

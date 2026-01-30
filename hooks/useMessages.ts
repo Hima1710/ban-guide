@@ -84,7 +84,7 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
     try {
       const { error: updateError } = await supabase
         .from('messages')
-        .update({ is_read: true })
+        .update({ is_read: true } as never)
         .eq('id', messageId)
 
       if (updateError) throw updateError
@@ -121,18 +121,19 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
       const placeIds = Array.isArray(placeId) ? placeId : [placeId]
       const placeIdToUse = placeIds[0] // Use first place ID
 
+      const msgRow = {
+        sender_id: user.id,
+        place_id: placeIdToUse,
+        content,
+        image_url: imageUrl || null,
+        audio_url: audioUrl || null,
+        product_id: productId || null,
+        recipient_id: recipientId || null,
+        is_read: false,
+      }
       const { error: insertError } = await supabase
         .from('messages')
-        .insert({
-          sender_id: user.id,
-          place_id: placeIdToUse,
-          content,
-          image_url: imageUrl || null,
-          audio_url: audioUrl || null,
-          product_id: productId || null,
-          recipient_id: recipientId || null,
-          is_read: false,
-        })
+        .insert(msgRow as never)
 
       if (insertError) throw insertError
 

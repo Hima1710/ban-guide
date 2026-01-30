@@ -78,11 +78,12 @@ export function useAffiliateManager(options: UseAffiliateManagerOptions = {}) {
     setLoading(true)
     try {
       // Load affiliate data
-      const { data: affiliateData, error: affiliateError } = await supabase
+      const { data: affRow, error: affiliateError } = await supabase
         .from('affiliates')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle()
+      const affiliateData = affRow as Affiliate | null
 
       if (affiliateError && affiliateError.code !== 'PGRST116') {
         throw affiliateError

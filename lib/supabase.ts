@@ -44,12 +44,12 @@ function getSupabaseAdminClient() {
 // Export proxy so existing code (supabase.auth, supabase.from(...)) works unchanged; client is created on first access.
 export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
   get(_, prop) {
-    return (getSupabaseClient() as Record<string, unknown>)[prop as string]
+    return (getSupabaseClient() as unknown as Record<string, unknown>)[prop as string]
   },
 })
 
 export const supabaseAdmin = new Proxy({} as ReturnType<typeof createClient>, {
   get(_, prop) {
-    return (getSupabaseAdminClient() as Record<string, unknown>)[prop as string]
+    return (getSupabaseAdminClient() as unknown as Record<string, unknown>)[prop as string]
   },
 })

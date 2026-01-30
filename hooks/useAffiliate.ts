@@ -58,11 +58,12 @@ export function useAffiliate() {
 
     try {
       // Get affiliate record
-      const { data: affiliateData, error: affiliateError } = await supabase
+      const { data: affRow, error: affiliateError } = await supabase
         .from('affiliates')
         .select('*')
         .eq('user_id', user.id)
         .single()
+      const affiliateData = affRow as Affiliate | null
 
       if (affiliateError) {
         if (affiliateError.code === 'PGRST116') {
@@ -74,11 +75,17 @@ export function useAffiliate() {
         throw affiliateError
       }
 
+      if (!affiliateData) {
+        setAffiliate(null)
+        setLoading(false)
+        return
+      }
+
       setAffiliate(affiliateData)
 
       // Get balance using database function
       const { data: balanceData, error: balanceError } = await supabase
-        .rpc('get_affiliate_balance', { p_affiliate_id: affiliateData.id })
+        .rpc('get_affiliate_balance', { p_affiliate_id: affiliateData.id } as never)
 
       if (balanceError) throw balanceError
 
@@ -92,14 +99,15 @@ export function useAffiliate() {
 
       if (transactionsError) throw transactionsError
 
-      setTransactions(transactionsData || [])
+      const txList = (transactionsData || []) as AffiliateTransaction[]
+      setTransactions(txList)
 
       // Calculate stats
-      const earnings = (transactionsData || [])
+      const earnings = txList
         .filter(t => t.transaction_type === 'earning' && t.status === 'completed')
         .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0)
 
-      const withdrawals = (transactionsData || [])
+      const withdrawals = txList
         .filter(t => t.transaction_type === 'withdrawal' && t.status === 'completed')
         .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0)
 
@@ -153,15 +161,16 @@ export function useAffiliate() {
     if (amount <= 0) return { success: false, error: 'المبلغ غير صحيح' }
 
     try {
+      const withdrawRow = {
+        affiliate_id: affiliate.id,
+        transaction_type: 'withdrawal' as const,
+        amount: -amount,
+        description_ar: `طلب سحب ${amount} جنيه`,
+        status: 'pending' as const,
+      }
       const { error: insertError } = await supabase
         .from('affiliate_transactions')
-        .insert({
-          affiliate_id: affiliate.id,
-          transaction_type: 'withdrawal',
-          amount: -amount, // Negative for withdrawal
-          description_ar: `طلب سحب ${amount} جنيه`,
-          status: 'pending'
-        })
+        .insert(withdrawRow as never)
 
       if (insertError) throw insertError
 
