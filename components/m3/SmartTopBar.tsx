@@ -38,6 +38,15 @@ export default function SmartTopBar() {
     setCanGoBack(window.history.length > 1 && !isTopLevel(pathname))
   }, [pathname])
 
+  // في تطبيق أندرويد: مطابقة لون شريط الحالة والتنقل مع لون الهيدر
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const w = window as Window & { Android?: { setStatusBarColor?: (hex: string) => void } }
+    if (w.Android?.setStatusBarColor && colors.surface) {
+      w.Android.setStatusBarColor(colors.surface)
+    }
+  }, [colors.surface])
+
   const handleBack = () => {
     router.back()
   }
