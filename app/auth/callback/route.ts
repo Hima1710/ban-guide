@@ -3,7 +3,12 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
 /**
- * Auth callback: exchange ?code= for session, set cookies (sameSite: Lax for WebView), redirect to /.
+ * Auth callback when Android (or web) redirects to /auth/callback?code=...
+ *
+ * MUST:
+ * 1. Await supabase.auth.exchangeCodeForSession(code) to establish the session.
+ * 2. Set the session in cookies using sameSite: 'lax' so the WebView can store them.
+ * 3. After successful exchange, redirect to / with Cache-Control so the UI does a fresh load and picks up the new session.
  */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
@@ -15,7 +20,6 @@ export async function GET(request: NextRequest) {
       const supabase = createRouteHandlerClient(
         { cookies: (() => cookieStore) as unknown as () => Promise<Awaited<ReturnType<typeof cookies>>> },
         {
-          // sameSite: Lax so WebView can store cookies
           cookieOptions: {
             sameSite: 'lax',
             path: '/',
@@ -26,7 +30,7 @@ export async function GET(request: NextRequest) {
       )
 
       const { error } = await supabase.auth.exchangeCodeForSession(code)
-      
+
       if (!error) {
         // Create or update user profile
         const { data: { user } } = await supabase.auth.getUser()
@@ -83,6 +87,8 @@ export async function GET(request: NextRequest) {
             // Don't fail the login if notification fails
           }
         }
+        // Short delay before redirect so cookies are committed and WebView picks up session.
+        await new Promise((r) => setTimeout(r, 250))
       } else {
         console.error('Error exchanging code for session:', error)
       }
@@ -91,6 +97,14 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // التوجيه إلى الصفحة الرئيسية بعد تسجيل الدخول
-  return NextResponse.redirect(new URL('/', requestUrl.origin))
+  // Redirect to / with cache-busting so the client does a fresh load and picks up the new session (important for WebView/Android).
+  const homeUrl = new URL('/', requestUrl.origin)
+  homeUrl.searchParams.set('_', String(Date.now()))
+  const response = NextResponse.redirect(homeUrl)
+  // Explicitly kill all cache so WebView/browser does not serve stale page and misses new session.
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+  response.headers.set('Surrogate-Control', 'no-store')
+  return response
 }

@@ -161,14 +161,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // ✅ Load from localStorage first for instant hydration (critical for Android WebView)
     loadUser(true)
 
-    // ✅ Listen for auth changes
+    // ✅ Listen for auth changes so UI updates immediately (critical for WebView after OAuth redirect).
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      
       if (event === 'SIGNED_OUT' || !session) {
         setUser(null)
         setProfile(null)
         saveToLocalStorage(null, null)
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      } else if (
+        event === 'SIGNED_IN' ||
+        event === 'TOKEN_REFRESHED' ||
+        event === 'INITIAL_SESSION'
+      ) {
+        // INITIAL_SESSION: session recovered from cookies on load (e.g. after /auth/callback redirect).
         loadUser()
       }
     })
