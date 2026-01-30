@@ -14,14 +14,53 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(url && key)
 }
 
+/** Chainable stub that resolves to empty result when awaited (used when Supabase env is missing). */
+function createNoopChain() {
+  const result = Promise.resolve({ data: null, error: null }) as Promise<{ data: unknown; error: null }>
+  const chain = new Proxy(result, {
+    get(_, prop) {
+      if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+        const fn = (result as unknown as Record<string, (this: Promise<unknown>) => unknown>)[prop as string]
+        return typeof fn === 'function' ? fn.bind(result) : undefined
+      }
+      return () => chain
+    },
+  })
+  return chain
+}
+
+/** Stub client when env vars are missing — no throw, app keeps running with empty auth/data. */
+function createStubClient(): ReturnType<typeof createClient> {
+  const noopChain = createNoopChain()
+  const emptyAuth = {
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    setSession: () => Promise.resolve({ data: {}, error: null }),
+    signOut: () => Promise.resolve({ error: null }),
+    exchangeCodeForSession: () => Promise.resolve({ data: { session: null, user: null }, error: null }),
+  }
+  return {
+    auth: emptyAuth,
+    from: () => noopChain,
+    rpc: () => noopChain,
+    channel: () => ({ on: () => ({ subscribe: () => {} }), unsubscribe: () => Promise.resolve() }),
+    removeChannel: () => {},
+    rest: {} as ReturnType<typeof createClient>['rest'],
+    realtime: {} as ReturnType<typeof createClient>['realtime'],
+    storage: {} as ReturnType<typeof createClient>['storage'],
+    functions: {} as ReturnType<typeof createClient>['functions'],
+    schema: () => noopChain,
+  } as unknown as ReturnType<typeof createClient>
+}
+
 function getSupabaseClient() {
   if (supabaseClient) return supabaseClient
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
   if (!url || !key) {
-    throw new Error(
-      'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required. Set them in Vercel Environment Variables.'
-    )
+    supabaseClient = createStubClient()
+    return supabaseClient
   }
   if (typeof window !== 'undefined') {
     supabaseClient = createClientComponentClient({
