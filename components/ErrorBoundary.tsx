@@ -3,18 +3,19 @@
 import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react'
 
-/** Fixed colors for error fallback so it works without ThemeProvider (e.g. when error is caught above ThemeProvider). */
+/** M3-aligned fallback when ThemeProvider is unavailable (e.g. error above provider). Primary: Royal Gold. */
 const FALLBACK_COLORS = {
   background: '#ffffff',
   surface: '#f5f5f5',
   surfaceContainer: '#e5e5e7',
   onSurface: '#1c1c1e',
-  onSurfaceVariant: '#49454f',
-  error: '#b3261e',
-  errorContainer: '#fdecea',
-  warning: '#7d5700',
-  outline: '#79747e',
-  primary: '#6750a4',
+  onSurfaceVariant: '#5c5c5e',
+  onPrimary: '#1c1c1e',
+  error: '#ba1a1a',
+  errorContainer: '#fee2e2',
+  warning: '#e65100',
+  outline: '#e5e5e7',
+  primary: '#D4AF37',
 }
 
 interface ErrorBoundaryProps {
@@ -160,7 +161,7 @@ function ErrorBoundaryFallback({
               type="button"
               onClick={onReload}
               className="w-full py-3 px-4 rounded-full font-medium flex items-center justify-center gap-2"
-              style={{ backgroundColor: c.primary, color: '#fff', border: 'none', cursor: 'pointer' }}
+              style={{ backgroundColor: c.primary, color: c.onPrimary, border: 'none', cursor: 'pointer' }}
             >
               <RefreshCcw size={20} />
               إعادة تحميل الصفحة
@@ -197,7 +198,7 @@ function ErrorBoundaryFallback({
               type="button"
               onClick={onReset}
               className="py-2 px-4 rounded-full text-sm font-medium flex items-center gap-2"
-              style={{ backgroundColor: c.primary, color: '#fff', border: 'none', cursor: 'pointer' }}
+              style={{ backgroundColor: c.primary, color: c.onPrimary, border: 'none', cursor: 'pointer' }}
             >
               <RefreshCcw size={16} />
               إعادة المحاولة

@@ -18,13 +18,14 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   clickable?: boolean
 }
 
+/** M3 elevation من متغيرات الثيم (globals.css) */
 const shadowClasses: Record<ShadowLevel, string> = {
-  0: 'shadow-none',
-  1: 'shadow-[0_1px_2px_0_rgba(0,0,0,0.05),0_1px_3px_1px_rgba(0,0,0,0.1)]',
-  2: 'shadow-[0_1px_2px_0_rgba(0,0,0,0.05),0_2px_6px_2px_rgba(0,0,0,0.1)]',
-  3: 'shadow-[0_4px_8px_3px_rgba(0,0,0,0.1),0_1px_3px_0_rgba(0,0,0,0.08)]',
-  4: 'shadow-[0_6px_10px_4px_rgba(0,0,0,0.1),0_2px_3px_0_rgba(0,0,0,0.08)]',
-  5: 'shadow-[0_8px_12px_6px_rgba(0,0,0,0.12),0_4px_4px_0_rgba(0,0,0,0.08)]',
+  0: 'shadow-elev-0',
+  1: 'shadow-elev-1',
+  2: 'shadow-elev-2',
+  3: 'shadow-elev-3',
+  4: 'shadow-elev-4',
+  5: 'shadow-elev-5',
 }
 
 export default function Card({

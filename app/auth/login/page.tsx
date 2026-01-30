@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { showError, showSuccess } from '@/components/SweetAlert'
 import { Card, Button } from '@/components/common'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -23,9 +23,17 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { colors } = useTheme()
   const { isWebView, platform } = useWebView()
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (searchParams?.get('session_expired') === '1') {
+      showError('انتهت الجلسة. سجّل الدخول مرة أخرى.')
+      router.replace('/auth/login')
+    }
+  }, [searchParams, router])
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -77,7 +85,7 @@ export default function LoginPage() {
       <Card
         variant="outlined"
         padding="lg"
-        className="w-full max-w-md rounded-extra-large !bg-surface border-2 border-primary shadow-[0_2px_6px_2px_rgba(0,0,0,0.1)]"
+        className="w-full max-w-md rounded-extra-large !bg-surface border-2 border-primary shadow-elev-3"
       >
         <h1 className="text-headline-medium text-on-surface text-center mb-6">
           تسجيل الدخول

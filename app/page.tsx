@@ -3,8 +3,10 @@
 import { useEffect, useState, useRef } from 'react'
 import { useUnifiedFeed, type EntityType } from '@/hooks/useUnifiedFeed'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { BanCard, BanSkeleton } from '@/components/common'
+import { BodySmall, BodyMedium, TitleSmall, LabelSmall } from '@/components/m3'
 import type { PlaceFeedItem, PostFeedItem, ProductFeedItem } from '@/hooks/useUnifiedFeed'
 
 const TABS: { key: EntityType; label: string }[] = [
@@ -27,6 +29,7 @@ export default function HomePage() {
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   const { user } = useAuthContext()
+  const { colors } = useTheme()
   const { items, fetchNextPage, hasNextPage, loading, error } = useUnifiedFeed({ entityType: activeTab })
 
   useEffect(() => {
@@ -75,18 +78,22 @@ export default function HomePage() {
   }, [hasNextPage, loading, fetchNextPage])
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Stories: متابعات المستخدم */}
-      <section aria-label="الأماكن المتابعة" className="border-b border-outline bg-surface px-3 py-4">
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-3 px-3" role="list">
+    <div className="min-h-screen" style={{ backgroundColor: colors.background }}>
+      {/* Stories: متابعات المستخدم — M3 Surface + 16dp padding */}
+      <section
+        aria-label="الأماكن المتابعة"
+        className="border-b px-4 py-4"
+        style={{ backgroundColor: colors.surface, borderColor: colors.outline }}
+      >
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4" role="list">
           {storiesLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
               <BanSkeleton key={`story-skeleton-${i}`} variant="avatar" className="shrink-0" />
             ))
           ) : followedPlaces.length === 0 ? (
-            <p className="text-body-small text-on-surface-variant py-2 px-1">
+            <BodySmall color="onSurfaceVariant" className="py-2">
               {user?.id ? 'لم تتابع أي مكان بعد' : 'سجّل الدخول لمتابعة الأماكن'}
-            </p>
+            </BodySmall>
           ) : (
             followedPlaces.map((place) => (
               <a
@@ -95,31 +102,38 @@ export default function HomePage() {
                 className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation"
                 aria-label={place.name_ar || EMPTY_PLACE_LABEL}
               >
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-primary flex-shrink-0 bg-surface">
+                <div
+                  className="w-14 h-14 rounded-full overflow-hidden border-2 flex-shrink-0"
+                  style={{ borderColor: colors.primary, backgroundColor: colors.surface }}
+                >
                   {place.logo_url ? (
                     <img src={place.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-small">
-                      {place.name_ar?.[0] || '?'}
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ color: colors.onSurfaceVariant }}
+                    >
+                      <TitleSmall>{place.name_ar?.[0] || '?'}</TitleSmall>
                     </div>
                   )}
                 </div>
-                <span className="text-label-small text-on-surface truncate max-w-[64px] text-center">
+                <LabelSmall color="onSurface" className="truncate max-w-[64px] text-center">
                   {place.name_ar || EMPTY_PLACE_LABEL}
-                </span>
+                </LabelSmall>
               </a>
             ))
           )}
         </div>
       </section>
 
-      {/* Tabs: transparent bg, gold indicator pill under active */}
+      {/* Tabs: M3 Surface + مؤشر ذهبي تحت النشط */}
       <div
         role="tablist"
         aria-label="نوع المحتوى"
-        className="sticky top-[var(--header-height,56px)] z-30 bg-transparent border-b border-outline"
+        className="sticky top-[var(--header-height,56px)] z-30 border-b"
+        style={{ backgroundColor: colors.surface, borderColor: colors.outline }}
       >
-        <div className="flex px-2">
+        <div className="flex px-4">
           {TABS.map((tab) => (
             <div key={tab.key} className="flex-1 flex flex-col items-center">
               <button
@@ -129,16 +143,21 @@ export default function HomePage() {
                 aria-controls="feed-panel"
                 id={`tab-${tab.key}`}
                 onClick={() => setActiveTab(tab.key)}
-                className={`
-                  w-full min-h-[48px] rounded-extra-large text-title-small font-semibold transition-colors
-                  ${activeTab === tab.key ? 'text-primary' : 'text-on-surface-variant'}
-                `}
+                className="w-full min-h-[48px] rounded-extra-large transition-colors border-0 shadow-none hover:opacity-90 active:opacity-80"
+                style={{
+                  color: activeTab === tab.key ? colors.primary : colors.onSurface,
+                  backgroundColor:
+                    activeTab === tab.key ? `rgba(${colors.primaryRgb}, 0.1)` : 'transparent',
+                }}
               >
-                {tab.label}
+                <TitleSmall as="span" color={activeTab === tab.key ? 'primary' : 'onSurface'}>
+                  {tab.label}
+                </TitleSmall>
               </button>
               {activeTab === tab.key && (
                 <span
-                  className="w-10 h-1 rounded-full bg-primary mt-0.5 shrink-0"
+                  className="w-10 h-1 rounded-full mt-0.5 shrink-0"
+                  style={{ backgroundColor: colors.primary }}
                   aria-hidden
                 />
               )}
@@ -147,12 +166,12 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Feed */}
-      <main id="feed-panel" role="tabpanel" aria-label="التغذية" className="container mx-auto px-3 py-4 max-w-6xl">
+      {/* Feed — M3: خلفية رئيسية + 16dp أفقياً، 24dp عمودياً */}
+      <main id="feed-panel" role="tabpanel" aria-label="التغذية" className="container mx-auto px-4 py-6 max-w-6xl">
         {error != null ? (
-          <p className="text-body-medium text-error text-center py-4" role="alert">
+          <BodyMedium color="error" className="text-center py-6" role="alert">
             حدث خطأ في التحميل. حاول مرة أخرى.
-          </p>
+          </BodyMedium>
         ) : null}
 
         {loading && items.length === 0 ? (
@@ -162,9 +181,9 @@ export default function HomePage() {
             ))}
           </div>
         ) : !loading && items.length === 0 && !error ? (
-          <p className="text-body-medium text-on-surface-variant text-center py-12">
+          <BodyMedium color="onSurfaceVariant" className="text-center py-12">
             لا يوجد {activeTab === 'places' ? 'أماكن' : activeTab === 'posts' ? 'منشورات' : 'منتجات'} لعرضها.
-          </p>
+          </BodyMedium>
         ) : error && items.length === 0 ? null : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {items.map((item) =>

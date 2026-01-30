@@ -7,6 +7,7 @@ import { usePlaces } from '@/hooks/usePlaces'
 import PlaceCard from '@/components/PlaceCard'
 import { Search, MapPin, Loader2, Filter } from 'lucide-react'
 import { HeadlineLarge, HeadlineMedium, BodyMedium, BodySmall, LabelMedium } from '@/components/m3'
+import { Button } from '@/components/m3'
 
 export default function PlacesPage() {
   const router = useRouter()
@@ -38,7 +39,7 @@ export default function PlacesPage() {
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <MapPin size={32} style={{ color: colors.primary }} />
-            <HeadlineLarge>الأماكن</HeadlineLarge>
+            <HeadlineLarge style={{ color: colors.onSurface }}>الأماكن</HeadlineLarge>
           </div>
           <BodyMedium color="onSurfaceVariant">
             اكتشف المحلات والصيدليات والأماكن القريبة منك
@@ -49,10 +50,10 @@ export default function PlacesPage() {
         <div className="mb-6 space-y-4">
           {/* Search Bar */}
           <div 
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl border"
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl border-2"
             style={{
-              backgroundColor: colors.outline,
-              borderColor: colors.outline
+              backgroundColor: colors.surface,
+              borderColor: colors.outline,
             }}
           >
             <Search size={20} style={{ color: colors.onSurface }} />
@@ -66,25 +67,19 @@ export default function PlacesPage() {
             />
           </div>
 
-          {/* Category Filter */}
+          {/* Category Filter (M3 chips) */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2">
             <Filter size={20} style={{ color: colors.onSurface }} />
             {categories.map((category) => (
-              <button
+              <Button
                 key={category}
+                variant={selectedCategory === category ? 'filled' : 'outlined'}
+                size="sm"
                 onClick={() => setSelectedCategory(category)}
-                className="px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: selectedCategory === category 
-                    ? colors.surfaceContainer 
-                    : colors.outline,
-                  color: selectedCategory === category 
-                    ? colors.primary 
-                    : colors.onSurface
-                }}
+                className="shrink-0 rounded-extra-large"
               >
-                {category === 'all' ? 'الكل' : category}
-              </button>
+                <span>{category === 'all' ? 'الكل' : category}</span>
+              </Button>
             ))}
           </div>
         </div>
@@ -97,7 +92,7 @@ export default function PlacesPage() {
               className="animate-spin mb-4" 
               style={{ color: colors.primary }} 
             />
-            <BodyMedium>جاري التحميل...</BodyMedium>
+            <BodyMedium color="onSurfaceVariant">جاري التحميل...</BodyMedium>
           </div>
         ) : filteredPlaces.length === 0 ? (
           <div 
@@ -130,7 +125,7 @@ export default function PlacesPage() {
             </div>
 
             {/* Places Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {filteredPlaces.map((place) => (
                 <div
                   key={place.id}

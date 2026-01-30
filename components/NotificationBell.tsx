@@ -106,7 +106,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full transition-all duration-200"
+        className="relative p-2 rounded-full transition-all duration-200 bg-transparent border-0 shadow-none min-h-[48px] min-w-[48px] flex items-center justify-center"
         style={{
           color: colors.onSurface,
           backgroundColor: isOpen ? colors.surfaceVariant : 'transparent'
@@ -124,6 +124,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         title="الإشعارات"
       >
         <Bell size={20} className="transition-transform" style={{
+          color: colors.onSurface,
           transform: isOpen ? 'scale(1.1)' : 'scale(1)'
         }} />
         

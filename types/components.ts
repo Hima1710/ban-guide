@@ -153,6 +153,8 @@ export interface ChatInputProps {
   recordingTime: number
   disabled?: boolean
   placeholder?: string
+  /** M3 Premium drawer: dark surface and light text */
+  variant?: 'default' | 'dark'
 }
 
 // Message Item Props
@@ -161,4 +163,6 @@ export interface MessageItemProps {
   isOwn: boolean
   onReply: (message: ConversationMessage) => void
   showSender?: boolean
+  /** M3 Premium: dark charcoal received bubble, royal gold sent bubble */
+  variant?: 'default' | 'premium'
 }

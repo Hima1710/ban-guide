@@ -9,6 +9,8 @@ import { Plus, Edit, Trash2, X, Save, Image as ImageIcon, Video, FileText, Uploa
 import Link from 'next/link'
 import { extractYouTubeId } from '@/lib/youtube'
 import { useTheme } from '@/contexts/ThemeContext'
+import { notifyPlaceFollowers } from '@/lib/api/notifications'
+import { NotificationType } from '@/lib/types/database'
 
 export default function PlacePostsPage() {
   const params = useParams()
@@ -209,6 +211,13 @@ export default function PlacePostsPage() {
 
         if (error) throw error
         showSuccess('تم إضافة المنشور بنجاح')
+        await notifyPlaceFollowers({
+          placeId,
+          titleAr: `منشور جديد من ${place?.name_ar || 'المكان'}`,
+          messageAr: 'تم إضافة منشور جديد.',
+          type: NotificationType.POST,
+          link: `/places/${placeId}`,
+        })
       }
 
       closeLoading()

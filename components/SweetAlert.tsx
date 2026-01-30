@@ -2,24 +2,29 @@
 
 import Swal from 'sweetalert2'
 
-// M3 Golden Theme Colors
-const M3_COLORS = {
-  primary: '#D4AF37',    // Gold - Primary brand color
-  success: '#10b981',    // Green - Success state
-  error: '#ef4444',      // Red - Error state
-  secondary: '#6b7280',  // Gray - Secondary actions
+/** ألوان من الثيم الموحد (CSS variables التي يحدّثها ThemeContext) */
+function getThemeColors() {
+  if (typeof document === 'undefined') {
+    return { primary: '#D4AF37', error: '#ba1a1a', secondary: '#6b7280' }
+  }
+  const root = document.documentElement
+  const get = (v: string, fallback: string) =>
+    getComputedStyle(root).getPropertyValue(v).trim() || fallback
+  return {
+    primary: get('--primary-color', '#D4AF37'),
+    error: get('--color-error', '#ba1a1a'),
+    secondary: get('--color-outline-variant', '#6b7280'),
+  }
 }
 
-// M3 Custom Class for rounded corners
-const M3_CLASS = 'swal2-show'
-
 export const showSuccess = (message: string) => {
+  const colors = getThemeColors()
   return Swal.fire({
     icon: 'success',
     title: 'نجح!',
     text: message,
     confirmButtonText: 'حسناً',
-    confirmButtonColor: M3_COLORS.primary, // Gold theme
+    confirmButtonColor: colors.primary,
     customClass: {
       popup: 'rounded-3xl', // M3 rounded
       confirmButton: 'rounded-full', // M3 button
@@ -28,12 +33,13 @@ export const showSuccess = (message: string) => {
 }
 
 export const showError = (message: string) => {
+  const colors = getThemeColors()
   return Swal.fire({
     icon: 'error',
     title: 'خطأ!',
     text: message,
     confirmButtonText: 'حسناً',
-    confirmButtonColor: M3_COLORS.error,
+    confirmButtonColor: colors.error,
     customClass: {
       popup: 'rounded-3xl',
       confirmButton: 'rounded-full',
@@ -42,6 +48,7 @@ export const showError = (message: string) => {
 }
 
 export const showConfirm = (message: string) => {
+  const colors = getThemeColors()
   return Swal.fire({
     icon: 'question',
     title: 'تأكيد',
@@ -49,8 +56,8 @@ export const showConfirm = (message: string) => {
     showCancelButton: true,
     confirmButtonText: 'نعم',
     cancelButtonText: 'لا',
-    confirmButtonColor: M3_COLORS.primary, // Gold for primary action
-    cancelButtonColor: M3_COLORS.secondary,
+    confirmButtonColor: colors.primary,
+    cancelButtonColor: colors.secondary,
     customClass: {
       popup: 'rounded-3xl',
       confirmButton: 'rounded-full',

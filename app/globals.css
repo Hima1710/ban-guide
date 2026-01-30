@@ -55,7 +55,25 @@
   --status-warning: var(--color-warning);
   --overlay-bg: rgba(0, 0, 0, 0.5);
   --overlay-bg-light: rgba(0, 0, 0, 0.3);
+
+  /* M3 Premium – Chat Drawer */
+  --chat-drawer-bg: #1a1a1c;
+  --chat-drawer-surface: #242426;
+  --chat-bubble-sent: #D4AF37;
+  --chat-bubble-sent-rgb: 212, 175, 55;
+  --chat-bubble-received: #2d2d2e;
+  --chat-on-bubble-sent: #1c1c1e;
+  --chat-on-bubble-received: #f5f5f5;
+  /* أزرار الـ Drawer: ذهبي فقط، بدون خلفية افتراضية */
+  --chat-drawer-btn-color: var(--chat-bubble-sent);
+  --chat-drawer-btn-bg: transparent;
+  --chat-drawer-btn-hover-bg: rgba(212, 175, 55, 0.12);
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px 3px rgba(0, 0, 0, 0.1), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 6px 10px 4px rgba(0, 0, 0, 0.1), 0 2px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 8px 12px 6px rgba(0, 0, 0, 0.12), 0 4px 4px 0 rgba(0, 0, 0, 0.08);
+  --shadow-top: 0 -2px 10px rgba(0, 0, 0, 0.05);
 
   /* Spacing & Rounding – M3 */
   --main-padding: 16px;
@@ -232,7 +250,9 @@ main {
 }
 
 /* ============================================
-   Buttons & inputs – use tokens only
+   Buttons & inputs – tokens only (لا ألوان صلبة)
+   الخلفية من var(--primary-color) يحدّثها ThemeContext في الوضعين الفاتح والداكن.
+   أزرار الأيقونات/الـ outlined/الـ text تزيد bg-transparent فتصبح شفافة وتتبع الخلفية.
    ============================================ */
 
 button,
@@ -275,9 +295,68 @@ input[type="submit"]:disabled,
   transform: none;
 }
 
+/* تباين التركيز (لوحة المفاتيح): حلقة primary بتباين جيد على الخلفيات */
+button:focus,
+[role="button"]:focus {
+  outline: none;
+}
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
 button.secondary,
 [role="button"].secondary {
   background: var(--secondary-color);
+}
+
+/* أزرار لوحة المحادثة (M3 Premium): ذهبي، بدون خلفية افتراضية */
+[data-chat-drawer] button:not(.chat-drawer-btn-danger),
+[data-chat-drawer] [role="button"]:not(.chat-drawer-btn-danger),
+[data-chat-drawer] label[class*="cursor-pointer"] {
+  background: var(--chat-drawer-btn-bg) !important;
+  color: var(--chat-drawer-btn-color) !important;
+  padding: 0.5rem;
+  min-height: unset;
+}
+[data-chat-drawer] button:not(.chat-drawer-btn-danger):hover:not(:disabled),
+[data-chat-drawer] [role="button"]:not(.chat-drawer-btn-danger):hover:not(:disabled),
+[data-chat-drawer] label[class*="cursor-pointer"]:hover {
+  background: var(--chat-drawer-btn-hover-bg) !important;
+  color: var(--chat-drawer-btn-color) !important;
+}
+[data-chat-drawer] button:focus-visible,
+[data-chat-drawer] [role="button"]:focus-visible {
+  outline-color: var(--chat-bubble-sent);
+}
+[data-chat-drawer] button[disabled] {
+  opacity: 0.5;
+}
+/* زر إيقاف التسجيل يبقى أحمر */
+[data-chat-drawer] button.chat-drawer-btn-danger {
+  background: transparent !important;
+  color: var(--color-error) !important;
+}
+[data-chat-drawer] button.chat-drawer-btn-danger:hover {
+  background: rgba(186, 26, 26, 0.15) !important;
+  color: var(--color-error) !important;
+}
+
+/* فقاعات الرسائل في لوحة المحادثة: تجاوز أي لون افتراضي */
+[data-chat-drawer] .chat-drawer-bubble-sent {
+  background: var(--chat-bubble-sent) !important;
+  color: var(--chat-on-bubble-sent) !important;
+}
+[data-chat-drawer] .chat-drawer-bubble-sent p {
+  color: var(--chat-on-bubble-sent) !important;
+}
+[data-chat-drawer] .chat-drawer-bubble-received {
+  background: var(--chat-bubble-received) !important;
+  color: var(--chat-on-bubble-received) !important;
+}
+[data-chat-drawer] .chat-drawer-bubble-received p {
+  color: var(--chat-on-bubble-received) !important;
 }
 
 input[type="text"],
@@ -565,15 +644,25 @@ p {
 .bg-surface-bright { background-color: var(--color-surface-bright) !important; }
 .bg-base { background-color: var(--background) !important; }
 .text-primary { color: var(--primary-color) !important; }
+.text-on-primary { color: var(--color-on-primary) !important; }
 .text-content { color: var(--text-color) !important; }
 .text-foreground { color: var(--foreground) !important; }
 .border-primary { border-color: var(--primary-color) !important; }
+.border-outline { border-color: var(--border-color) !important; }
 .p-main { padding: var(--main-padding) !important; }
 .p-section { padding: var(--section-padding) !important; }
 .gap-element { gap: var(--element-gap) !important; }
 .rounded-main { border-radius: var(--border-radius) !important; }
 .rounded-section { border-radius: var(--border-radius-lg) !important; }
 .rounded-extra-large { border-radius: var(--radius-extra-large) !important; }
+
+/* M3 elevation (ظلال من الثيم) */
+.shadow-elev-0 { box-shadow: none !important; }
+.shadow-elev-1 { box-shadow: var(--shadow-sm) !important; }
+.shadow-elev-2 { box-shadow: var(--shadow-sm) !important; }
+.shadow-elev-3 { box-shadow: var(--shadow-md) !important; }
+.shadow-elev-4 { box-shadow: var(--shadow-lg) !important; }
+.shadow-elev-5 { box-shadow: var(--shadow-xl) !important; }
 
 .app-card {
   background: var(--background) !important;

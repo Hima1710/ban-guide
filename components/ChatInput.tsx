@@ -19,8 +19,15 @@ export default function ChatInput({
   recordingTime,
   disabled = false,
   placeholder = 'اكتب رسالة...',
+  variant = 'default',
 }: ChatInputProps) {
   const { colors } = useTheme()
+  const isDark = variant === 'dark'
+  const bg = isDark ? 'var(--chat-drawer-surface)' : colors.surface
+  const border = isDark ? 'var(--chat-drawer-bg)' : colors.outline
+  const text = isDark ? 'var(--chat-on-bubble-received)' : colors.onSurface
+  const textMuted = isDark ? 'rgba(245,245,245,0.8)' : colors.onSurfaceVariant
+  const accent = isDark ? 'var(--chat-bubble-sent)' : colors.primary
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -35,30 +42,30 @@ export default function ChatInput({
   }
 
   return (
-    <div className="border-t p-3" style={{ backgroundColor: colors.surface, borderColor: colors.outline }}>
+    <div className="border-t p-3" style={{ backgroundColor: bg, borderColor: border }}>
       {replyingTo && (
         <div
           className="mb-2 p-2 rounded border-r-2 flex items-start justify-between gap-2"
           style={{
-            background: `rgba(${colors.primaryRgb}, 0.1)`,
-            borderColor: colors.primary,
+            background: isDark ? 'rgba(212, 175, 55, 0.15)' : `rgba(${colors.primaryRgb}, 0.1)`,
+            borderColor: accent,
           }}
         >
           <div className="flex-1 min-w-0">
-            <p className="text-xs mb-0.5" style={{ color: colors.onSurfaceVariant }}>
+            <p className="text-xs mb-0.5" style={{ color: textMuted }}>
               الرد على: {replyingTo.sender?.full_name || 'مستخدم'}
             </p>
             {replyingTo.content && (
-              <p className="text-sm truncate" style={{ color: colors.onSurface }}>{replyingTo.content}</p>
+              <p className="text-sm truncate" style={{ color: text }}>{replyingTo.content}</p>
             )}
             {replyingTo.image_url && !replyingTo.content && (
-              <p className="text-sm italic" style={{ color: colors.onSurfaceVariant }}>صورة</p>
+              <p className="text-sm italic" style={{ color: textMuted }}>صورة</p>
             )}
           </div>
           <button
             onClick={onCancelReply}
             className="p-1 rounded transition-colors hover:opacity-70"
-            style={{ color: colors.onSurfaceVariant }}
+            style={{ color: textMuted }}
           >
             <X size={14} />
           </button>
@@ -90,24 +97,22 @@ export default function ChatInput({
       {isRecording && (
         <div
           className="mb-2 p-2 rounded flex items-center gap-2"
-          style={{ background: colors.errorContainer }}
+          style={{ background: isDark ? 'rgba(186,26,26,0.2)' : colors.errorContainer }}
         >
           <div
             className="w-3 h-3 rounded-full animate-pulse"
             style={{ background: colors.error }}
           />
-          <span className="text-sm" style={{ color: colors.onSurface }}>{formatRecordingTime(recordingTime)}</span>
+          <span className="text-sm" style={{ color: text }}>{formatRecordingTime(recordingTime)}</span>
         </div>
       )}
 
       {/* Input area */}
       <div className="flex items-end gap-2">
-        {/* Action buttons (left side) */}
         <div className="flex gap-1">
-          {/* Image button */}
           <label
             className="p-2 rounded transition-colors cursor-pointer hover:opacity-70"
-            style={{ color: colors.primary }}
+            style={{ color: accent }}
           >
             <ImageIcon size={20} />
             <input
@@ -121,39 +126,34 @@ export default function ChatInput({
               disabled={disabled}
             />
           </label>
-
-          {/* Product picker button */}
           <button
             onClick={onProductSelect}
             className="p-2 rounded transition-colors hover:opacity-70"
-            style={{ color: colors.secondary }}
+            style={{ color: isDark ? accent : colors.secondary }}
             disabled={disabled}
           >
             <Package size={20} />
           </button>
-
-          {/* Audio button */}
           {!isRecording ? (
             <button
               onClick={onStartRecording}
               className="p-2 rounded transition-colors hover:opacity-70"
-              style={{ color: colors.primary }}
+              style={{ color: accent }}
               disabled={disabled}
             >
               <Mic size={20} />
             </button>
           ) : (
             <button
+              type="button"
               onClick={onStopRecording}
-              className="p-2 rounded transition-colors hover:opacity-70"
+              className="chat-drawer-btn-danger p-2 rounded transition-colors hover:opacity-70"
               style={{ color: colors.error }}
             >
               <Square size={20} />
             </button>
           )}
         </div>
-
-        {/* Text input */}
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -165,19 +165,17 @@ export default function ChatInput({
             minHeight: '40px',
             maxHeight: '120px',
             fontSize: '16px',
-            backgroundColor: colors.surface,
-            border: `1px solid ${colors.outline}`,
-            color: colors.onSurface,
+            backgroundColor: isDark ? 'var(--chat-drawer-bg)' : colors.surface,
+            border: `1px solid ${border}`,
+            color: text,
           }}
           rows={1}
         />
-
-        {/* Send button */}
         <button
           onClick={onSend}
           disabled={disabled || (!value.trim() && !selectedImage)}
           className="p-2 rounded transition-colors disabled:opacity-50"
-          style={{ color: colors.primary }}
+          style={{ color: accent }}
         >
           <Send size={20} />
         </button>

@@ -1,8 +1,24 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+
+/** مفتاح تخزين code_verifier في sessionStorage (نفس منطق Supabase) — إن لم يوجد لا نرسل طلب التبادل فنمنع 400 */
+function getCodeVerifierFromStorage(): string | null {
+  if (typeof window === 'undefined') return null
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+  if (!url) return null
+  try {
+    const hostname = new URL(url).hostname
+    const storageKey = `sb-${hostname.split('.')[0]}-auth-token`
+    const raw = sessionStorage.getItem(`${storageKey}-code-verifier`)
+    const verifier = (raw ?? '').split('/')[0]?.trim()
+    return verifier || null
+  } catch {
+    return null
+  }
+}
 
 /**
  * Auth callback page — يعمل من جانب العميل (مهم لـ WebView/Android مع PKCE).
@@ -16,19 +32,39 @@ function CallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'exchanging' | 'done' | 'error'>('exchanging')
+  const ranRef = useRef(false)
 
   useEffect(() => {
-    const code = searchParams.get('code')
+    const code = searchParams.get('code')?.trim() || ''
     const hash = typeof window !== 'undefined' ? window.location.hash : ''
 
     const run = async () => {
+      // لا نستدعي التبادل إلا إذا وُجد code (تأتي من OAuth redirect). إن فُتحت الصفحة مباشرة أو بعد تحديث، نوجّه لصفحة الدخول.
       if (code) {
+        // منع التشغيل المزدوج (React Strict Mode يفعّل الـ effect مرتين) — الاستدعاء الثاني يستهلك code_verifier ويسبب 400
+        if (ranRef.current) return
+        ranRef.current = true
+
+        // إن لم يوجد code_verifier في التخزين لا نستدعي التبادل (نمنع طلب 400)
+        if (!getCodeVerifierFromStorage()) {
+          setStatus('error')
+          router.replace('/auth/login?session_expired=1')
+          return
+        }
+
         try {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
           if (error) {
-            console.error('[auth/callback] exchangeCodeForSession error:', error)
+            const isVerifierMissing =
+              error.message?.includes('code verifier') || error.message?.includes('non-empty')
+            if (isVerifierMissing) {
+              // انتهت جلسة PKCE (مثلاً فتح من جهاز آخر أو مسح التخزين) — نوجّه لتسجيل الدخول من جديد
+              router.replace('/auth/login?session_expired=1')
+            } else {
+              console.error('[auth/callback] exchangeCodeForSession error:', error)
+              router.replace('/?auth_error=1')
+            }
             setStatus('error')
-            router.replace('/?auth_error=1')
             return
           }
           const user = data?.user
@@ -85,8 +121,8 @@ function CallbackContent() {
         return
       }
 
-      setStatus('error')
-      router.replace('/?auth_error=1')
+      // فتح الصفحة بدون code ولا hash (مثلاً زيارة مباشرة أو تحديث) — نوجّه لصفحة الدخول بدون رسالة خطأ
+      router.replace('/auth/login')
     }
 
     run()

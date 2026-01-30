@@ -154,6 +154,38 @@ export async function sendPaymentConfirmationNotification(
 }
 
 /**
+ * Notify all followers of a place (e.g. new post or product).
+ * Calls Supabase RPC notify_place_followers.
+ */
+export async function notifyPlaceFollowers(params: {
+  placeId: string
+  titleAr: string
+  messageAr: string
+  type: NotificationType
+  link?: string
+  titleEn?: string
+  messageEn?: string
+}) {
+  try {
+    const { error } = await supabase.rpc('notify_place_followers', {
+      p_place_id: params.placeId,
+      p_title_ar: params.titleAr,
+      p_message_ar: params.messageAr,
+      p_type: params.type,
+      p_link: params.link ?? null,
+      p_title_en: params.titleEn ?? null,
+      p_message_en: params.messageEn ?? null,
+    } as never)
+
+    if (error) throw error
+    return { error: null }
+  } catch (error) {
+    console.error('Error notifying place followers:', error)
+    return { error }
+  }
+}
+
+/**
  * Send promotion notification
  */
 export async function sendPromotionNotification(

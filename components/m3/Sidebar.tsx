@@ -78,12 +78,13 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
                 />
               )}
 
-              {/* Icon with enhanced active state */}
+              {/* Icon: لون صريح لتباين جيد في الوضع الداكن (لا نعتمد على الوراثة فقط) */}
               <Icon
                 size={24}
                 strokeWidth={isActive ? 2.8 : 2}
                 className="flex-shrink-0 transition-all duration-200"
                 style={{
+                  color: isActive ? colors.primary : colors.onSurface,
                   filter: isActive ? `drop-shadow(0 2px 4px rgba(${colors.primaryRgb}, 0.3))` : 'none',
                 }}
               />
@@ -94,7 +95,8 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
                   <span 
                     className="flex-1 text-base transition-all duration-200"
                     style={{
-                      fontWeight: isActive ? 700 : 500, // Bolder when active
+                      color: isActive ? colors.primary : colors.onSurface,
+                      fontWeight: isActive ? 700 : 500,
                       letterSpacing: isActive ? '0.02em' : 'normal',
                     }}
                   >

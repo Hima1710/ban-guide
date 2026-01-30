@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
-import { usePlaces } from '@/hooks'
-import { useConversationsManager } from '@/hooks/useConversationsManager'
-import { MessageCircle, Search, Loader2, Users, Package, MapPin, User } from 'lucide-react'
+import { useConversationContext } from '@/contexts/ConversationContext'
+import { MessageCircle, Search, Loader2, Users, Package, MapPin } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ar } from 'date-fns/locale'
 
@@ -14,22 +13,13 @@ export default function MessagesPage() {
   const router = useRouter()
   const { user } = useAuthContext()
   const { colors } = useTheme()
+  const { getConversations, openConversation } = useConversationContext()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'places' | 'products' | 'employees'>('all')
   
-  // Get user's places
-  const { places: userPlaces, loading: placesLoading } = usePlaces()
-  
-  const {
-    getConversations,
-    messages
-  } = useConversationsManager({ userId: user?.id || null, userPlaces })
-  
-  // Get conversations from manager
   const conversations = useMemo(() => getConversations(), [getConversations])
   
-  // Calculate loading and unread counts
-  const loading = placesLoading
+  const loading = false
   const unreadCounts = useMemo(() => {
     const total = conversations.reduce((acc, conv) => acc + (conv.unreadCount || 0), 0)
     return { total }
@@ -69,9 +59,8 @@ export default function MessagesPage() {
   }
 
   const handleConversationClick = (conv: any) => {
-    // Navigate to the place page with conversation context
-    if (conv.placeId) {
-      router.push(`/places/${conv.placeId}`)
+    if (conv.placeId && conv.senderId) {
+      openConversation(conv.placeId, conv.senderId)
     }
   }
 

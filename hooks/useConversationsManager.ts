@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { AudioRecorder } from '@/lib/audio-recorder'
 import { showError, showSuccess } from '@/components/SweetAlert'
@@ -42,9 +41,6 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
   const [selectedPlaceInfo, setSelectedPlaceInfo] = useState<{ id: string, name_ar?: string } | null>(null)
   const [selectedSenderInfo, setSelectedSenderInfo] = useState<MessageUserProfile | null>(null)
 
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
   const subscriptionRef = useRef<any>(null)
 
   // ==================== DATA LOADING ====================
@@ -639,93 +635,7 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
     }
   }, [selectedPlaceId, loadProducts])
 
-  // Handle openConversation query parameter
-  useEffect(() => {
-    if (typeof window === 'undefined' || !userId) return
-    
-    const openConversationPlaceId = searchParams.get('openConversation')
-    
-    if (!openConversationPlaceId) return
-    
-    const openConversationWithPlace = async () => {
-      if (messages.length > 0) {
-        const conversations = getConversations()
-        const conversation = conversations.find(c => c.placeId === openConversationPlaceId)
-        
-        if (conversation) {
-          selectConversation(conversation.senderId, conversation.placeId)
-          const currentParams = new URLSearchParams(window.location.search)
-          currentParams.delete('openConversation')
-          const newUrl = window.location.pathname + (currentParams.toString() ? '?' + currentParams.toString() : '')
-          window.history.replaceState({}, '', newUrl)
-          return
-        }
-      }
-      
-      const userPlace = userPlaces.find(p => p.id === openConversationPlaceId)
-      if (userPlace) {
-        const currentParams = new URLSearchParams(window.location.search)
-        currentParams.delete('openConversation')
-        const newUrl = window.location.pathname + (currentParams.toString() ? '?' + currentParams.toString() : '')
-        window.history.replaceState({}, '', newUrl)
-        return
-      }
-      
-      try {
-        const { data: placeRow, error } = await supabase
-          .from('places')
-          .select('user_id')
-          .eq('id', openConversationPlaceId)
-          .single()
-        const placeData = placeRow as { user_id: string } | null
-
-        if (error) {
-          console.error('❌ [OPEN CONVERSATION] Error fetching place:', error)
-          return
-        }
-
-        if (placeData) {
-          const placeOwnerId = placeData.user_id
-
-          const [placeResult, senderResult] = await Promise.all([
-            supabase
-              .from('places')
-              .select('id, name_ar')
-              .eq('id', openConversationPlaceId)
-              .single(),
-            supabase
-              .from('user_profiles')
-              .select('id, full_name, email, avatar_url')
-              .eq('id', placeOwnerId)
-              .single()
-          ])
-
-          const placeInfo = placeResult.data as { id: string; name_ar?: string } | null
-          const senderInfo = senderResult.data as MessageUserProfile | null
-          if (placeInfo) {
-            setSelectedPlaceInfo(placeInfo)
-          }
-          if (senderInfo) {
-            setSelectedSenderInfo(senderInfo)
-          }
-          
-          selectConversation(placeOwnerId, openConversationPlaceId)
-          const currentParams = new URLSearchParams(window.location.search)
-          currentParams.delete('openConversation')
-          const newUrl = window.location.pathname + (currentParams.toString() ? '?' + currentParams.toString() : '')
-          window.history.replaceState({}, '', newUrl)
-        }
-      } catch (error) {
-        console.error('❌ [OPEN CONVERSATION] Error fetching place owner:', error)
-      }
-    }
-    
-    const timer = setTimeout(() => {
-      openConversationWithPlace()
-    }, 500)
-    
-    return () => clearTimeout(timer)
-  }, [userId, userPlaces, messages, pathname, searchParams, getConversations, selectConversation])
+  // openConversation URL param is handled by the place page + ConversationContext (open drawer, no redirect)
 
   // Auto-scroll to bottom when conversation changes
   useEffect(() => {

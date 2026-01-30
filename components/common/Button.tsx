@@ -1,6 +1,6 @@
 /**
- * M3 Button – uses design tokens (Tailwind + globals.css).
- * Variants: filled (bg-primary), outlined (border-primary), text.
+ * M3 Button – ألوان من useTheme() (النظام الموحد)، لا لون افتراضي.
+ * Variants: filled (primary + onPrimary), outlined (border primary), text.
  * All rounded-extra-large, min 48px height for touch.
  */
 
@@ -8,6 +8,7 @@
 
 import { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'filled' | 'outlined' | 'text'
@@ -30,36 +31,44 @@ export default function Button({
   style = {},
   ...restProps
 }: ButtonProps) {
+  const { colors } = useTheme()
+
   const sizeClasses = {
     sm: 'px-4 text-sm min-h-[48px]',
     md: 'px-6 text-base min-h-[48px]',
     lg: 'px-8 text-lg min-h-[48px]',
   }
 
-  const variantClasses = {
-    filled:
-      'bg-primary text-on-primary border-0 shadow-sm hover:opacity-90 active:opacity-95 disabled:opacity-60 disabled:shadow-none',
-    outlined:
-      'bg-transparent border-2 border-primary text-primary hover:bg-primary/10 active:bg-primary/15 disabled:opacity-60 disabled:border-outline disabled:text-on-surface-variant',
-    text:
-      'bg-transparent border-0 text-primary hover:bg-primary/10 active:bg-primary/15 disabled:opacity-60 disabled:text-on-surface-variant',
-  }
+  const variantBaseClasses =
+    'font-semibold rounded-extra-large inline-flex items-center justify-center gap-2 transition-all duration-200 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]'
+
+  const variantStyles =
+    variant === 'filled'
+      ? { backgroundColor: colors.primary, color: colors.onPrimary, border: 0 }
+      : variant === 'outlined'
+        ? { backgroundColor: 'transparent', color: colors.primary, borderWidth: 2, borderStyle: 'solid', borderColor: colors.primary }
+        : { backgroundColor: 'transparent', color: colors.primary, border: 0 }
+
+  const disabledStyle =
+    disabled || loading
+      ? { opacity: 0.6, ...(variant !== 'filled' && { borderColor: colors.outline, color: colors.onSurfaceVariant }) }
+      : {}
 
   return (
     <button
       type="button"
       className={`
-        font-semibold rounded-extra-large
-        inline-flex items-center justify-center gap-2
-        transition-all duration-200
-        disabled:cursor-not-allowed
-        hover:scale-[1.02] active:scale-[0.98]
+        ${variantBaseClasses}
         ${sizeClasses[size]}
-        ${variantClasses[variant]}
         ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
-      style={{ minHeight: MIN_TOUCH_HEIGHT, ...style }}
+      style={{
+        minHeight: MIN_TOUCH_HEIGHT,
+        ...variantStyles,
+        ...disabledStyle,
+        ...style,
+      }}
       disabled={disabled || loading}
       {...restProps}
     >

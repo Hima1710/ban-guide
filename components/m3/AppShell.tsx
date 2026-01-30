@@ -9,6 +9,8 @@ import BottomNavigation from './BottomNavigation'
 import Sidebar from './Sidebar'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ConversationsSidebar from '@/components/ConversationsSidebar'
+import ConversationDrawer from '@/components/ConversationDrawer'
+import { ConversationProvider } from '@/contexts/ConversationContext'
 
 const BOTTOM_NAV_HEIGHT = 64
 
@@ -51,41 +53,46 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
   const headerHeight = showHeader ? HEADER_HEIGHT : 0
 
   return (
-    <div
-      className={`min-h-screen ${isWebView ? 'webview-optimized' : ''}`}
-      style={{
-        backgroundColor: colors.background,
-        color: colors.onBackground,
-        paddingTop: isWebView ? safeAreaInsets.top : 0,
-      }}
-    >
-      {showHeader && <SmartTopBar />}
-      {showHeader && pathname !== '/' && <Breadcrumbs />}
-
-      <main
-        className="min-h-screen transition-all duration-300"
+    <ConversationProvider>
+      <div
+        className={`min-h-screen ${isWebView ? 'webview-optimized' : ''}`}
         style={{
-          paddingTop: showHeader ? 8 : 0,
-          paddingBottom: bottomNavHeight,
-          paddingLeft: 0,
-          paddingRight: 0,
+          backgroundColor: colors.background,
+          color: colors.onBackground,
+          paddingTop: isWebView ? safeAreaInsets.top : 0,
         }}
       >
-        <div className="lg:pr-[280px] min-h-0 flex flex-col">
-          {children}
-        </div>
-      </main>
+        {showHeader && <SmartTopBar />}
+        {showHeader && pathname !== '/' && <Breadcrumbs />}
 
-      {showNav && (
-        <>
-          <Sidebar />
-          <BottomNavigation />
-        </>
-      )}
+        <main
+          className="min-h-screen transition-all duration-300"
+          style={{
+            paddingTop: showHeader ? 8 : 0,
+            paddingBottom: bottomNavHeight,
+            paddingLeft: 0,
+            paddingRight: 0,
+          }}
+        >
+          <div className="lg:pr-[280px] min-h-0 flex flex-col">
+            {children}
+          </div>
+        </main>
 
-      <Suspense fallback={null}>
-        <ConversationsSidebar />
-      </Suspense>
+        {showNav && (
+          <>
+            <Sidebar />
+            <BottomNavigation />
+          </>
+        )}
+
+        <Suspense fallback={null}>
+          <ConversationsSidebar />
+        </Suspense>
+
+        <ConversationDrawer />
+
+      </div>
 
       {process.env.NODE_ENV === 'development' && isWebView && (
         <div
@@ -121,6 +128,6 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
           }
         }
       `}</style>
-    </div>
+    </ConversationProvider>
   )
 }

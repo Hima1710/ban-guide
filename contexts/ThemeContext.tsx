@@ -188,6 +188,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.setProperty('--color-outline-variant', c.outlineVariant)
     root.style.setProperty('--color-surface-dim', c.surfaceVariant)
     root.style.setProperty('--color-surface-bright', isDark ? '#38383a' : '#fafafa')
+    root.style.setProperty('--color-error', c.error)
+    root.style.setProperty('--color-success', c.success)
+    root.style.setProperty('--color-warning', c.warning)
 
     // Aliases (globals + legacy)
     root.style.setProperty('--background', c.background)

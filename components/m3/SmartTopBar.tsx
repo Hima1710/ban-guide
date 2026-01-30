@@ -56,30 +56,64 @@ export default function SmartTopBar() {
     window.location.href = '/'
   }
 
-  const pageTitle = pathname === '/' ? '' : pathname.split('/').filter(Boolean).slice(-1)[0] || ''
+  /** عنوان الصفحة بالعربية حسب المسار (لا نعرض آخر جزء من الرابط فقط) */
+  const getHeaderTitle = (): string => {
+    if (pathname === '/') return 'بان'
+    const segments = pathname.split('/').filter(Boolean)
+    if (segments[0] === 'places') {
+      if (segments.length === 1) return 'الأماكن'
+      return 'تفاصيل المكان'
+    }
+    if (segments[0] === 'messages') return 'المحادثات'
+    if (segments[0] === 'dashboard') {
+      if (segments.length === 1) return 'لوحة التحكم'
+      if (segments[1] === 'places') return segments[2] ? 'تعديل المكان' : 'أماكني'
+      if (segments[1] === 'packages') return 'باقاتي'
+      if (segments[1] === 'affiliate') return 'المسوق'
+      if (segments[1] === 'privacy') return 'الخصوصية'
+      return 'لوحة التحكم'
+    }
+    if (segments[0] === 'auth') return 'تسجيل الدخول'
+    if (segments[0] === 'admin') {
+      if (segments.length === 1) return 'الإدارة'
+      const adminTitles: Record<string, string> = {
+        users: 'المستخدمون',
+        packages: 'الباقات',
+        affiliates: 'المسوقون',
+        subscriptions: 'الاشتراكات',
+        'discount-codes': 'أكواد الخصم',
+        youtube: 'يوتيوب',
+        settings: 'الإعدادات',
+      }
+      return adminTitles[segments[1]] ?? 'الإدارة'
+    }
+    return 'بان'
+  }
+
+  const headerTitle = getHeaderTitle()
 
   return (
     <header
       className="sticky top-0 z-50 border-b min-h-[56px] flex items-center safe-area-top"
       style={{
         height: HEADER_HEIGHT,
-        backgroundColor: 'var(--color-surface)',
-        borderColor: 'var(--color-outline)',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+        backgroundColor: colors.surface,
+        borderColor: colors.outline,
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
       <div className="flex items-center justify-between w-full h-full px-3 sm:px-4">
-        {/* Left: Back button (only when can go back) */}
+        {/* Left: Back button — M3 Icon Button، لون من الثيم، hover خفيف */}
         <div className="flex items-center min-w-[48px] min-h-[48px] shrink-0">
           {canGoBack ? (
             <button
               type="button"
               onClick={handleBack}
-              className="flex items-center justify-center w-12 h-12 rounded-extra-large transition-colors hover:bg-on-surface/10 active:opacity-80"
-              style={{ color: 'var(--color-on-surface)' }}
+              className="flex items-center justify-center w-12 h-12 rounded-extra-large border-0 shadow-none app-hover-bg active:opacity-80"
+              style={{ color: colors.onSurface }}
               aria-label="رجوع"
             >
-              <ChevronRight size={24} className="rtl:rotate-180" />
+              <ChevronRight size={24} className="rtl:rotate-180 shrink-0" style={{ color: colors.onSurface }} />
             </button>
           ) : (
             <span className="w-12" aria-hidden />
@@ -103,10 +137,10 @@ export default function SmartTopBar() {
               />
             </div>
             <span
-              className="hidden sm:inline text-title-large font-semibold truncate max-w-[140px]"
-              style={{ color: 'var(--color-on-surface)' }}
+              className="hidden sm:inline text-title-large font-semibold truncate max-w-[180px]"
+              style={{ color: colors.onSurface }}
             >
-              {pathname === '/' ? 'بان' : (pageTitle ? decodeURIComponent(pageTitle) : 'بان')}
+              {headerTitle}
             </span>
           </Link>
         </div>
@@ -116,12 +150,12 @@ export default function SmartTopBar() {
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex items-center justify-center w-12 h-12 rounded-extra-large transition-colors hover:bg-on-surface/10"
-            style={{ color: 'var(--color-on-surface)' }}
+            className="flex items-center justify-center w-12 h-12 rounded-extra-large border-0 shadow-none app-hover-bg active:opacity-80"
+            style={{ color: colors.onSurface }}
             title={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
             aria-label={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
           >
-            {isDark ? <Sun size={22} /> : <Moon size={22} />}
+            {isDark ? <Sun size={22} style={{ color: colors.onSurface }} /> : <Moon size={22} style={{ color: colors.onSurface }} />}
           </button>
 
           {user ? (
@@ -130,12 +164,13 @@ export default function SmartTopBar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="hidden sm:flex items-center justify-center w-12 h-12 rounded-extra-large transition-colors hover:bg-on-surface/10"
-                style={{ color: 'var(--color-on-surface)' }}
+                className="flex items-center justify-center gap-1.5 min-h-[48px] min-w-[48px] px-2 sm:px-3 rounded-extra-large border-0 shadow-none app-hover-bg active:opacity-80"
+                style={{ color: colors.onSurface }}
                 title="تسجيل الخروج"
                 aria-label="تسجيل الخروج"
               >
-                <LogOut size={22} />
+                <LogOut size={22} className="shrink-0" style={{ color: colors.onSurface }} />
+                <span className="hidden sm:inline text-label-large font-semibold" style={{ color: colors.onSurface }}>خروج</span>
               </button>
             </>
           ) : (

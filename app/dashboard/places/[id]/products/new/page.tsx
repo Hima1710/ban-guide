@@ -8,6 +8,8 @@ import { Upload, X, Plus, Trash2 } from 'lucide-react'
 import { convertToWebP, uploadImageToImgBB } from '@/lib/imgbb'
 import { useTheme } from '@/contexts/ThemeContext'
 import type { Package } from '@/lib/types'
+import { notifyPlaceFollowers } from '@/lib/api/notifications'
+import { NotificationType } from '@/lib/types/database'
 
 // Constants
 const DEFAULT_MAX_IMAGES = 5
@@ -221,6 +223,14 @@ export default function NewProductPage() {
 
         if (variantsError) throw variantsError
       }
+
+      await notifyPlaceFollowers({
+        placeId,
+        titleAr: 'منتج جديد',
+        messageAr: 'تم إضافة منتج جديد في مكان تتابعه.',
+        type: NotificationType.PRODUCT,
+        link: `/places/${placeId}`,
+      })
 
       closeLoading()
       showSuccess('تم إضافة المنتج بنجاح')

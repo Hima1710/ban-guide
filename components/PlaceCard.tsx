@@ -24,25 +24,25 @@ export default function PlaceCard({ place, cardStyle = 'default', size = 'medium
         return {
           border: `2px solid ${colors.warning}`,
           background: `linear-gradient(to bottom right, ${colors.warningContainer}, rgba(${colors.primaryRgb}, 0.08))`,
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+          boxShadow: 'var(--shadow-lg)',
         }
       case 'gold':
         return {
           border: `2px solid ${colors.warning}`,
           background: `linear-gradient(to bottom right, ${colors.warningContainer}, rgba(${colors.primaryRgb}, 0.08))`,
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+          boxShadow: 'var(--shadow-xl)',
         }
       case 'silver':
         return {
           border: `1px solid ${colors.outline}`,
           background: `linear-gradient(to bottom right, ${colors.surface}, ${colors.background})`,
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          boxShadow: 'var(--shadow-md)',
         }
       default:
         return {
           border: `1px solid ${colors.outline}`,
           background: colors.background,
-          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+          boxShadow: 'var(--shadow-sm)',
         }
     }
   }
@@ -66,18 +66,21 @@ export default function PlaceCard({ place, cardStyle = 'default', size = 'medium
                 <div
                   className="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none"
                   style={{
-                    background: `linear-gradient(to top, rgba(0,0,0,0.45), transparent)`,
+                    background: 'linear-gradient(to top, var(--overlay-bg), transparent)',
                   }}
                   aria-hidden
                 />
               )}
               {place.video_url && (
-                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                <div 
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ backgroundColor: colors.overlay }}
+              >
                   <div 
                     className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs font-bold flex items-center gap-0.5 sm:gap-1"
                     style={{
                       backgroundColor: colors.error,
-                      color: colors.onPrimary,
+                      color: 'var(--color-on-error)',
                     }}
                   >
                     <Video size={10} className="sm:w-3 sm:h-3" />

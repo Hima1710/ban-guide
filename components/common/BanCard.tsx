@@ -12,8 +12,9 @@ const DEFAULT_TIER: SubscriptionTier = 'basic'
 const PLACEHOLDER_NAME = 'مكان'
 const PREMIUM_BADGE_LABEL = 'بريميوم'
 const PREMIUM_ARIA = 'معتمد / بريميوم'
+/** M3 Icon Button: شفاف، 48dp، rounded-extra-large — نلغي افتراضي globals (خلفية ذهبية) */
 const INTERACTION_BTN_CLASS =
-  'flex items-center gap-1.5 rounded-extra-large px-2 py-2 min-h-[48px] min-w-[48px] justify-center touch-manipulation'
+  'flex items-center gap-1.5 rounded-extra-large px-2 py-2 min-h-[48px] min-w-[48px] justify-center touch-manipulation bg-transparent border-0 shadow-none hover:opacity-90 active:opacity-80 disabled:opacity-60'
 
 /** Card styling by tier: bg-surface (Dark Charcoal), Royal Gold only for borders/icons/titles. */
 function getTierCardProps(tier: SubscriptionTier) {
@@ -22,7 +23,7 @@ function getTierCardProps(tier: SubscriptionTier) {
       return {
         variant: 'elevated' as const,
         elevation: 4 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary shadow-[0_6px_10px_4px_rgba(0,0,0,0.15)]',
+        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary',
         showPremiumBadge: true,
       }
     case 'gold':

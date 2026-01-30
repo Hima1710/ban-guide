@@ -24,7 +24,7 @@ export default function BottomNavigation() {
       style={{
         backgroundColor: 'var(--color-surface)',
         borderColor: 'var(--color-outline)',
-        boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
+        boxShadow: 'var(--shadow-top)',
         paddingBottom: 'env(safe-area-inset-bottom, 0)',
       }}
     >

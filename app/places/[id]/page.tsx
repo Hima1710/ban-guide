@@ -1,17 +1,19 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import { Place, Product, Message } from '@/lib/types'
+import { Place, Product } from '@/lib/types'
 import { incrementPlaceView } from '@/lib/api/places'
-import { useAuthContext, usePlace, useProducts, useMessages } from '@/hooks'
+import { useAuthContext, usePlace, useProducts } from '@/hooks'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
 import { extractYouTubeId, getYouTubeEmbedUrl } from '@/lib/youtube'
 import { MapPin, Phone, MessageCircle, Image as ImageIcon, X, Package, UserPlus, CheckCircle, Plus, Trash2, Video, Upload } from 'lucide-react'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
 import { LoadingSpinner, Input } from '@/components/common'
-import { AudioRecorder } from '@/lib/audio-recorder'
+import { notifyPlaceFollowers } from '@/lib/api/notifications'
+import { NotificationType } from '@/lib/types/database'
+import { useConversationContextOptional } from '@/contexts/ConversationContext'
 import { TitleLarge, TitleMedium, BodyMedium, BodySmall, LabelMedium, LabelLarge, Button } from '@/components/m3'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
@@ -33,25 +35,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const { colors } = useTheme()
   const { place, loading: placeLoading } = usePlace(placeId)
   const { products } = useProducts({ placeId, autoLoad: !!placeId })
-  const { 
-    messages, 
-    markAsRead,
-    refresh: refreshMessages
-  } = useMessages({ placeId, autoLoad: !!placeId })
+  const conversationContext = useConversationContextOptional()
 
-  const [newMessage, setNewMessage] = useState('')
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null)
-  const [replyingTo, setReplyingTo] = useState<Message | null>(null)
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
-  const [audioRecorder, setAudioRecorder] = useState<any>(null)
-  const [recordingTimer, setRecordingTimer] = useState<NodeJS.Timeout | null>(null)
-  const [sendingMessages, setSendingMessages] = useState<Set<string>>(new Set())
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [showProductPicker, setShowProductPicker] = useState(false)
   const [showEmployeeRequestModal, setShowEmployeeRequestModal] = useState(false)
   const [employeePhone, setEmployeePhone] = useState('')
   const [isEmployee, setIsEmployee] = useState(false)
@@ -71,6 +58,8 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const [uploadingVideo, setUploadingVideo] = useState(false)
   const [videoTitle, setVideoTitle] = useState('')
   const [videoUploadMethod, setVideoUploadMethod] = useState<'link' | 'upload'>('link')
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followLoading, setFollowLoading] = useState(false)
 
   useEffect(() => {
     if (place) {
@@ -89,6 +78,23 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       checkEmployeeStatus()
     }
   }, [user, place])
+
+  // Load follow state for logged-in user
+  useEffect(() => {
+    if (!user || !placeId) return
+    let cancelled = false
+    const checkFollow = async () => {
+      const { data, error } = await supabase
+        .from('follows')
+        .select('id')
+        .eq('follower_id', user.id)
+        .eq('place_id', placeId)
+        .maybeSingle()
+      if (!cancelled && !error) setIsFollowing(!!data)
+    }
+    checkFollow()
+    return () => { cancelled = true }
+  }, [user, placeId])
 
 
   const loadPosts = async () => {
@@ -162,6 +168,34 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     }
   }
 
+  const toggleFollow = async () => {
+    if (!user || !place || followLoading) return
+    setFollowLoading(true)
+    try {
+      if (isFollowing) {
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('place_id', place.id)
+        if (error) throw error
+        setIsFollowing(false)
+        showSuccess('تم إلغاء المتابعة')
+      } else {
+        const { error } = await supabase
+          .from('follows')
+          .insert({ follower_id: user.id, place_id: place.id } as never)
+        if (error) throw error
+        setIsFollowing(true)
+        showSuccess('تمت المتابعة. سنُعلمك بالمنشورات والمنتجات الجديدة.')
+      }
+    } catch (e: any) {
+      showError(e.message || 'حدث خطأ')
+    } finally {
+      setFollowLoading(false)
+    }
+  }
+
   const handleEmployeeRequest = async () => {
     if (!user || !place || !employeePhone.trim()) {
       showError('يرجى إدخال رقم الهاتف')
@@ -199,420 +233,20 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     }
   }
 
-  // Messages are automatically loaded by useMessages hook
-  // Auto-select first conversation if none selected
+  // Open conversation drawer when landing with ?openConversation=placeId (no redirect)
+  const openedConversationRef = useRef(false)
   useEffect(() => {
-    if (!selectedConversation && messages.length > 0 && user) {
-      const uniqueSenders = Array.from(
-        new Set(
-          messages
-            .filter((msg) => msg.sender_id !== user.id)
-            .map((msg) => msg.sender_id)
-        )
-      )
-      if (uniqueSenders.length > 0) {
-        setSelectedConversation(uniqueSenders[0])
-      }
-    }
-  }, [messages, user, selectedConversation])
+    if (!conversationContext || !place || !user) return
+    const openParam = searchParams.get('openConversation')
+    if (openParam !== placeId || openedConversationRef.current) return
+    openedConversationRef.current = true
+    conversationContext.openConversation(placeId, place.user_id)
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('openConversation')
+    const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '')
+    window.history.replaceState({}, '', newUrl)
+  }, [conversationContext, place, placeId, user, searchParams])
 
-  // Group messages by sender (conversations)
-  const getConversations = () => {
-    if (!user) return []
-    
-    // Get unique sender IDs (excluding current user)
-    const uniqueSenders = Array.from(
-      new Set(
-        messages
-          .filter((msg) => msg.sender_id !== user.id)
-          .map((msg) => msg.sender_id)
-      )
-    )
-
-    return uniqueSenders.map((senderId) => {
-      const senderMessages = messages.filter((msg) => msg.sender_id === senderId)
-      const lastMessage = senderMessages[senderMessages.length - 1]
-      const unreadCount = senderMessages.filter((msg) => !msg.is_read && msg.sender_id !== user.id).length
-      
-      return {
-        senderId,
-        sender: lastMessage?.sender,
-        lastMessage,
-        unreadCount,
-        messageCount: senderMessages.length,
-      }
-    }).sort((a, b) => {
-      // Sort by last message time (newest first)
-      const timeA = new Date(a.lastMessage?.created_at || 0).getTime()
-      const timeB = new Date(b.lastMessage?.created_at || 0).getTime()
-      return timeB - timeA
-    })
-  }
-
-  // Get messages for selected conversation (owner view)
-  const getConversationMessages = () => {
-    if (!selectedConversation || !user) return []
-    // Show messages from the selected sender and replies from the owner
-    return messages.filter((msg) => 
-      msg.sender_id === selectedConversation || 
-      (msg.sender_id === user.id && messages.some(m => m.sender_id === selectedConversation))
-    )
-  }
-
-  // Mark messages as read using hook function
-  const markConversationAsRead = async (senderId: string) => {
-    if (!user) return
-    
-    // Mark all unread messages from this sender
-    const unreadMessages = messages.filter(
-      msg => msg.sender_id === senderId && !msg.is_read && msg.sender_id !== user.id
-    )
-    
-    for (const msg of unreadMessages) {
-      await markAsRead(msg.id)
-    }
-  }
-
-  useEffect(() => {
-    if (selectedConversation && user) {
-      markConversationAsRead(selectedConversation)
-    }
-  }, [selectedConversation, user])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (audioRecorder) {
-        audioRecorder.cancelRecording()
-      }
-      if (recordingTimer) {
-        clearInterval(recordingTimer)
-      }
-    }
-  }, [audioRecorder, recordingTimer])
-
-  const startRecording = async () => {
-    try {
-      const recorder = new AudioRecorder()
-      await recorder.startRecording()
-      setAudioRecorder(recorder)
-      setIsRecording(true)
-      setRecordingTime(0)
-
-      // Start timer
-      const timer = setInterval(() => {
-        setRecordingTime((prev) => prev + 1)
-      }, 1000)
-      setRecordingTimer(timer)
-    } catch (error: any) {
-      console.error('فشل في بدء التسجيل:', error)
-    }
-  }
-
-  const stopRecording = async () => {
-    if (!audioRecorder) return
-
-    try {
-      if (recordingTimer) {
-        clearInterval(recordingTimer)
-        setRecordingTimer(null)
-      }
-
-      const audioBlob = await audioRecorder.stopRecording()
-      setIsRecording(false)
-      setRecordingTime(0)
-
-      // Upload audio
-      const formData = new FormData()
-      formData.append('audio', audioBlob, 'recording.opus')
-
-      const response = await fetch('/api/upload-audio', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        // Send message with audio
-        await sendMessageWithAudio(data.url)
-      } else {
-        throw new Error(data.error || 'فشل في رفع الصوت')
-      }
-    } catch (error: any) {
-      console.error('حدث خطأ في تسجيل الصوت:', error)
-      setIsRecording(false)
-      setRecordingTime(0)
-    } finally {
-      setAudioRecorder(null)
-    }
-  }
-
-  const cancelRecording = () => {
-    if (audioRecorder) {
-      audioRecorder.cancelRecording()
-      setAudioRecorder(null)
-    }
-    if (recordingTimer) {
-      clearInterval(recordingTimer)
-      setRecordingTimer(null)
-    }
-    setIsRecording(false)
-    setRecordingTime(0)
-  }
-
-  const sendMessageWithAudio = async (audioUrl: string) => {
-    if (!user) return
-
-    // Save values before clearing
-    const messageContent = newMessage.trim()
-    const messageReplyTo = replyingTo
-
-    // Create temporary message ID
-    const tempId = `temp-${Date.now()}`
-    const tempMessage: any = {
-      id: tempId,
-      sender_id: user.id,
-      place_id: placeId,
-      content: messageContent || null,
-      audio_url: audioUrl,
-      reply_to: messageReplyTo?.id || null,
-      is_read: false,
-      created_at: new Date().toISOString(),
-      sender: {
-        id: user.id,
-        full_name: user.user_metadata?.full_name || null,
-        email: user.email || null,
-        avatar_url: user.user_metadata?.avatar_url || null,
-      },
-      replied_message: messageReplyTo || null,
-    }
-
-    // Add temporary message ID to sending set
-    setSendingMessages((prev) => new Set(prev).add(tempId))
-    setNewMessage('')
-    setReplyingTo(null)
-
-    try {
-      // Determine recipient_id
-      let recipientId = null
-      if (selectedConversation) {
-        recipientId = selectedConversation
-      } else if (messageReplyTo) {
-        recipientId = messageReplyTo.sender_id
-      } else if (place && place.user_id === user.id) {
-        recipientId = null
-      } else {
-        recipientId = place?.user_id || null
-      }
-
-      const messageData: any = {
-        sender_id: user.id,
-        place_id: placeId,
-        recipient_id: recipientId,
-        content: messageContent || null,
-        audio_url: audioUrl,
-        reply_to: messageReplyTo?.id || null,
-      }
-
-      const { data: msgData, error } = await supabase
-        .from('messages')
-        .insert(messageData as never)
-        .select('*, sender:user_profiles(*)')
-        .single()
-      const newMessageData = msgData as (Message & { replied_message?: Message }) | null
-
-      if (error) {
-        console.error('Error sending message:', error)
-        // Remove temporary message on error
-        
-        setSendingMessages((prev) => {
-          const newSet = new Set(prev)
-          newSet.delete(tempId)
-          return newSet
-        })
-        return
-      }
-
-      // Load replied message if exists
-      if (newMessageData && messageReplyTo) {
-        newMessageData.replied_message = messageReplyTo
-      }
-
-      // Replace temporary message with real one
-      
-      setSendingMessages((prev) => {
-        const newSet = new Set(prev)
-        newSet.delete(tempId)
-        return newSet
-      })
-      
-      // Reload messages to ensure we have the latest data
-      await refreshMessages()
-    } catch (error: any) {
-      console.error('Error sending message:', error)
-      // Remove temporary message on error
-      
-      setSendingMessages((prev) => {
-        const newSet = new Set(prev)
-        newSet.delete(tempId)
-        return newSet
-      })
-    }
-  }
-
-  const sendMessage = async () => {
-    if (!user) return
-
-    if (!newMessage.trim() && !selectedImage && !selectedProduct) return
-
-    // Create temporary message ID
-    const tempId = `temp-${Date.now()}`
-    const messageContent = newMessage.trim()
-    const messageImage = selectedImage
-    const messageReplyTo = replyingTo
-    const messageProduct = selectedProduct
-
-    // Create temporary message
-    const tempMessage: any = {
-      id: tempId,
-      sender_id: user.id,
-      place_id: placeId,
-      content: messageContent || null,
-      image_url: messageImage ? URL.createObjectURL(messageImage) : null,
-      product_id: messageProduct?.id || null,
-      reply_to: messageReplyTo?.id || null,
-      is_read: false,
-      created_at: new Date().toISOString(),
-      sender: {
-        id: user.id,
-        full_name: user.user_metadata?.full_name || null,
-        email: user.email || null,
-        avatar_url: user.user_metadata?.avatar_url || null,
-      },
-      replied_message: messageReplyTo || null,
-      product: messageProduct || null,
-    }
-
-    // Add temporary message with loading state
-    setSendingMessages((prev) => new Set(prev).add(tempId))
-    setNewMessage('')
-    setSelectedImage(null)
-    setSelectedProduct(null)
-    setReplyingTo(null)
-
-    try {
-      let imageUrl = null
-      if (messageImage) {
-        // Upload image to ImgBB
-        const formData = new FormData()
-        formData.append('image', messageImage)
-        
-        const response = await fetch('/api/upload-image', {
-          method: 'POST',
-          body: formData,
-        })
-        
-        const data = await response.json()
-        if (data.success) {
-          imageUrl = data.url
-        }
-      }
-
-      // Determine recipient_id
-      // If there's a selected conversation, recipient is the conversation partner
-      // Otherwise, if user is owner, recipient should be the last sender they're replying to
-      let recipientId = null
-      if (selectedConversation) {
-        recipientId = selectedConversation
-      } else if (messageReplyTo) {
-        // If replying to a message, recipient is the sender of that message
-        recipientId = messageReplyTo.sender_id
-      } else if (place && place.user_id === user.id) {
-        // If owner sending a message without conversation selected, we can't determine recipient
-        // This case shouldn't happen as owner should use sidebar for messaging
-        recipientId = null
-      } else {
-        // Client sending to owner - recipient is the place owner
-        recipientId = place?.user_id || null
-      }
-
-      const messageData: any = {
-        sender_id: user.id,
-        place_id: placeId,
-        recipient_id: recipientId,
-        content: messageContent || null,
-        reply_to: messageReplyTo?.id || null,
-      }
-      
-      if (imageUrl) {
-        messageData.image_url = imageUrl
-      }
-
-      if (messageProduct) {
-        messageData.product_id = messageProduct.id
-      }
-
-      const { data: msgData2, error } = await supabase
-        .from('messages')
-        .insert(messageData as never)
-        .select('*, sender:user_profiles(*)')
-        .single()
-      const newMessageData = msgData2 as (Message & { replied_message?: Message }) | null
-
-      if (error) {
-        console.error('Error sending message:', error)
-        // Remove temporary message on error
-        
-        setSendingMessages((prev) => {
-          const newSet = new Set(prev)
-          newSet.delete(tempId)
-          return newSet
-        })
-        return
-      }
-
-      // Load replied message if exists
-      if (newMessageData && messageReplyTo) {
-        newMessageData.replied_message = messageReplyTo
-      }
-
-      // Load product if exists
-      if (newMessageData && messageProduct) {
-        newMessageData.product = messageProduct
-      } else if (newMessageData && newMessageData.product_id) {
-        // Load product from database if not already loaded
-        const { data: productData } = await supabase
-          .from('products')
-          .select('*, images:product_images(*), videos:product_videos(*), variants:product_variants(*)')
-          .eq('id', newMessageData.product_id)
-          .single()
-        
-        if (productData) {
-          newMessageData.product = productData
-        }
-      }
-
-      // Replace temporary message with real one
-      
-      setSendingMessages((prev) => {
-        const newSet = new Set(prev)
-        newSet.delete(tempId)
-        return newSet
-      })
-      
-      // Reload messages to ensure we have the latest data
-      await refreshMessages()
-    } catch (error: any) {
-      console.error('Error sending message:', error)
-      // Remove temporary message on error
-      
-      setSendingMessages((prev) => {
-        const newSet = new Set(prev)
-        newSet.delete(tempId)
-        return newSet
-      })
-    }
-  }
 
   if (loading) {
     return (
@@ -842,6 +476,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       setVideoTitle('')
       setVideoUploadMethod('link')
       loadPosts()
+      // Notify place followers about new post
+      await notifyPlaceFollowers({
+        placeId,
+        titleAr: `منشور جديد من ${place.name_ar}`,
+        messageAr: 'تم إضافة منشور جديد.',
+        type: NotificationType.POST,
+        link: `/places/${placeId}`,
+      })
     } catch (error: any) {
       closeLoading()
       showError(error.message || 'حدث خطأ في إضافة المنشور')
@@ -874,18 +516,12 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     }
   }
   
-  // Get messages for client view (only messages between client and place)
-  const getClientMessages = () => {
-    if (!user || isOwner) return []
-    return messages.filter((msg) => msg.sender_id === user.id || msg.sender_id === place.user_id)
-  }
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.background }}>
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Place Header */}
         <div
-          className="shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 rounded-2xl"
+          className="shadow-elev-4 p-4 sm:p-6 mb-4 sm:mb-6 rounded-2xl"
           style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
         >
           <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
@@ -962,46 +598,56 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 </a>
               </div>
               
-              {/* Employee Request and Message Buttons - Only for logged-in clients */}
+              {/* Follow, Employee Request and Message Buttons - Only for logged-in clients (M3) */}
               {user && !isOwner && (
                 <div className="mt-4 flex justify-center md:justify-start gap-2 flex-wrap">
+                  <Button
+                    variant={isFollowing ? 'outlined' : 'filled'}
+                    size="sm"
+                    loading={followLoading}
+                    disabled={followLoading}
+                    onClick={toggleFollow}
+                    className="shrink-0"
+                    aria-label={isFollowing ? 'إلغاء متابعة المكان' : 'متابعة المكان'}
+                  >
+                    {!followLoading && (isFollowing ? <CheckCircle size={18} /> : <UserPlus size={18} />)}
+                    <span>{isFollowing ? 'متابع' : 'متابعة'}</span>
+                  </Button>
                   {!isEmployee && (
                     hasPendingRequest ? (
                       <div
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg border"
-                      style={{ background: colors.warningContainer, color: colors.warning, borderColor: colors.outline }}
-                    >
-                        <CheckCircle size={18} />
-                        <span className="text-sm font-medium">طلبك قيد المراجعة</span>
+                        className="flex items-center gap-2 px-4 py-2 rounded-extra-large border min-h-[48px]"
+                        style={{ background: colors.warningContainer, borderColor: colors.outline }}
+                      >
+                        <CheckCircle size={18} style={{ color: colors.warning }} />
+                        <LabelMedium as="span" color="warning">طلبك قيد المراجعة</LabelMedium>
                       </div>
                     ) : (
-                      <button
+                      <Button
+                        variant="filled"
+                        size="sm"
                         onClick={() => setShowEmployeeRequestModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-medium"
-                        style={{ background: colors.primary, color: colors.onPrimary }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                        aria-label="انضمام كموظف"
                       >
                         <UserPlus size={18} />
                         <span>انضمام كموظف</span>
-                      </button>
+                      </Button>
                     )
                   )}
-                  <button
-                    onClick={() => {
-                      // Add openConversation query parameter to current URL without navigating away
-                      const params = new URLSearchParams(searchParams.toString())
-                      params.set('openConversation', placeId)
-                      router.push(`/places/${placeId}?${params.toString()}`)
+                  <Button
+                    variant="outlined"
+                    size="sm"
+                    onClick={() => conversationContext?.openConversation(placeId, place.user_id)}
+                    aria-label="إرسال رسالة"
+                    style={{
+                      backgroundColor: colors.surfaceContainer,
+                      borderColor: colors.outline,
+                      color: colors.primary,
                     }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-medium"
-                    style={{ background: colors.secondary, color: colors.onSecondary }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
-                    <MessageCircle size={18} />
-                    <span>إرسال رسالة</span>
-                  </button>
+                    <MessageCircle size={18} style={{ color: 'inherit' }} />
+                    <span className="font-semibold" style={{ color: 'inherit' }}>إرسال رسالة</span>
+                  </Button>
                 </div>
               )}
 
@@ -1027,23 +673,24 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         {showEmployeeRequestModal && (
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: colors.overlay }}>
             <div
-              className="shadow-xl rounded-3xl max-w-md w-full p-6"
+              className="shadow-elev-5 rounded-3xl max-w-md w-full p-6"
               style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
             >
               <div className="flex items-center justify-between mb-4">
                 <TitleLarge style={{ color: colors.onSurface }}>طلب انضمام كموظف</TitleLarge>
-                <button
-                  type="button"
+                <Button
+                  variant="text"
+                  size="sm"
                   onClick={() => {
                     setShowEmployeeRequestModal(false)
                     setEmployeePhone('')
                   }}
-                  className="transition-colors hover:opacity-70 p-2 rounded-full"
+                  className="!min-h-0 !p-2 rounded-full shrink-0"
                   style={{ color: colors.onSurfaceVariant }}
                   aria-label="إغلاق"
                 >
                   <X size={24} />
-                </button>
+                </Button>
               </div>
               <BodyMedium color="onSurfaceVariant" className="mb-4">
                 أدخل رقم هاتفك لإرسال طلب الانضمام كموظف في {place.name_ar}
@@ -1078,7 +725,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
         {/* Posts and Products Tabs */}
         <div
-          className="shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl"
+          className="shadow-elev-4 p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl"
           style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
         >
           {/* Tabs */}
@@ -1090,30 +737,36 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               <button
                 type="button"
                 onClick={() => setActiveTab('posts')}
-                className="px-3 sm:px-4 py-2.5 transition-colors border-b-2 rounded-t min-w-0"
+                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0"
                 style={{
-                  color: activeTab === 'posts' ? colors.primary : colors.onSurfaceVariant,
-                  borderBottomColor: activeTab === 'posts' ? colors.primary : 'transparent',
-                  marginBottom: '-1px',
+                  color: activeTab === 'posts' ? colors.onPrimary : colors.onSurfaceVariant,
+                  backgroundColor: activeTab === 'posts' ? colors.primary : 'transparent',
                 }}
-                onMouseEnter={(e) => { if (activeTab !== 'posts') e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'posts') e.currentTarget.style.backgroundColor = colors.surfaceContainer
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = activeTab === 'posts' ? colors.primary : 'transparent'
+                }}
               >
-                <LabelLarge as="span" style={{ color: 'inherit' }}>المنشورات ({posts.length})</LabelLarge>
+                <span className="font-semibold text-sm">المنشورات ({posts.length})</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('products')}
-                className="px-3 sm:px-4 py-2.5 transition-colors border-b-2 rounded-t min-w-0"
+                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0"
                 style={{
-                  color: activeTab === 'products' ? colors.primary : colors.onSurfaceVariant,
-                  borderBottomColor: activeTab === 'products' ? colors.primary : 'transparent',
-                  marginBottom: '-1px',
+                  color: activeTab === 'products' ? colors.onPrimary : colors.onSurfaceVariant,
+                  backgroundColor: activeTab === 'products' ? colors.primary : 'transparent',
                 }}
-                onMouseEnter={(e) => { if (activeTab !== 'products') e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'products') e.currentTarget.style.backgroundColor = colors.surfaceContainer
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = activeTab === 'products' ? colors.primary : 'transparent'
+                }}
               >
-                <LabelLarge as="span" style={{ color: 'inherit' }}>المنتجات ({products.length})</LabelLarge>
+                <span className="font-semibold text-sm">المنتجات ({products.length})</span>
               </button>
             </div>
             
@@ -1167,7 +820,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           className="absolute top-2 left-2 p-1.5 rounded-lg transition-all hover:scale-110"
                           style={{
                             backgroundColor: colors.error,
-                            color: colors.onPrimary,
+                            color: 'var(--color-on-error)',
                           }}
                           title="حذف المنشور"
                         >
@@ -1257,7 +910,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                           className="absolute top-2 left-2 p-2 rounded-lg transition-all hover:scale-110 z-10"
                           style={{
                             backgroundColor: colors.error,
-                            color: colors.onPrimary,
+                            color: 'var(--color-on-error)',
                           }}
                           title="حذف المنتج"
                         >
@@ -1310,7 +963,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
       {showAddPostModal && canManagePosts && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: colors.overlay }}>
           <div
-            className="shadow-xl rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="shadow-elev-5 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
           >
             <div
@@ -1413,7 +1066,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                         className="absolute top-2 right-2 rounded-full p-1 transition-all hover:scale-110"
                         style={{
                           backgroundColor: colors.error,
-                          color: colors.onPrimary,
+                          color: 'var(--color-on-error)',
                         }}
                       >
                         <X size={16} />
@@ -1641,86 +1294,6 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         </div>
       )}
 
-      {/* Product Picker Bottom Sheet */}
-      {showProductPicker && isOwner && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            style={{ backgroundColor: colors.overlay }}
-            onClick={() => setShowProductPicker(false)}
-          />
-          {/* Bottom Sheet */}
-          <div
-          className="fixed bottom-0 left-0 right-0 rounded-t-2xl shadow-2xl z-50 max-h-[80vh] flex flex-col animate-slide-up"
-          style={{ backgroundColor: colors.surface, borderTop: `1px solid ${colors.outline}` }}
-        >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-12 h-1 rounded-full" style={{ background: colors.outline }} />
-            </div>
-            
-            {/* Header */}
-            <div className="px-4 pb-3 border-b">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold" style={{ color: colors.onSurfaceVariant }}>اختر منتج للمشاركة</h3>
-                <button
-                  onClick={() => setShowProductPicker(false)}
-                  className="p-2 rounded-full transition-colors hover:opacity-80"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-            {/* Products List */}
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              {products.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {products.map((product) => (
-                    <button
-                      key={product.id}
-                      onClick={() => {
-                        setSelectedProduct(product)
-                        setShowProductPicker(false)
-                      }}
-                      className="p-3 border-2 rounded-xl text-right transition-all hover:opacity-90"
-                      style={{
-                        borderColor: selectedProduct?.id === product.id ? colors.primary : colors.outline,
-                        backgroundColor: selectedProduct?.id === product.id ? `rgba(${colors.primaryRgb}, 0.1)` : 'transparent',
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = selectedProduct?.id === product.id ? `rgba(${colors.primaryRgb}, 0.15)` : colors.surfaceContainer }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = selectedProduct?.id === product.id ? `rgba(${colors.primaryRgb}, 0.1)` : 'transparent' }}
-                    >
-                      {product.images && product.images.length > 0 && (
-                        <img
-                          src={product.images[0].image_url}
-                          alt={product.name_ar}
-                          className="w-full h-24 object-cover rounded mb-2"
-                        />
-                      )}
-                      <p className="text-sm font-semibold truncate mb-1" style={{ color: colors.onSurfaceVariant }}>
-                        {product.name_ar}
-                      </p>
-                      {product.price && (
-                        <p className="text-xs font-bold" style={{ color: colors.primary }}>
-                          {product.price} {product.currency}
-                        </p>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurfaceVariant }} />
-                  <BodyMedium color="onSurfaceVariant">لا توجد منتجات متاحة</BodyMedium>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
     </div>
   )
 }
