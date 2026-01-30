@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
+import type { UserProfile } from '@/lib/types'
 import { showSuccess, showError } from '@/components/SweetAlert'
 import { LoadingSpinner } from '@/components/common'
 import { HeadlineLarge, BodySmall } from '@/components/m3'
@@ -64,11 +65,12 @@ export default function AdminYouTubePage() {
 
       setUser(user)
 
-      const { data: profileData } = await supabase
+      const { data } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
         .single()
+      const profileData = data as UserProfile | null
 
       if (!profileData?.is_admin) {
         showError('غير مصرح لك بالوصول إلى هذه الصفحة')
