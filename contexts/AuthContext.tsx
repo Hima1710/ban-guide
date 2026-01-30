@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { UserProfile } from '@/lib/types'
 import type { User } from '@supabase/supabase-js'
 
@@ -89,6 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ✅ Load user from Supabase
   const loadUser = async (fromLocalStorageFirst = false) => {
     try {
+      if (!isSupabaseConfigured()) {
+        setUser(null)
+        setProfile(null)
+        setLoading(false)
+        return
+      }
       // If requested, try localStorage first for instant hydration
       if (fromLocalStorageFirst && !hydrated) {
         const cached = loadFromLocalStorage()
@@ -157,7 +163,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Mark as mounted to avoid hydration mismatch
     setIsMounted(true)
-    
+
+    if (!isSupabaseConfigured()) {
+      setLoading(false)
+      return
+    }
+
     // ✅ Load from localStorage first for instant hydration (critical for Android WebView)
     loadUser(true)
 
@@ -199,6 +210,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const forceSessionCheck = async () => {
       try {
+        if (!isSupabaseConfigured()) return
         const res = await fetch('/api/auth/session', { cache: 'no-store' })
         const { session } = await res.json()
         if (session?.access_token) {

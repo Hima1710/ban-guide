@@ -7,6 +7,13 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 let supabaseClient: ReturnType<typeof createClient> | ReturnType<typeof createClientComponentClient> | null = null
 let supabaseAdminClient: ReturnType<typeof createClient> | null = null
 
+/** Use this to avoid throwing when env vars are missing (e.g. local dev without .env.local). */
+export function isSupabaseConfigured(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+  return Boolean(url && key)
+}
+
 function getSupabaseClient() {
   if (supabaseClient) return supabaseClient
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
