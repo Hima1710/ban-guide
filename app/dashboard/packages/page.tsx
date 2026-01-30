@@ -263,17 +263,18 @@ export default function PackagesPage() {
       }
 
       // Create subscription with pending status
+      const subscriptionRow = {
+        user_id: user.id,
+        package_id: pkg.id,
+        amount_paid: finalPrice,
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+        receipt_image_url: receiptImageUrl,
+        status: 'pending',
+        is_active: false, // Will be activated after admin approval
+      }
       const { data: subscriptionData, error: subError } = await supabase
         .from('user_subscriptions')
-        .insert({
-          user_id: user.id,
-          package_id: pkg.id,
-          amount_paid: finalPrice,
-          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-          receipt_image_url: receiptImageUrl,
-          status: 'pending',
-          is_active: false, // Will be activated after admin approval
-        })
+        .insert(subscriptionRow as never)
         .select()
         .single()
 
@@ -285,9 +286,7 @@ export default function PackagesPage() {
       if (discount && subscriptionData) {
         if (discount.type === 'code') {
           // Increment usage count for discount code
-          const { error: incrementError } = await supabase.rpc('increment_discount_code_usage', {
-            code_id: discount.id
-          })
+          const { error: incrementError } = await supabase.rpc('increment_discount_code_usage', { code_id: discount.id } as never)
           if (incrementError) {
             console.error('Error incrementing discount code usage:', incrementError)
           }
@@ -295,15 +294,16 @@ export default function PackagesPage() {
           // Create affiliate transaction
           const commissionAmount = (finalPrice * discount.discount_percentage) / 100
           
+          const transRow = {
+            affiliate_id: discount.id,
+            subscription_id: subscriptionData.id,
+            amount: commissionAmount,
+            commission_percentage: discount.discount_percentage,
+            status: 'pending',
+          }
           const { error: transError } = await supabase
             .from('affiliate_transactions')
-            .insert({
-              affiliate_id: discount.id,
-              subscription_id: subscriptionData.id,
-              amount: commissionAmount,
-              commission_percentage: discount.discount_percentage,
-              status: 'pending',
-            })
+            .insert(transRow as never)
 
           if (transError) {
             console.error('Error creating affiliate transaction:', transError)
