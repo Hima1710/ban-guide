@@ -59,15 +59,17 @@ export async function GET(request: NextRequest) {
     const adminUserId = adminUsers[0].id
 
     // Store in admin profile using admin client (bypasses RLS)
+    const updatePayload = {
+      youtube_access_token: tokens.access_token,
+      youtube_refresh_token: tokens.refresh_token,
+      youtube_token_expiry: tokens.expiry_date
+        ? new Date(tokens.expiry_date).toISOString()
+        : null,
+    }
+    // Type assertion: Proxy client loses generics so .update() is inferred as never
     const { error: updateError } = await supabaseAdmin
       .from('user_profiles')
-      .update({
-        youtube_access_token: tokens.access_token,
-        youtube_refresh_token: tokens.refresh_token,
-        youtube_token_expiry: tokens.expiry_date
-          ? new Date(tokens.expiry_date).toISOString()
-          : null,
-      })
+      .update(updatePayload as never)
       .eq('id', adminUserId)
 
     if (updateError) {
