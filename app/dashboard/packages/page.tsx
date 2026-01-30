@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Package } from '@/lib/types'
-import { useAuth } from '@/hooks'
+import { useAuthContext } from '@/hooks'
 import { showError, showSuccess, showConfirm } from '@/components/SweetAlert'
 import { Check, Crown, Star, Upload, X } from 'lucide-react'
 import { Input, LoadingSpinner } from '@/components/common'
@@ -26,7 +26,7 @@ import {
 export default function PackagesPage() {
   const router = useRouter()
   const { colors } = useTheme()
-  const { user, loading: authLoading } = useAuth(true)
+  const { user, loading: authLoading } = useAuthContext(true)
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
   const [currentSubscription, setCurrentSubscription] = useState<any>(null)

@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { Place, Product, Message } from '@/lib/types'
 import { incrementPlaceView } from '@/lib/api/places'
-import { useAuth, usePlace, useProducts, useMessages } from '@/hooks'
+import { useAuthContext, usePlace, useProducts, useMessages } from '@/hooks'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase } from '@/lib/supabase'
 import { extractYouTubeId, getYouTubeEmbedUrl } from '@/lib/youtube'
@@ -29,7 +29,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const placeId = params.id as string
 
   // Use custom hooks
-  const { user } = useAuth()
+  const { user } = useAuthContext()
   const { colors } = useTheme()
   const { place, loading: placeLoading } = usePlace(placeId)
   const { products } = useProducts({ placeId, autoLoad: !!placeId })

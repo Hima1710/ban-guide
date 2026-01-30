@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuth, usePlaces, useMessages } from '@/hooks'
+import { useAuthContext, usePlaces, useMessages } from '@/hooks'
 import Link from 'next/link'
 import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown, FileCheck, LogOut } from 'lucide-react'
 import { showSuccess, showError } from '@/components/SweetAlert'
@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const [adminMenuOpen, setAdminMenuOpen] = useState(false)
 
   // Use custom hooks for data fetching
-  const { user, profile, loading: authLoading } = useAuth(true)
+  const { user, profile, loading: authLoading } = useAuthContext(true)
   
   const handleLogout = async () => {
     await supabase.auth.signOut()
