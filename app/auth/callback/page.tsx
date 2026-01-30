@@ -49,8 +49,8 @@ function CallbackContent() {
                 .select('id')
                 .eq('user_id', user.id)
                 .limit(1)
-              const isFirst = !existing?.length
-              await supabase.rpc('send_notification', {
+              const isFirst = !(existing as unknown[] | null)?.length
+              const rpcParams = {
                 p_user_id: user.id,
                 p_title_ar: isFirst ? 'مرحباً بك في بان! 🎉' : 'مرحباً بعودتك! 👋',
                 p_title_en: isFirst ? 'Welcome to BAN! 🎉' : 'Welcome back! 👋',
@@ -62,7 +62,8 @@ function CallbackContent() {
                   : 'Happy to see you again. Check out the new updates!',
                 p_type: 'system',
                 p_link: '/dashboard',
-              })
+              }
+              await supabase.rpc('send_notification', rpcParams as never)
             } catch {
               // لا نفشل تسجيل الدخول إذا فشل الإشعار
             }
