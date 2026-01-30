@@ -152,7 +152,7 @@ export default function PlaceEmployeesPage() {
       // Update request status
       const { error: updateError } = await supabase
         .from('employee_requests')
-        .update({ status: 'accepted', permissions })
+        .update({ status: 'accepted', permissions } as never)
         .eq('id', requestId)
 
       if (updateError) {
@@ -161,21 +161,22 @@ export default function PlaceEmployeesPage() {
       }
 
       // Add to place_employees
+      const insertRow = {
+        user_id: request.user_id,
+        place_id: placeId,
+        permissions,
+        phone: request.phone,
+        is_active: true,
+      }
       const { error: insertError } = await supabase
         .from('place_employees')
-        .insert({
-          user_id: request.user_id,
-          place_id: placeId,
-          permissions,
-          phone: request.phone,
-          is_active: true
-        })
+        .insert(insertRow as never)
 
       if (insertError) {
         // If already exists, just update
         const { error: upsertError } = await supabase
           .from('place_employees')
-          .update({ permissions, is_active: true })
+          .update({ permissions, is_active: true } as never)
           .eq('user_id', request.user_id)
           .eq('place_id', placeId)
 
@@ -197,7 +198,7 @@ export default function PlaceEmployeesPage() {
     try {
       const { error } = await supabase
         .from('employee_requests')
-        .update({ status: 'rejected' })
+        .update({ status: 'rejected' } as never)
         .eq('id', requestId)
 
       if (error) {
@@ -218,7 +219,7 @@ export default function PlaceEmployeesPage() {
     try {
       const { error } = await supabase
         .from('place_employees')
-        .update({ is_active: false })
+        .update({ is_active: false } as never)
         .eq('id', employeeId)
 
       if (error) {
