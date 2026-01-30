@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package } from '@/lib/types'
+import { Package, DiscountCode, Affiliate } from '@/lib/types'
 import { useAuthContext } from '@/hooks'
 import { showError, showSuccess, showConfirm } from '@/components/SweetAlert'
 import { Check, Crown, Star, Upload, X } from 'lucide-react'
@@ -90,7 +90,7 @@ export default function PackagesPage() {
     try {
       // First, try to find in discount_codes table
       const now = new Date().toISOString()
-      const { data: discountCodeData, error: discountError } = await supabase
+      const { data: discountData, error: discountError } = await supabase
         .from('discount_codes')
         .select('*')
         .eq('code', codeUpper)
@@ -98,6 +98,7 @@ export default function PackagesPage() {
         .lte('start_date', now)
         .gte('end_date', now)
         .single()
+      const discountCodeData = discountData as DiscountCode | null
 
       if (!discountError && discountCodeData) {
         // Check if max_uses is reached
@@ -112,12 +113,13 @@ export default function PackagesPage() {
       }
 
       // If not found in discount_codes, try affiliates table
-      const { data: affiliateData, error: affiliateError } = await supabase
+      const { data: affData, error: affiliateError } = await supabase
         .from('affiliates')
         .select('*')
         .eq('code', codeUpper)
         .eq('is_active', true)
         .single()
+      const affiliateData = affData as Affiliate | null
 
       if (!affiliateError && affiliateData) {
         setSelectedDiscount(affiliateData)
