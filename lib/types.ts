@@ -193,3 +193,14 @@ export interface Post {
   place?: Place
   creator?: UserProfile
 }
+
+/** حالة مكان (ستوري): صاحب المحل يضيفها وتظهر للمتابعين حتى انتهاء المدة */
+export interface PlaceStory {
+  id: string
+  place_id: string
+  media_url: string
+  media_type: 'image' | 'video'
+  expires_at: string
+  created_at: string
+  place?: Pick<Place, 'id' | 'name_ar' | 'logo_url'>
+}

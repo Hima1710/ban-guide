@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useAdminManager } from '@/hooks'
 import { showError, showSuccess } from '@/components/SweetAlert'
-import { LoadingSpinner } from '@/components/common'
+import { PageSkeleton } from '@/components/common'
 import Link from 'next/link'
 import { Save, Globe, Eye } from 'lucide-react'
 import { HeadlineLarge, TitleLarge, BodyMedium, BodySmall, LabelMedium, Button } from '@/components/m3'
@@ -67,11 +67,7 @@ export default function AdminSettingsPage() {
   }
 
   if (adminLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!isAdmin) {

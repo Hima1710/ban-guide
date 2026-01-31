@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useAdminManager } from '@/hooks'
 import { showError, showConfirm } from '@/components/SweetAlert'
-import { LoadingSpinner } from '@/components/common'
+import { PageSkeleton } from '@/components/common'
 import { Card } from '@/components/common'
 import { HeadlineLarge, BodySmall, TitleLarge, Button } from '@/components/m3'
 import Link from 'next/link'
@@ -102,12 +102,7 @@ export default function AdminSubscriptionsPage() {
 
   if (adminLoading || subscriptionsLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
+      <PageSkeleton variant="default" />
     )
   }
 

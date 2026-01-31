@@ -6,14 +6,17 @@ import { supabase } from '@/lib/supabase'
 import { Place, Product } from '@/lib/types'
 import { getPlaceById } from '@/lib/api/places'
 import { getProductsByPlace } from '@/lib/api/products'
+import { addStory, deleteStory } from '@/lib/api/stories'
+import { usePlaceStories } from '@/hooks/useStories'
+import { useUploadImage } from '@/hooks/useUploadImage'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
-import { MapPin, Phone, Edit, Trash2, Plus, Package, Eye, Video, Save, X, Upload, Image as ImageIcon, Users, FileText } from 'lucide-react'
+import { MapPin, Phone, Edit, Trash2, Plus, Package, Eye, Video, Save, X, Upload, Image as ImageIcon, Users, FileText, CircleDot } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import YouTubeUpload from '@/components/YouTubeUpload'
 import { useTheme } from '@/contexts/ThemeContext'
 import { HeadlineLarge, TitleLarge, TitleMedium, BodyMedium, BodySmall, LabelMedium, Button } from '@/components/m3'
-import { Input } from '@/components/common'
+import { Input, LoadingSpinner, PageSkeleton } from '@/components/common'
 
 const MapComponent = dynamic(() => import('@/components/MapComponent'), { ssr: false })
 const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false })
@@ -41,7 +44,13 @@ export default function PlaceDetailsPage() {
     latitude: 0,
     longitude: 0,
   })
-  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [addingStory, setAddingStory] = useState(false)
+  const [storyMediaType, setStoryMediaType] = useState<'image' | 'video'>('image')
+  const [uploadingStory, setUploadingStory] = useState(false)
+
+  const { stories: placeStories, loading: storiesLoading, refresh: refreshStories } = usePlaceStories(placeId)
+  const { uploadImage, isUploading: uploadingStoryImage } = useUploadImage()
+  const { uploadImage: uploadLogoImage, isUploading: uploadingLogo } = useUploadImage()
 
   useEffect(() => {
     checkUser()
@@ -139,50 +148,24 @@ export default function PlaceDetailsPage() {
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      showError('الرجاء اختيار ملف صورة صحيح')
-      return
-    }
-
-    // Check file size (max 32MB for ImgBB free tier)
     if (file.size > 32 * 1024 * 1024) {
       showError('حجم الصورة كبير جداً. الحد الأقصى هو 32MB')
       return
     }
-
-    setUploadingLogo(true)
     showLoading('جاري رفع الصورة...')
     try {
-      // Use API route instead of direct client-side upload
-      const formData = new FormData()
-      formData.append('image', file)
-
-      const response = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'فشل رفع الصورة')
-      }
-
-      if (data.url) {
-        setEditData({ ...editData, logo_url: data.url })
+      const url = await uploadLogoImage(file)
+      if (url) {
+        setEditData((prev) => ({ ...prev, logo_url: url }))
         closeLoading()
         showSuccess('تم رفع الصورة بنجاح')
       } else {
-        throw new Error('لم يتم إرجاع رابط الصورة')
+        closeLoading()
+        showError('فشل رفع الصورة')
       }
-    } catch (error: any) {
+    } catch (err: any) {
       closeLoading()
-      const errorMessage = error.message || 'فشل رفع الصورة'
-      showError(errorMessage)
-      console.error('Image upload error:', error)
-    } finally {
-      setUploadingLogo(false)
+      showError(err?.message || 'فشل رفع الصورة')
     }
   }
 
@@ -237,6 +220,64 @@ export default function PlaceDetailsPage() {
     }
   }
 
+  const handleAddStoryImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !placeId) return
+    showLoading('جاري رفع الحالة...')
+    setUploadingStory(true)
+    try {
+      const url = await uploadImage(file)
+      if (!url) {
+        showError('فشل رفع الصورة')
+        return
+      }
+      const added = await addStory({ place_id: placeId, media_url: url, media_type: 'image' })
+      if (added) {
+        refreshStories()
+        showSuccess('تم إضافة الحالة')
+        setAddingStory(false)
+      } else showError('فشل حفظ الحالة')
+    } catch (err: any) {
+      showError(err?.message || 'فشل رفع الحالة')
+    } finally {
+      setUploadingStory(false)
+      closeLoading()
+    }
+  }
+
+  const handleStoryVideoUploaded = async (videoUrl: string) => {
+    if (!placeId) return
+    setUploadingStory(true)
+    showLoading('جاري إضافة الحالة...')
+    try {
+      const added = await addStory({ place_id: placeId, media_url: videoUrl, media_type: 'video' })
+      if (added) {
+        refreshStories()
+        showSuccess('تم إضافة الحالة')
+        setAddingStory(false)
+      } else showError('فشل حفظ الحالة')
+    } catch (err: any) {
+      showError(err?.message || 'فشل إضافة الحالة')
+    } finally {
+      setUploadingStory(false)
+      closeLoading()
+    }
+  }
+
+  const handleDeleteStory = async (storyId: string) => {
+    if (!confirm('حذف هذه الحالة؟')) return
+    showLoading('جاري الحذف...')
+    try {
+      const ok = await deleteStory(storyId)
+      if (ok) {
+        refreshStories()
+        showSuccess('تم حذف الحالة')
+      } else showError('فشل حذف الحالة')
+    } finally {
+      closeLoading()
+    }
+  }
+
   const handleLocationChange = (lat: number, lng: number, address?: string) => {
     setEditData({
       ...editData,
@@ -279,11 +320,7 @@ export default function PlaceDetailsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: colors.primary }} />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!place) {
@@ -593,6 +630,140 @@ export default function PlaceDetailsPage() {
                 />
               </div>
             )
+          )}
+        </div>
+
+        {/* حالات المكان (ستوريز) — تظهر للمتابعين 24 ساعة — M3 ظلال من النظام الموحد */}
+        <div
+          className="shadow-elev-4 p-6 mb-6 rounded-2xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <TitleLarge style={{ color: colors.onSurface }} className="flex items-center gap-2">
+              <CircleDot size={24} style={{ color: colors.primary }} />
+              حالات المكان (ستوريز)
+            </TitleLarge>
+            {!addingStory && (
+              <Button
+                variant="filled"
+                size="md"
+                onClick={() => setAddingStory(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus size={18} />
+                إضافة حالة
+              </Button>
+            )}
+          </div>
+          <BodySmall color="onSurfaceVariant" className="mb-4">
+            الحالات تظهر للمتابعين 24 ساعة. صورة أو فيديو (رابط يوتيوب).
+          </BodySmall>
+
+          {addingStory && (
+            <div
+              className="p-4 mb-4 rounded-xl border-2"
+              style={{ backgroundColor: colors.surfaceContainer, borderColor: colors.outline }}
+            >
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant={storyMediaType === 'image' ? 'filled' : 'outlined'}
+                  size="md"
+                  onClick={() => setStoryMediaType('image')}
+                >
+                  صورة
+                </Button>
+                <Button
+                  variant={storyMediaType === 'video' ? 'filled' : 'outlined'}
+                  size="md"
+                  onClick={() => setStoryMediaType('video')}
+                >
+                  فيديو (يوتيوب)
+                </Button>
+              </div>
+              {storyMediaType === 'image' ? (
+                <label
+                  className="flex flex-col items-center justify-center min-h-[120px] border-2 border-dashed rounded-xl cursor-pointer transition-colors"
+                  style={{ borderColor: colors.outline }}
+                >
+                  <Upload size={32} className="mb-2" style={{ color: colors.onSurfaceVariant }} />
+                  <BodySmall color="onSurfaceVariant">
+                    {uploadingStoryImage ? 'جاري الرفع...' : 'اختر صورة'}
+                  </BodySmall>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAddStoryImage}
+                    className="hidden"
+                    disabled={uploadingStoryImage}
+                  />
+                </label>
+              ) : (
+                <YouTubeUpload
+                  onVideoUploaded={handleStoryVideoUploaded}
+                  maxVideos={1}
+                  currentVideos={0}
+                  allowReplace={true}
+                />
+              )}
+              <Button
+                variant="text"
+                size="sm"
+                onClick={() => setAddingStory(false)}
+                className="mt-2"
+              >
+                إلغاء
+              </Button>
+            </div>
+          )}
+
+          {storiesLoading ? (
+            <div className="flex items-center gap-2 py-4">
+              <LoadingSpinner size="sm" iconOnly />
+              <BodySmall color="onSurfaceVariant">جاري تحميل الحالات...</BodySmall>
+            </div>
+          ) : placeStories.length === 0 ? (
+            <BodySmall color="onSurfaceVariant">لا توجد حالات نشطة. أضف حالة لتظهر للمتابعين.</BodySmall>
+          ) : (
+            <div className="flex flex-wrap gap-4">
+              {placeStories.map((story) => (
+                <div
+                  key={story.id}
+                  className="relative rounded-xl overflow-hidden border-2"
+                  style={{ borderColor: colors.outline, width: 120, height: 160 }}
+                >
+                  {story.media_type === 'image' ? (
+                    <img
+                      src={story.media_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ backgroundColor: colors.surfaceContainer }}
+                    >
+                      <Video size={40} style={{ color: colors.primary }} />
+                    </div>
+                  )}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 px-2 py-1 text-xs"
+                    style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}
+                  >
+                    {new Date(story.expires_at).toLocaleDateString('ar-SA')}
+                  </div>
+                  <Button
+                    variant="filled"
+                    size="sm"
+                    onClick={() => handleDeleteStory(story.id)}
+                    className="absolute top-1 left-1 !min-h-0 !p-0 w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: colors.error, color: colors.onPrimary }}
+                    aria-label="حذف الحالة"
+                  >
+                    <Trash2 size={16} aria-hidden />
+                  </Button>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

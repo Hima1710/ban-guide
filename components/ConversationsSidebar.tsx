@@ -10,8 +10,11 @@ export default function ConversationsSidebar() {
   const { user } = useAuthContext()
   const { colors } = useTheme()
   const ctx = useConversationContextOptional()
-  const [isOpen, setIsOpen] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
+
+  const isOpen = ctx?.isSidebarOpen ?? false
+  const openSidebar = ctx?.openSidebar ?? (() => {})
+  const closeSidebar = ctx?.closeSidebar ?? (() => {})
 
   useEffect(() => {
     setIsMounted(true)
@@ -41,7 +44,7 @@ export default function ConversationsSidebar() {
     <>
       {/* Desktop Toggle Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => (isOpen ? closeSidebar() : openSidebar())}
         className="hidden lg:flex fixed w-14 h-14 rounded-full shadow-lg transition-all z-[70] items-center justify-center relative"
         style={{
           background: colors.primary,
@@ -70,7 +73,7 @@ export default function ConversationsSidebar() {
 
       {/* Mobile Toggle Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => (isOpen ? closeSidebar() : openSidebar())}
         className="lg:hidden fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg transition-all z-50 flex items-center justify-center relative"
         style={{ background: colors.primary, color: colors.onPrimary }}
         aria-label="فتح/إغلاق المحادثات"
@@ -95,7 +98,7 @@ export default function ConversationsSidebar() {
         <div
           className="hidden lg:block fixed inset-0 z-[55]"
           style={{ backgroundColor: colors.overlay }}
-          onClick={() => setIsOpen(false)}
+          onClick={closeSidebar}
         />
       )}
 
@@ -119,7 +122,7 @@ export default function ConversationsSidebar() {
             المحادثات
           </h2>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={closeSidebar}
             className="p-2 rounded-full transition-colors"
             style={{ color: colors.onSurfaceVariant }}
             onMouseEnter={(e) => {
@@ -151,7 +154,7 @@ export default function ConversationsSidebar() {
                   key={`${conv.senderId}-${conv.placeId}`}
                   onClick={() => {
                     openConversation(conv.placeId, conv.senderId)
-                    setIsOpen(false)
+                    closeSidebar()
                   }}
                   className="p-3 rounded-lg cursor-pointer transition-all border"
                   style={{ borderColor: colors.outline }}
@@ -226,7 +229,7 @@ export default function ConversationsSidebar() {
         <div
           className="lg:hidden fixed inset-0 z-[60]"
           style={{ backgroundColor: colors.overlay }}
-          onClick={() => setIsOpen(false)}
+          onClick={closeSidebar}
         />
       )}
     </>

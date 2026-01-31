@@ -21,6 +21,10 @@ type ConversationContextValue = ConversationManager & {
   isDrawerOpen: boolean
   openConversation: OpenConversationFn
   closeConversation: CloseConversationFn
+  isSidebarOpen: boolean
+  openSidebar: () => void
+  closeSidebar: () => void
+  totalUnreadCount: number
   userPlaces: Place[]
 }
 
@@ -35,6 +39,10 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   })
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  const openSidebar = useCallback(() => setIsSidebarOpen(true), [])
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), [])
 
   const openConversation = useCallback<OpenConversationFn>(
     (placeId, partnerId) => {
@@ -50,11 +58,18 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     manager.setReplyingTo(null)
   }, [manager])
 
+  const conversations = manager.getConversations()
+  const totalUnreadCount = conversations.reduce((s, c) => s + (c.unreadCount ?? 0), 0)
+
   const value: ConversationContextValue = {
     ...manager,
     isDrawerOpen,
     openConversation,
     closeConversation,
+    isSidebarOpen,
+    openSidebar,
+    closeSidebar,
+    totalUnreadCount,
     userPlaces: userPlaces ?? [],
   }
 

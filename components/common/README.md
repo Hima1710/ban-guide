@@ -93,6 +93,33 @@ import { LoadingSpinner } from '@/components/common'
 - `size`: 'sm' | 'md' | 'lg'
 - `text`: string
 
+### `BanSkeleton`
+Skeleton loader with shimmer for lists/grids (حتى يرد السيرفر بالداتا).
+
+```tsx
+import { BanSkeleton } from '@/components/common'
+
+<BanSkeleton variant="card" lines={3} />   // كروت
+<BanSkeleton variant="avatar" />          // صور دائرية (ستوريز)
+<BanSkeleton variant="text" />            // أسطر نص
+```
+
+للقوائم والشبكات استخدم `BanSkeleton` حسب الشكل النهائي للمحتوى.
+
+### `PageSkeleton`
+هيكل صفحة سكيلتون موحد (يستبدل "جاري التحميل" بمنظر هيكلي).
+
+```tsx
+import { PageSkeleton } from '@/components/common'
+
+<PageSkeleton variant="default" />   // عنوان + شبكة كروت
+<PageSkeleton variant="dashboard" /> // لوحة تحكم (أفاتار + كروت)
+<PageSkeleton variant="list" />      // قائمة (أفاتار + أسطر)
+<PageSkeleton variant="form" />      // نموذج (عنوان + حقول)
+```
+
+**اتفاقية موحدة:** تحميل صفحة كاملة → `PageSkeleton`؛ قوائم/شبكات → `BanSkeleton`؛ تحميل داخلي (زر/رفع) → `LoadingSpinner`. التفاصيل في `UNIFIED_SYSTEM_REFERENCE.md` (قسم 4).
+
 ## Usage Guidelines
 
 - Always use common components instead of creating custom styled elements

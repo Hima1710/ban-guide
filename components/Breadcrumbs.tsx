@@ -58,9 +58,8 @@ export default function Breadcrumbs() {
 
   return (
     <nav 
-      className="py-2 sm:py-3 border-b"
+      className="py-2 sm:py-3 border-b surface-chameleon"
       style={{
-        backgroundColor: colors.surface,
         borderColor: colors.outline
       }}
     >

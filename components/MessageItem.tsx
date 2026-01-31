@@ -9,7 +9,6 @@ const PREMIUM = {
   bubbleReceived: 'var(--chat-bubble-received)',
   onBubbleSent: 'var(--chat-on-bubble-sent)',
   onBubbleReceived: 'var(--chat-on-bubble-received)',
-  replyBg: 'rgba(212, 175, 55, 0.15)',
   replyBorder: 'var(--chat-bubble-sent)',
   muted: 'var(--chat-on-bubble-received)',
   opacity: 0.8,
@@ -21,10 +20,10 @@ export default function MessageItem({ message, isOwn, onReply, showSender = true
   const bubbleBg = isPremium ? (isOwn ? PREMIUM.bubbleSent : PREMIUM.bubbleReceived) : (isOwn ? colors.primary : colors.surface)
   const bubbleColor = isPremium ? (isOwn ? PREMIUM.onBubbleSent : PREMIUM.onBubbleReceived) : (isOwn ? colors.onPrimary : colors.onSurface)
   const mutedColor = isPremium ? PREMIUM.muted : colors.onSurfaceVariant
-  const replyBg = isPremium ? PREMIUM.replyBg : `rgba(${colors.primaryRgb}, 0.1)`
+  const replyBg = isPremium ? `rgba(${colors.primaryRgb}, 0.15)` : `rgba(${colors.primaryRgb}, 0.1)`
   const replyBorder = isPremium ? PREMIUM.replyBorder : colors.primary
-  const productBg = isPremium && isOwn ? 'rgba(212, 175, 55, 0.25)' : (isOwn ? `rgba(${colors.primaryRgb}, 0.2)` : colors.surfaceContainer)
-  const productBorder = isPremium && isOwn ? 'rgba(212, 175, 55, 0.4)' : (isOwn ? `rgba(${colors.primaryRgb}, 0.3)` : colors.outline)
+  const productBg = isPremium && isOwn ? `rgba(${colors.primaryRgb}, 0.25)` : (isOwn ? `rgba(${colors.primaryRgb}, 0.2)` : colors.surfaceContainer)
+  const productBorder = isPremium && isOwn ? `rgba(${colors.primaryRgb}, 0.4)` : (isOwn ? `rgba(${colors.primaryRgb}, 0.3)` : colors.outline)
 
   return (
     <div className={`mb-3 ${isOwn ? 'text-left' : 'text-right'}`}>

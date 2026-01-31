@@ -75,7 +75,7 @@ export default function ConversationDrawer() {
       <div
         className="fixed inset-0 z-[75] transition-opacity duration-300"
         style={{
-          backgroundColor: show ? 'rgba(0,0,0,0.45)' : 'transparent',
+          backgroundColor: show ? 'var(--overlay-bg)' : 'transparent',
           pointerEvents: show ? 'auto' : 'none',
         }}
         onClick={closeConversation}
@@ -262,7 +262,7 @@ export default function ConversationDrawer() {
                         : 'var(--chat-drawer-surface)',
                     backgroundColor:
                       selectedProduct?.id === product.id
-                        ? 'rgba(212, 175, 55, 0.15)'
+                        ? 'var(--chat-drawer-btn-hover-bg)'
                         : 'transparent',
                   }}
                 >
@@ -304,7 +304,7 @@ export default function ConversationDrawer() {
           <div
             className="p-2 border-t flex items-center justify-between gap-2"
             style={{
-              backgroundColor: 'rgba(212, 175, 55, 0.12)',
+              backgroundColor: 'var(--chat-drawer-btn-hover-bg)',
               borderColor: 'var(--chat-drawer-surface)',
             }}
           >

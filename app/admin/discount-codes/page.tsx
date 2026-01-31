@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAdminManager } from '@/hooks'
 import { DiscountCode } from '@/lib/types'
 import { showError, showConfirm } from '@/components/SweetAlert'
-import { LoadingSpinner, Button, Input, Card } from '@/components/common'
+import { PageSkeleton, Button, Input, Card } from '@/components/common'
 import { HeadlineLarge, BodySmall } from '@/components/m3'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -99,11 +99,7 @@ export default function AdminDiscountCodesPage() {
   }
 
   if (adminLoading || discountCodesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!isAdmin) {

@@ -6,6 +6,9 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useAffiliate } from '@/hooks/useAffiliate'
 import { formatDateTime } from '@/utils/helpers'
+import { showError, showSuccess } from '@/components/SweetAlert'
+import { PageSkeleton } from '@/components/common'
+import { Button } from '@/components/m3'
 import {
   Copy,
   CreditCard,
@@ -45,38 +48,22 @@ export default function AffiliateDashboardPage() {
   const handleWithdrawal = async () => {
     const amount = parseFloat(withdrawalAmount)
     if (isNaN(amount)) {
-      alert('الرجاء إدخال مبلغ صحيح')
+      showError('الرجاء إدخال مبلغ صحيح')
       return
     }
 
     const result = await requestWithdrawal(amount)
     if (result.success) {
-      alert('تم إرسال طلب السحب بنجاح! سيتم مراجعته قريباً.')
+      showSuccess('تم إرسال طلب السحب بنجاح! سيتم مراجعته قريباً.')
       setShowWithdrawalModal(false)
       setWithdrawalAmount('')
     } else {
-      alert(result.error || 'فشل طلب السحب')
+      showError(result.error || 'فشل طلب السحب')
     }
   }
 
   if (loading) {
-    return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div className="text-center">
-          <div 
-            className="w-16 h-16 border-4 rounded-full animate-spin mx-auto mb-4"
-            style={{
-              borderColor: colors.outline,
-              borderTopColor: colors.primary
-            }}
-          />
-          <p style={{ color: colors.onSurface }}>جاري التحميل...</p>
-        </div>
-      </div>
-    )
+    return <PageSkeleton variant="dashboard" />
   }
 
   if (!affiliate) {
@@ -111,18 +98,9 @@ export default function AffiliateDashboardPage() {
           >
             للحصول على حساب مسوق، يرجى التواصل مع الإدارة
           </p>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="px-6 py-3 rounded-full font-medium transition-opacity"
-            style={{
-              backgroundColor: colors.primary,
-              color: colors.onPrimary
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-          >
+          <Button variant="filled" onClick={() => router.push('/dashboard')}>
             العودة للوحة التحكم
-          </button>
+          </Button>
         </div>
       </div>
     )

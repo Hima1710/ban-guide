@@ -94,10 +94,9 @@ export default function SmartTopBar() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b min-h-[56px] flex items-center safe-area-top"
+      className="sticky top-0 z-50 border-b min-h-[56px] flex items-center safe-area-top surface-chameleon-glass"
       style={{
         height: HEADER_HEIGHT,
-        backgroundColor: colors.surface,
         borderColor: colors.outline,
         boxShadow: 'var(--shadow-sm)',
       }}

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAdminManager } from '@/hooks'
 import { useTheme } from '@/contexts/ThemeContext'
 import { showError } from '@/components/SweetAlert'
-import { LoadingSpinner } from '@/components/common'
+import { PageSkeleton } from '@/components/common'
 import Link from 'next/link'
 import { Package, Users, TrendingUp, Settings, Video, Ticket, FileCheck } from 'lucide-react'
 import { HeadlineLarge, TitleMedium, BodySmall } from '@/components/m3'
@@ -27,11 +27,7 @@ export default function AdminDashboardPage() {
   }, [isAdmin, adminLoading, router])
 
   if (adminLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!isAdmin) {

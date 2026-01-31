@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminManager } from '@/hooks'
 import { showError, showConfirm } from '@/components/SweetAlert'
-import { LoadingSpinner, Button, Card } from '@/components/common'
+import { PageSkeleton, Button, Card } from '@/components/common'
 import { HeadlineLarge, BodySmall } from '@/components/m3'
 import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
@@ -82,11 +82,7 @@ export default function AdminAffiliatesPage() {
   }
 
   if (adminLoading || affiliatesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!isAdmin) {

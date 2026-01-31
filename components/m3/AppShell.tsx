@@ -8,9 +8,11 @@ import SmartTopBar, { HEADER_HEIGHT } from './SmartTopBar'
 import BottomNavigation from './BottomNavigation'
 import Sidebar from './Sidebar'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { PageSkeleton } from '@/components/common'
 import ConversationsSidebar from '@/components/ConversationsSidebar'
 import ConversationDrawer from '@/components/ConversationDrawer'
 import { ConversationProvider } from '@/contexts/ConversationContext'
+import { AddStoryProvider } from '@/contexts/AddStoryContext'
 
 const BOTTOM_NAV_HEIGHT = 64
 
@@ -36,17 +38,7 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
   }, [isWebView])
 
   if (loading) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div
-          className="animate-spin rounded-full h-12 w-12 border-4 border-t-transparent"
-          style={{ borderColor: colors.primary }}
-        />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   const bottomNavHeight = showNav ? `calc(${BOTTOM_NAV_HEIGHT}px + env(safe-area-inset-bottom, 0px))` : '0px'
@@ -54,6 +46,7 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
 
   return (
     <ConversationProvider>
+      <AddStoryProvider>
       <div
         className={`min-h-screen ${isWebView ? 'webview-optimized' : ''}`}
         style={{
@@ -93,6 +86,7 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
         <ConversationDrawer />
 
       </div>
+      </AddStoryProvider>
 
       {process.env.NODE_ENV === 'development' && isWebView && (
         <div

@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAdminManager } from '@/hooks'
 import { showError, showConfirm } from '@/components/SweetAlert'
-import { LoadingSpinner, Card } from '@/components/common'
+import { PageSkeleton, Card } from '@/components/common'
 import { HeadlineLarge, BodySmall } from '@/components/m3'
 import { Crown, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
@@ -49,11 +49,7 @@ export default function AdminUsersPage() {
   }
 
   if (adminLoading || usersLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!isAdmin) {

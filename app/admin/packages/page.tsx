@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Package } from '@/lib/types'
 import { useAdminManager } from '@/hooks'
 import { showError, showConfirm } from '@/components/SweetAlert'
-import { Button, Input, Card, LoadingSpinner } from '@/components/common'
+import { Button, Input, Card, PageSkeleton } from '@/components/common'
 import { HeadlineLarge, BodySmall } from '@/components/m3'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -104,11 +104,7 @@ export default function AdminPackagesPage() {
   }
 
   if (adminLoading || packagesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!isAdmin) {

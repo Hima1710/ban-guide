@@ -8,6 +8,8 @@ import { Image as ImageIcon, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import YouTubeUpload from '@/components/YouTubeUpload'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useUploadImage } from '@/hooks/useUploadImage'
+import { LoadingSpinner, PageSkeleton } from '@/components/common'
 
 const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false })
 
@@ -34,7 +36,7 @@ export default function NewPlacePage() {
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
-  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const { uploadImage, isUploading: uploadingLogo } = useUploadImage()
 
   useEffect(() => {
     checkUser()
@@ -83,29 +85,16 @@ export default function NewPlacePage() {
   }
 
   const handleLogoUpload = async (file: File) => {
-    setUploadingLogo(true)
     try {
-      // Upload via API route (automatically optimizes to WebP)
-      const formData = new FormData()
-      formData.append('image', file)
-
-      const response = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'فشل رفع الصورة')
+      const url = await uploadImage(file)
+      if (url) {
+        setLogoUrl(url)
+        showSuccess('تم رفع الشعار بنجاح')
+      } else {
+        showError('حدث خطأ في رفع الشعار')
       }
-
-      setLogoUrl(data.url)
-      showSuccess('تم رفع الشعار بنجاح')
     } catch (error: any) {
-      showError(error.message || 'حدث خطأ في رفع الشعار')
-    } finally {
-      setUploadingLogo(false)
+      showError(error?.message || 'حدث خطأ في رفع الشعار')
     }
   }
 
@@ -159,11 +148,7 @@ export default function NewPlacePage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: colors.primary }}></div>
-      </div>
-    )
+    return <PageSkeleton variant="form" />
   }
 
   return (
@@ -255,7 +240,7 @@ export default function NewPlacePage() {
                 </button>
                 {uploadingLogo && (
                   <div className="absolute inset-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: colors.overlay }}>
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: colors.onPrimary }}></div>
+                    <LoadingSpinner size="sm" iconOnly />
                   </div>
                 )}
               </div>

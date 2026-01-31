@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { extractYouTubeId, getYouTubeEmbedUrl } from '@/lib/youtube'
 import { MapPin, Phone, MessageCircle, Image as ImageIcon, X, Package, UserPlus, CheckCircle, Plus, Trash2, Video, Upload } from 'lucide-react'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
-import { LoadingSpinner, Input } from '@/components/common'
+import { LoadingSpinner, Input, PageSkeleton } from '@/components/common'
 import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
 import { useConversationContextOptional } from '@/contexts/ConversationContext'
@@ -249,14 +249,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: colors.primary }}></div>
-        <p className="mt-4" style={{ color: colors.onSurfaceVariant }}>جاري التحميل...</p>
-        </div>
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   if (!place) {
@@ -1300,11 +1293,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
 export default function PlacePage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    }>
+    <Suspense fallback={<PageSkeleton variant="default" />}>
       <ProductIdHandler>
         {(productId) => <PlacePageContent productId={productId} />}
       </ProductIdHandler>

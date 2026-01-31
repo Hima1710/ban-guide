@@ -8,6 +8,7 @@ import { showError, showSuccess } from '@/components/SweetAlert'
 import { UserPlus, CheckCircle, X, Shield, MessageSquare, Package } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from '@/contexts/ThemeContext'
+import { PageSkeleton } from '@/components/common'
 
 export default function PlaceEmployeesPage() {
   const params = useParams()
@@ -261,17 +262,7 @@ export default function PlaceEmployeesPage() {
   }
 
   if (loading) {
-    return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div 
-          className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: colors.primary }}
-        ></div>
-      </div>
-    )
+    return <PageSkeleton variant="list" />
   }
 
   return (

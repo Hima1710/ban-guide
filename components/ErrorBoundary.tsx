@@ -3,19 +3,38 @@
 import React, { Component, ReactNode, ErrorInfo } from 'react'
 import { AlertTriangle, RefreshCcw, Home } from 'lucide-react'
 
-/** M3-aligned fallback when ThemeProvider is unavailable (e.g. error above provider). Primary: Royal Gold. */
-const FALLBACK_COLORS = {
-  background: '#ffffff',
-  surface: '#f5f5f5',
-  surfaceContainer: '#e5e5e7',
-  onSurface: '#1c1c1e',
-  onSurfaceVariant: '#5c5c5e',
-  onPrimary: '#1c1c1e',
-  error: '#ba1a1a',
-  errorContainer: '#fee2e2',
-  warning: '#e65100',
-  outline: '#e5e5e7',
-  primary: '#D4AF37',
+/** M3 fallback when theme not available; في المتصفح نقرأ من CSS variables (النظام الموحد). */
+function getFallbackColors(): Record<string, string> {
+  if (typeof document === 'undefined') {
+    return {
+      background: '#ffffff',
+      surface: '#f5f5f5',
+      surfaceContainer: '#e5e5e7',
+      onSurface: '#1c1c1e',
+      onSurfaceVariant: '#5c5c5e',
+      onPrimary: '#1c1c1e',
+      error: '#ba1a1a',
+      errorContainer: '#fee2e2',
+      warning: '#e65100',
+      outline: '#e5e5e7',
+      primary: '#D4AF37',
+    }
+  }
+  const root = document.documentElement
+  const get = (v: string, d: string) => getComputedStyle(root).getPropertyValue(v).trim() || d
+  return {
+    background: get('--color-background', '#ffffff'),
+    surface: get('--color-surface', '#f5f5f5'),
+    surfaceContainer: get('--color-surface-container', '#e5e5e7'),
+    onSurface: get('--color-on-surface', '#1c1c1e'),
+    onSurfaceVariant: get('--color-on-surface-variant', '#5c5c5e'),
+    onPrimary: get('--color-on-primary', '#1c1c1e'),
+    error: get('--color-error', '#ba1a1a'),
+    errorContainer: get('--color-error-container', '#fee2e2'),
+    warning: get('--color-warning', '#e65100'),
+    outline: get('--color-outline', '#e5e5e7'),
+    primary: get('--color-primary', '#D4AF37'),
+  }
 }
 
 interface ErrorBoundaryProps {
@@ -134,7 +153,7 @@ function ErrorBoundaryFallback({
   onReload: () => void
   onGoHome: () => void
 }) {
-  const c = FALLBACK_COLORS
+  const c = getFallbackColors()
 
   if (level === 'global') {
     return (

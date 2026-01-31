@@ -6,7 +6,7 @@ import { useAuthContext, usePlaces, useMessages } from '@/hooks'
 import Link from 'next/link'
 import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown, FileCheck, LogOut } from 'lucide-react'
 import { showSuccess, showError } from '@/components/SweetAlert'
-import { LoadingSpinner } from '@/components/common'
+import { PageSkeleton } from '@/components/common'
 import { Button, HeadlineLarge, HeadlineMedium, TitleMedium, TitleLarge, BodyMedium, BodySmall, LabelSmall } from '@/components/m3'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -63,11 +63,7 @@ export default function DashboardPage() {
   const loading = authLoading || (user && placesLoading)
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="dashboard" />
   }
 
   return (

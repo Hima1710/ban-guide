@@ -1,11 +1,11 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { BadgeCheck, Heart, MessageCircle, Star, UserPlus } from 'lucide-react'
+import { BadgeCheck, Heart, MessageCircle, Star } from 'lucide-react'
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { Card, Button } from '@/components/common'
+import { Card } from '@/components/common'
 import type { PlaceFeedItem, PostFeedItem, ProductFeedItem, SubscriptionTier } from '@/hooks/useUnifiedFeed'
 
 const DEFAULT_TIER: SubscriptionTier = 'basic'
@@ -108,10 +108,8 @@ function useInteractionToggle(
 
 export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedItem; onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void }) {
   const router = useRouter()
-  const { user } = useAuthContext()
   const [isLiked, setIsLiked] = useState(item.isLiked)
   const [isFavorited, setIsFavorited] = useState(item.isFavorited)
-  const [isFollowing, setIsFollowing] = useState(false)
 
   const handleUpdate = useCallback((payload: { isLiked: boolean; isFavorited: boolean }) => {
     setIsLiked(payload.isLiked)
@@ -153,26 +151,6 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
             <h3 className="text-title-medium text-primary font-semibold truncate">{item.name_ar}</h3>
             <p className="text-body-small text-on-surface-variant line-clamp-2 mt-0.5">{item.description_ar || item.description_en || ''}</p>
           </div>
-          {user?.id && (
-            <Button
-              variant={isFollowing ? 'text' : 'outlined'}
-              size="sm"
-              className="shrink-0"
-              onClick={async (e) => {
-                e.stopPropagation()
-                const next = !isFollowing
-                setIsFollowing(next)
-                if (next) {
-                  await supabase.from('follows').insert({ follower_id: user.id, place_id: item.id } as never)
-                } else {
-                  await supabase.from('follows').delete().eq('follower_id', user.id).eq('place_id', item.id)
-                }
-              }}
-            >
-              <UserPlus size={16} />
-              {isFollowing ? 'متابع' : 'متابعة'}
-            </Button>
-          )}
         </div>
         <InteractionsBar
           isLiked={isLiked}

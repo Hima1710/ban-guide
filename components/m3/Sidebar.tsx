@@ -23,6 +23,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme, type ThemeColors } from '@/contexts/ThemeContext'
 import { getSidebarNavigation, getUserRole, isNavigationItemActive, type NavigationItem } from '@/config/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useConversationContextOptional } from '@/contexts/ConversationContext'
 
 interface SidebarSectionProps {
   title?: string
@@ -30,9 +31,13 @@ interface SidebarSectionProps {
   pathname: string
   colors: ThemeColors
   collapsed: boolean
+  /** عند النقر على "المحادثات" يفتح لوحة المحادثات بدل التوجيه */
+  onMessagesClick?: () => void
+  messagesBadge?: number
+  isSidebarOpen?: boolean
 }
 
-function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSectionProps) {
+function SidebarSection({ title, items, pathname, colors, collapsed, onMessagesClick, messagesBadge, isSidebarOpen }: SidebarSectionProps) {
   if (items.length === 0) return null
 
   return (
@@ -50,35 +55,23 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
       <div className="space-y-1">
         {items.map((item) => {
           const Icon = item.icon
-          const isActive = isNavigationItemActive(item, pathname)
+          const isMessages = item.id === 'messages'
+          const isActive = isMessages
+            ? pathname === '/messages' || (isSidebarOpen ?? false)
+            : isNavigationItemActive(item, pathname)
+          const badge = isMessages && messagesBadge != null ? messagesBadge : item.badge
 
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="flex items-center gap-3 px-4 py-3 transition-all duration-300 relative group"
-              style={{
-                backgroundColor: isActive
-                  ? `rgba(${colors.primaryRgb}, 0.16)` // Stronger active state
-                  : 'transparent',
-                color: isActive ? colors.primary : colors.onSurface,
-                borderRadius: collapsed ? '12px' : '16px', // M3 pill-like shape
-                transform: isActive ? 'scale(1.02)' : 'scale(1)',
-              }}
-              title={collapsed ? item.label : undefined}
-            >
-              {/* M3 Active Pill Indicator (Enhanced right-side bar) */}
+          const linkContent = (
+            <>
               {isActive && (
                 <div
                   className="absolute right-0 top-1/2 transform -translate-y-1/2 w-1.5 h-10 rounded-l-full transition-all duration-300"
-                  style={{ 
+                  style={{
                     backgroundColor: colors.primary,
-                    boxShadow: `0 0 12px rgba(${colors.primaryRgb}, 0.6)`, // Gold glow effect
+                    boxShadow: `0 0 12px rgba(${colors.primaryRgb}, 0.6)`,
                   }}
                 />
               )}
-
-              {/* Icon: لون صريح لتباين جيد في الوضع الداكن (لا نعتمد على الوراثة فقط) */}
               <Icon
                 size={24}
                 strokeWidth={isActive ? 2.8 : 2}
@@ -88,11 +81,9 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
                   filter: isActive ? `drop-shadow(0 2px 4px rgba(${colors.primaryRgb}, 0.3))` : 'none',
                 }}
               />
-
-              {/* Label */}
               {!collapsed && (
                 <>
-                  <span 
+                  <span
                     className="flex-1 text-base transition-all duration-200"
                     style={{
                       color: isActive ? colors.primary : colors.onSurface,
@@ -102,9 +93,7 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
                   >
                     {item.label}
                   </span>
-
-                  {/* Badge with pulse animation */}
-                  {item.badge && (
+                  {badge != null && Number(badge) > 0 && (
                     <div
                       className="min-w-[20px] h-5 flex items-center justify-center text-[11px] font-bold rounded-full px-2 animate-pulse"
                       style={{
@@ -113,22 +102,53 @@ function SidebarSection({ title, items, pathname, colors, collapsed }: SidebarSe
                         boxShadow: `0 2px 4px ${colors.error}40`,
                       }}
                     >
-                      {item.badge}
+                      {Number(badge) > 9 ? '9+' : badge}
                     </div>
                   )}
                 </>
               )}
-
-              {/* Enhanced hover effect */}
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
                 style={{
-                  backgroundColor: isActive
-                    ? `rgba(${colors.primaryRgb}, 0.08)` // Subtle hover on active
-                    : `rgba(${colors.primaryRgb}, 0.08)`,
+                  backgroundColor: `rgba(${colors.primaryRgb}, 0.08)`,
                   borderRadius: collapsed ? '12px' : '16px',
                 }}
               />
+            </>
+          )
+
+          const className = `flex items-center gap-3 px-4 py-3 transition-all duration-300 relative group w-full text-right`
+          const style = {
+            backgroundColor: isActive ? `rgba(${colors.primaryRgb}, 0.16)` : 'transparent',
+            color: isActive ? colors.primary : colors.onSurface,
+            borderRadius: collapsed ? '12px' : '16px',
+            transform: isActive ? 'scale(1.02)' : 'scale(1)',
+          }
+
+          if (isMessages && onMessagesClick) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={onMessagesClick}
+                className={className}
+                style={style}
+                title={collapsed ? item.label : undefined}
+              >
+                {linkContent}
+              </button>
+            )
+          }
+
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={className}
+              style={style}
+              title={collapsed ? item.label : undefined}
+            >
+              {linkContent}
             </Link>
           )
         })}
@@ -142,6 +162,7 @@ export default function Sidebar() {
   const { profile } = useAuthContext()
   const { colors } = useTheme()
   const [collapsed, setCollapsed] = useState(false)
+  const convCtx = useConversationContextOptional()
 
   const role = getUserRole(profile)
   const navigation = getSidebarNavigation(role)
@@ -177,6 +198,9 @@ export default function Sidebar() {
           pathname={pathname}
           colors={colors}
           collapsed={collapsed}
+          onMessagesClick={convCtx?.openSidebar}
+          messagesBadge={convCtx?.totalUnreadCount}
+          isSidebarOpen={convCtx?.isSidebarOpen}
         />
 
         {/* Secondary Navigation */}

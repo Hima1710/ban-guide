@@ -7,6 +7,7 @@ import { showError, showSuccess, showLoading, closeLoading } from '@/components/
 import { Upload, X, Plus, Trash2 } from 'lucide-react'
 import { convertToWebP, uploadImageToImgBB } from '@/lib/imgbb'
 import { useTheme } from '@/contexts/ThemeContext'
+import { PageSkeleton } from '@/components/common'
 import type { Package } from '@/lib/types'
 import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
@@ -55,10 +56,14 @@ export default function NewProductPage() {
   const [videos, setVideos] = useState<string[]>([])
   const [variants, setVariants] = useState<ProductVariant[]>([])
   const [subscription, setSubscription] = useState<Package | null>(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true)
 
   const checkSubscription = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      setSubscriptionLoading(false)
+      return
+    }
 
     const { data: placeRow } = await supabase
       .from('places')
@@ -70,11 +75,16 @@ export default function NewProductPage() {
     if (placeData?.subscription) {
       setSubscription((placeData.subscription as any).package)
     }
+    setSubscriptionLoading(false)
   }, [placeId])
 
   useEffect(() => {
     checkSubscription()
   }, [checkSubscription])
+
+  if (subscriptionLoading) {
+    return <PageSkeleton variant="form" />
+  }
 
   const handleImageUpload = async (files: FileList) => {
     const maxImages = subscription?.max_product_images || DEFAULT_MAX_IMAGES

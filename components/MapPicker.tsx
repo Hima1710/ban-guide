@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { getLocationInfo, LocationInfo } from '@/lib/geocoding'
-import { MapPin, Loader2, Navigation } from 'lucide-react'
+import { MapPin, Navigation } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { BodySmall } from '@/components/m3'
+import { LoadingSpinner, BanSkeleton } from '@/components/common'
 
 // Dynamically import Leaflet components to avoid SSR issues
 const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), { ssr: false })
@@ -201,13 +202,12 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
   if (!mounted) {
     return (
       <div
-        className="w-full h-full flex items-center justify-center rounded-lg"
+        className="w-full h-full rounded-lg overflow-hidden flex flex-col gap-3 p-4"
         style={{ backgroundColor: colors.surface }}
+        aria-busy="true"
       >
-        <div className="text-center">
-          <Loader2 className="animate-spin mx-auto mb-2" size={24} style={{ color: colors.primary }} />
-          <BodySmall color="onSurfaceVariant">جاري تحميل الخريطة...</BodySmall>
-        </div>
+        <BanSkeleton variant="text" style={{ height: 20, width: '50%' }} />
+        <BanSkeleton variant="custom" className="flex-1 w-full" style={{ minHeight: 200 }} />
       </div>
     )
   }
@@ -219,7 +219,7 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
           className="absolute top-2 left-2 z-[1000] px-3 py-2 rounded-lg shadow-lg flex items-center gap-2"
           style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
         >
-          <Loader2 className="animate-spin" size={16} style={{ color: colors.primary }} />
+          <LoadingSpinner size="sm" iconOnly />
           <BodySmall style={{ color: colors.onSurface }}>جاري تحديد موقعك...</BodySmall>
         </div>
       )}
@@ -247,7 +247,7 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
         title="تحديد موقعي"
       >
         {loadingLocation ? (
-          <Loader2 className="animate-spin" size={20} />
+          <LoadingSpinner size="sm" iconOnly />
         ) : (
           <Navigation size={20} />
         )}

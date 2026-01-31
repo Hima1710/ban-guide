@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useConversationContextOptional } from '@/contexts/ConversationContext'
 import { useNotifications } from '@/hooks/useNotifications'
 import { getBottomNavigation, getUserRole, isNavigationItemActive } from '@/config/navigation'
 
@@ -11,6 +12,7 @@ export default function BottomNavigation() {
   const pathname = usePathname()
   const { user, profile } = useAuthContext()
   const { colors } = useTheme()
+  const convCtx = useConversationContextOptional()
   const { unreadCount } = useNotifications(user?.id)
 
   const role = getUserRole(profile)
@@ -20,9 +22,8 @@ export default function BottomNavigation() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t safe-area-bottom"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t safe-area-bottom surface-chameleon-glass"
       style={{
-        backgroundColor: 'var(--color-surface)',
         borderColor: 'var(--color-outline)',
         boxShadow: 'var(--shadow-top)',
         paddingBottom: 'env(safe-area-inset-bottom, 0)',
@@ -31,19 +32,17 @@ export default function BottomNavigation() {
       <div className="flex items-center justify-around min-h-[64px] px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = isNavigationItemActive(item, pathname)
-          const badge = item.id === 'messages' ? unreadCount : item.badge
+          const isMessages = item.id === 'messages'
+          const isSidebarOpen = convCtx?.isSidebarOpen ?? false
+          const isActive = isMessages
+            ? pathname === '/messages' || isSidebarOpen
+            : isNavigationItemActive(item, pathname)
+          const badge = isMessages
+            ? (convCtx?.totalUnreadCount ?? unreadCount)
+            : item.badge
 
-          return (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`
-                flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-extra-large
-                transition-all duration-200 relative min-w-[64px] min-h-[48px]
-                ${isActive ? 'bg-primary/10 text-primary' : 'text-on-surface'}
-              `}
-            >
+          const content = (
+            <>
               <div className="relative">
                 <Icon size={24} strokeWidth={isActive ? 2.5 : 2} className="transition-all" />
                 {badge != null && Number(badge) > 0 && (
@@ -63,6 +62,32 @@ export default function BottomNavigation() {
                   aria-hidden
                 />
               )}
+            </>
+          )
+
+          const className = `
+            flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-extra-large
+            transition-all duration-200 relative min-w-[64px] min-h-[48px]
+            ${isActive ? 'bg-primary/10 text-primary' : 'text-on-surface'}
+          `
+
+          if (isMessages && convCtx) {
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => convCtx.openSidebar()}
+                className={className}
+                aria-label={item.label}
+              >
+                {content}
+              </button>
+            )
+          }
+
+          return (
+            <Link key={item.id} href={item.href} className={className}>
+              {content}
             </Link>
           )
         })}

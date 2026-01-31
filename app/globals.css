@@ -56,6 +56,10 @@
   --overlay-bg: rgba(0, 0, 0, 0.5);
   --overlay-bg-light: rgba(0, 0, 0, 0.3);
 
+  /* Chameleon – سطح يتكيّف مع الثيم/الخلفية (شفاف + اختياريًا زجاج) */
+  --surface-chameleon: rgba(245, 245, 245, 0.88);
+  --surface-chameleon-glass: rgba(255, 255, 255, 0.72);
+
   /* M3 Premium – Chat Drawer */
   --chat-drawer-bg: #1a1a1c;
   --chat-drawer-surface: #242426;
@@ -157,8 +161,12 @@
 }
 
 /* ============================================
-   Base
+   Base – خلفية موحدة لتفادي شرائط جانبية بلون خاطئ
    ============================================ */
+
+html {
+  background: var(--background);
+}
 
 body {
   background: var(--background);
@@ -699,6 +707,19 @@ p {
 
 .app-hover-bg:hover {
   background: var(--surface-hover) !important;
+}
+
+/* Chameleon – سطح شفاف يتكيّف مع الثيم (هيدر، كروت عائمة، إلخ).
+   !important يضمن تفوقه على bg-surface وأي كلاس خلفية آخر. */
+.surface-chameleon {
+  background: var(--surface-chameleon) !important;
+  color: var(--color-on-surface);
+}
+.surface-chameleon-glass {
+  background: var(--surface-chameleon-glass) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--color-on-surface);
 }
 
 .icon-primary { color: var(--primary-color); }

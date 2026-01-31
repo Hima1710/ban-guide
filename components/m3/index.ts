@@ -7,6 +7,8 @@ export { default as SmartTopBar } from './SmartTopBar'
 export { default as Carousel } from './Carousel'
 export type { CarouselItemSize, CarouselProps } from './Carousel'
 export { default as BottomNavigation } from './BottomNavigation'
+export { default as BottomSheet } from './BottomSheet'
+export type { BottomSheetProps } from './BottomSheet'
 export { default as Typography } from './Typography'
 export {
   DisplayLarge,

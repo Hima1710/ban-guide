@@ -13,7 +13,7 @@ type YouTubeProfileRow = {
   youtube_token_expiry: string | null
 } | null
 import { showSuccess, showError } from '@/components/SweetAlert'
-import { LoadingSpinner } from '@/components/common'
+import { PageSkeleton } from '@/components/common'
 import { HeadlineLarge, BodySmall } from '@/components/m3'
 import Link from 'next/link'
 import { CheckCircle, AlertCircle, ExternalLink, Copy } from 'lucide-react'
@@ -170,11 +170,7 @@ export default function AdminYouTubePage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background }}>
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   return (

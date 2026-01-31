@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { PageSkeleton } from '@/components/common'
 
 /** مفتاح تخزين code_verifier في sessionStorage (نفس منطق Supabase) — إن لم يوجد لا نرسل طلب التبادل فنمنع 400 */
 function getCodeVerifierFromStorage(): string | null {
@@ -145,13 +146,7 @@ function CallbackContent() {
 
 export default function AuthCallbackPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center p-4 bg-surface">
-          <p className="text-body-large text-on-surface-variant">جاري التحميل...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={<PageSkeleton variant="default" />}>
       <CallbackContent />
     </Suspense>
   )

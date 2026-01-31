@@ -7,7 +7,7 @@ import { Package, DiscountCode, Affiliate } from '@/lib/types'
 import { useAuthContext } from '@/hooks'
 import { showError, showSuccess, showConfirm } from '@/components/SweetAlert'
 import { Check, Crown, Star, Upload, X } from 'lucide-react'
-import { Input, LoadingSpinner } from '@/components/common'
+import { Input, PageSkeleton } from '@/components/common'
 import Link from 'next/link'
 import { useTheme } from '@/contexts/ThemeContext'
 import {
@@ -344,11 +344,7 @@ export default function PackagesPage() {
   }
 
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" text="جاري التحميل..." />
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   return (

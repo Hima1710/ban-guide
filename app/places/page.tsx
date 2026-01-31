@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from '@/contexts/ThemeContext'
 import { usePlaces } from '@/hooks/usePlaces'
 import PlaceCard from '@/components/PlaceCard'
-import { Search, MapPin, Loader2, Filter } from 'lucide-react'
+import { BanSkeleton } from '@/components/common'
+import { Search, MapPin, Filter } from 'lucide-react'
 import { HeadlineLarge, HeadlineMedium, BodyMedium, BodySmall, LabelMedium } from '@/components/m3'
 import { Button } from '@/components/m3'
 
@@ -86,13 +87,10 @@ export default function PlacesPage() {
 
         {/* Places Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 
-              size={48} 
-              className="animate-spin mb-4" 
-              style={{ color: colors.primary }} 
-            />
-            <BodyMedium color="onSurfaceVariant">جاري التحميل...</BodyMedium>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6" aria-busy="true">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <BanSkeleton key={`place-skeleton-${i}`} variant="card" lines={2} showImage={true} />
+            ))}
           </div>
         ) : filteredPlaces.length === 0 ? (
           <div 

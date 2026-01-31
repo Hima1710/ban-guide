@@ -26,7 +26,7 @@ export default function ChatInput({
   const bg = isDark ? 'var(--chat-drawer-surface)' : colors.surface
   const border = isDark ? 'var(--chat-drawer-bg)' : colors.outline
   const text = isDark ? 'var(--chat-on-bubble-received)' : colors.onSurface
-  const textMuted = isDark ? 'rgba(245,245,245,0.8)' : colors.onSurfaceVariant
+  const textMuted = isDark ? 'var(--chat-on-bubble-received)' : colors.onSurfaceVariant
   const accent = isDark ? 'var(--chat-bubble-sent)' : colors.primary
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -47,7 +47,7 @@ export default function ChatInput({
         <div
           className="mb-2 p-2 rounded border-r-2 flex items-start justify-between gap-2"
           style={{
-            background: isDark ? 'rgba(212, 175, 55, 0.15)' : `rgba(${colors.primaryRgb}, 0.1)`,
+            background: `rgba(${colors.primaryRgb}, ${isDark ? 0.15 : 0.1})`,
             borderColor: accent,
           }}
         >
@@ -97,7 +97,7 @@ export default function ChatInput({
       {isRecording && (
         <div
           className="mb-2 p-2 rounded flex items-center gap-2"
-          style={{ background: isDark ? 'rgba(186,26,26,0.2)' : colors.errorContainer }}
+          style={{ background: colors.errorContainer }}
         >
           <div
             className="w-3 h-3 rounded-full animate-pulse"

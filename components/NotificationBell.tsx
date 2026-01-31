@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, Check, CheckCheck, X } from 'lucide-react'
 import { useTheme, type ThemeColors } from '@/contexts/ThemeContext'
+import { BanSkeleton } from '@/components/common'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Notification } from '@/lib/types/database'
 import { useRouter } from 'next/navigation'
@@ -204,14 +205,16 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
             style={{ maxHeight: 'calc(80vh - 80px)' }}
           >
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div 
-                  className="w-8 h-8 border-3 rounded-full animate-spin"
-                  style={{
-                    borderColor: colors.surfaceVariant,
-                    borderTopColor: colors.primary
-                  }}
-                />
+              <div className="p-4 space-y-3" aria-busy="true">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center gap-3 py-2">
+                    <BanSkeleton variant="avatar" className="shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <BanSkeleton variant="text" style={{ height: 14, width: '80%' }} />
+                      <BanSkeleton variant="text" style={{ height: 12, width: '50%' }} />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-5 text-center">

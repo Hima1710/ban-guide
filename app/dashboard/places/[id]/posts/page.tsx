@@ -11,6 +11,8 @@ import { extractYouTubeId } from '@/lib/youtube'
 import { useTheme } from '@/contexts/ThemeContext'
 import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
+import { useUploadImage } from '@/hooks/useUploadImage'
+import { LoadingSpinner, PageSkeleton } from '@/components/common'
 
 export default function PlacePostsPage() {
   const params = useParams()
@@ -30,7 +32,7 @@ export default function PlacePostsPage() {
     image_url: '',
     video_url: '',
   })
-  const [uploadingImage, setUploadingImage] = useState(false)
+  const { uploadImage, isUploading: uploadingImage } = useUploadImage()
   const [hasPermission, setHasPermission] = useState(false)
 
   useEffect(() => {
@@ -118,43 +120,24 @@ export default function PlacePostsPage() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      showError('الرجاء اختيار ملف صورة صحيح')
-      return
-    }
-
     if (file.size > 32 * 1024 * 1024) {
       showError('حجم الصورة كبير جداً. الحد الأقصى هو 32MB')
       return
     }
-
-    setUploadingImage(true)
     showLoading('جاري رفع الصورة...')
-
     try {
-      const formData = new FormData()
-      formData.append('image', file)
-
-      const response = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const result = await response.json()
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'حدث خطأ في رفع الصورة')
+      const url = await uploadImage(file)
+      if (url) {
+        setPostData((prev) => ({ ...prev, image_url: url }))
+        closeLoading()
+        showSuccess('تم رفع الصورة بنجاح')
+      } else {
+        closeLoading()
+        showError('حدث خطأ في رفع الصورة')
       }
-
-      setPostData({ ...postData, image_url: result.url })
+    } catch (err: any) {
       closeLoading()
-      showSuccess('تم رفع الصورة بنجاح')
-    } catch (error: any) {
-      closeLoading()
-      showError(error.message || 'حدث خطأ في رفع الصورة')
-    } finally {
-      setUploadingImage(false)
+      showError(err?.message || 'حدث خطأ في رفع الصورة')
     }
   }
 
@@ -283,17 +266,7 @@ export default function PlacePostsPage() {
   }
 
   if (loading) {
-    return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: colors.background }}
-      >
-        <div 
-          className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: colors.primary }}
-        ></div>
-      </div>
-    )
+    return <PageSkeleton variant="default" />
   }
 
   return (

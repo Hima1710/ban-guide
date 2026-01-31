@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useConversationContext } from '@/contexts/ConversationContext'
-import { MessageCircle, Search, Loader2, Users, Package, MapPin } from 'lucide-react'
+import { MessageCircle, Search, Users, Package, MapPin } from 'lucide-react'
+import { PageSkeleton } from '@/components/common'
 import { formatDistanceToNow } from 'date-fns'
 import { ar } from 'date-fns/locale'
 
@@ -190,14 +191,7 @@ export default function MessagesPage() {
 
         {/* Conversations List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 
-              size={48} 
-              className="animate-spin mb-4" 
-              style={{ color: colors.primary }} 
-            />
-            <p style={{ color: colors.onSurface }}>جاري التحميل...</p>
-          </div>
+          <PageSkeleton variant="list" className="py-8" />
         ) : filteredConversations.length === 0 ? (
           <div 
             className="text-center py-20 rounded-3xl"

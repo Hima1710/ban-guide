@@ -5,8 +5,12 @@ import { useUnifiedFeed, type EntityType } from '@/hooks/useUnifiedFeed'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+import { useStoriesForFollowedPlaces, type PlaceWithStories } from '@/hooks/useStories'
 import { BanCard, BanSkeleton } from '@/components/common'
 import { BodySmall, BodyMedium, TitleSmall, LabelSmall } from '@/components/m3'
+import { Plus } from 'lucide-react'
+import StoryViewer from '@/components/StoryViewer'
+import { useAddStorySheet } from '@/contexts/AddStoryContext'
 import type { PlaceFeedItem, PostFeedItem, ProductFeedItem } from '@/hooks/useUnifiedFeed'
 
 const TABS: { key: EntityType; label: string }[] = [
@@ -25,39 +29,54 @@ interface FollowedPlace {
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<EntityType>('places')
   const [followedPlaces, setFollowedPlaces] = useState<FollowedPlace[]>([])
-  const [storiesLoading, setStoriesLoading] = useState(true)
+  const [ownedPlaces, setOwnedPlaces] = useState<FollowedPlace[]>([])
+  const [followedPlacesLoading, setFollowedPlacesLoading] = useState(true)
+  const [storyViewerPlace, setStoryViewerPlace] = useState<PlaceWithStories | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
+
+  const placeIds = [...new Set([...ownedPlaces.map((p) => p.id), ...followedPlaces.map((p) => p.id)])]
+  const { placesWithStories, loading: storiesLoading, refresh: refreshStories } = useStoriesForFollowedPlaces(placeIds)
+  const placesWithStoriesMap = new Map(placesWithStories.map((p) => [p.placeId, p]))
+  const myFirstPlaceId = ownedPlaces[0]?.id ?? null
+  const myFirstPlaceName = ownedPlaces[0]?.name_ar ?? null
+  const placesToShowInStrip = [...ownedPlaces, ...followedPlaces.filter((f) => !ownedPlaces.some((o) => o.id === f.id))]
 
   const { user } = useAuthContext()
   const { colors } = useTheme()
+  const { openAddStorySheet } = useAddStorySheet()
   const { items, fetchNextPage, hasNextPage, loading, error } = useUnifiedFeed({ entityType: activeTab })
 
   useEffect(() => {
     if (!user?.id || !isSupabaseConfigured()) {
       setFollowedPlaces([])
-      setStoriesLoading(false)
+      setOwnedPlaces([])
+      setFollowedPlacesLoading(false)
       return
     }
-    setStoriesLoading(true)
+    setFollowedPlacesLoading(true)
     const load = async () => {
       try {
-        const { data, error } = await supabase
-          .from('follows')
-          .select('places(id, name_ar, logo_url)')
-          .eq('follower_id', user.id)
-        if (error) {
+        const [followsRes, ownedRes] = await Promise.all([
+          supabase
+            .from('follows')
+            .select('places(id, name_ar, logo_url)')
+            .eq('follower_id', user.id),
+          supabase.from('places').select('id, name_ar, logo_url').eq('user_id', user.id),
+        ])
+        if (followsRes.error) {
           setFollowedPlaces([])
-          return
+        } else {
+          type Row = { places: FollowedPlace | FollowedPlace[] | null }
+          const list = (followsRes.data || []).flatMap((r: Row) => {
+            const p = (r as Row).places
+            if (!p) return []
+            return Array.isArray(p) ? p : [p]
+          }) as FollowedPlace[]
+          setFollowedPlaces(list)
         }
-        type Row = { places: FollowedPlace | FollowedPlace[] | null }
-        const list = (data || []).flatMap((r: Row) => {
-          const p = (r as Row).places
-          if (!p) return []
-          return Array.isArray(p) ? p : [p]
-        }) as FollowedPlace[]
-        setFollowedPlaces(list)
+        setOwnedPlaces((ownedRes.data ?? []) as FollowedPlace[])
       } finally {
-        setStoriesLoading(false)
+        setFollowedPlacesLoading(false)
       }
     }
     void load()
@@ -77,61 +96,127 @@ export default function HomePage() {
     return () => obs.disconnect()
   }, [hasNextPage, loading, fetchNextPage])
 
+  useEffect(() => {
+    const handler = () => refreshStories()
+    window.addEventListener('add-story-success', handler)
+    return () => window.removeEventListener('add-story-success', handler)
+  }, [refreshStories])
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.background }}>
-      {/* Stories: متابعات المستخدم — M3 Surface + 16dp padding */}
+      {/* Stories: متابعات المستخدم — من عنده حالات تفتح المشاهد، الباقي رابط للمكان */}
       <section
-        aria-label="الأماكن المتابعة"
-        className="border-b px-4 py-4"
-        style={{ backgroundColor: colors.surface, borderColor: colors.outline }}
+        aria-label="الأماكن المتابعة والحالات"
+        className="border-b px-4 py-4 surface-chameleon"
+        style={{ borderColor: colors.outline }}
       >
         <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4" role="list">
-          {storiesLoading ? (
+          {followedPlacesLoading || storiesLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
               <BanSkeleton key={`story-skeleton-${i}`} variant="avatar" className="shrink-0" />
             ))
-          ) : followedPlaces.length === 0 ? (
+          ) : placesToShowInStrip.length === 0 && !myFirstPlaceId ? (
             <BodySmall color="onSurfaceVariant" className="py-2">
               {user?.id ? 'لم تتابع أي مكان بعد' : 'سجّل الدخول لمتابعة الأماكن'}
             </BodySmall>
           ) : (
-            followedPlaces.map((place) => (
-              <a
-                key={place.id}
-                href={`/places/${place.id}`}
-                className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation"
-                aria-label={place.name_ar || EMPTY_PLACE_LABEL}
-              >
-                <div
-                  className="w-14 h-14 rounded-full overflow-hidden border-2 flex-shrink-0"
-                  style={{ borderColor: colors.primary, backgroundColor: colors.surface }}
+            <>
+              {myFirstPlaceId && (
+                <button
+                  type="button"
+                  onClick={() => openAddStorySheet(myFirstPlaceId, myFirstPlaceName)}
+                  className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation border-0 bg-transparent cursor-pointer p-0 text-inherit"
+                  aria-label="إضافة حالة"
                 >
-                  {place.logo_url ? (
-                    <img src={place.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  ) : (
-                    <div
-                      className="w-full h-full flex items-center justify-center"
-                      style={{ color: colors.onSurfaceVariant }}
-                    >
-                      <TitleSmall>{place.name_ar?.[0] || '?'}</TitleSmall>
-                    </div>
-                  )}
-                </div>
-                <LabelSmall color="onSurface" className="truncate max-w-[64px] text-center">
-                  {place.name_ar || EMPTY_PLACE_LABEL}
-                </LabelSmall>
-              </a>
-            ))
+                  <div
+                    className="w-14 h-14 rounded-full border-2 border-dashed flex items-center justify-center flex-shrink-0"
+                    style={{
+                      borderColor: colors.primary,
+                      backgroundColor: colors.surfaceContainer,
+                    }}
+                  >
+                    <Plus size={28} style={{ color: colors.primary }} aria-hidden />
+                  </div>
+                  <LabelSmall color="onSurface" className="truncate max-w-[64px] text-center">
+                    إضافة حالة
+                  </LabelSmall>
+                </button>
+              )}
+              {placesToShowInStrip.map((place) => {
+              const hasStories = placesWithStoriesMap.has(place.id)
+              const placeWithStories = placesWithStoriesMap.get(place.id)
+              const content = (
+                <>
+                  <div
+                    className="w-14 h-14 rounded-full overflow-hidden border-2 flex-shrink-0"
+                    style={{
+                      borderColor: hasStories ? colors.primary : colors.outline,
+                      backgroundColor: colors.surface,
+                    }}
+                  >
+                    {place.logo_url ? (
+                      <img src={place.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center"
+                        style={{ color: colors.onSurfaceVariant }}
+                      >
+                        <TitleSmall>{place.name_ar?.[0] || '?'}</TitleSmall>
+                      </div>
+                    )}
+                  </div>
+                  <LabelSmall color="onSurface" className="truncate max-w-[64px] text-center">
+                    {place.name_ar || EMPTY_PLACE_LABEL}
+                  </LabelSmall>
+                </>
+              )
+              if (hasStories && placeWithStories) {
+                return (
+                  <button
+                    key={place.id}
+                    type="button"
+                    onClick={() => setStoryViewerPlace(placeWithStories)}
+                    className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation border-0 bg-transparent cursor-pointer p-0 text-inherit"
+                    aria-label={`عرض حالات ${place.name_ar || EMPTY_PLACE_LABEL}`}
+                  >
+                    {content}
+                  </button>
+                )
+              }
+              return (
+                <a
+                  key={place.id}
+                  href={`/places/${place.id}`}
+                  className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation"
+                  aria-label={place.name_ar || EMPTY_PLACE_LABEL}
+                >
+                  {content}
+                </a>
+              )
+            })}
+            </>
           )}
         </div>
       </section>
 
-      {/* Tabs: M3 Surface + مؤشر ذهبي تحت النشط */}
+      {storyViewerPlace && (
+        <StoryViewer
+          placeName={storyViewerPlace.placeName}
+          placeLogo={storyViewerPlace.placeLogo}
+          stories={storyViewerPlace.stories}
+          onClose={() => {
+            setStoryViewerPlace(null)
+            refreshStories()
+          }}
+        />
+      )}
+
+      {/* Tabs: Chameleon glass — شريط لاصق يتكيّف مع المحتوى عند التمرير */}
       <div
         role="tablist"
         aria-label="نوع المحتوى"
-        className="sticky top-[var(--header-height,56px)] z-30 border-b"
-        style={{ backgroundColor: colors.surface, borderColor: colors.outline }}
+        className="sticky top-[var(--header-height,56px)] z-30 border-b surface-chameleon-glass"
+        style={{ borderColor: colors.outline }}
       >
         <div className="flex px-4">
           {TABS.map((tab) => (
