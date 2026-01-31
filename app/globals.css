@@ -279,6 +279,16 @@ input[type="submit"],
   -webkit-tap-highlight-color: transparent;
 }
 
+/* كارت النظام الموحد: إزالة الخلفية الصفراء من المحتوى القابل للنقر (Chameleon) */
+[role="button"].card-trigger {
+  background: transparent !important;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 button:active,
 input[type="button"]:active,
 input[type="submit"]:active,

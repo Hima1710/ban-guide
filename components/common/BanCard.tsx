@@ -17,28 +17,29 @@ const PREMIUM_ARIA = 'معتمد / بريميوم'
 const INTERACTION_BTN_CLASS =
   'flex items-center gap-1.5 rounded-extra-large px-2 py-2 min-h-[48px] min-w-[48px] justify-center touch-manipulation bg-transparent border-0 shadow-none hover:opacity-90 active:opacity-80 disabled:opacity-60'
 
-/** Card styling by tier — ألوان من الثيم فقط (surface, primary, outline). */
+/** Card styling by tier — Chameleon: bg-surface، حدود ذهبية رفيعة 0.5px، بدون خلفية صفراء. */
 function getTierCardProps(tier: SubscriptionTier) {
+  const baseChameleon = 'rounded-extra-large overflow-hidden !bg-surface border-[0.5px] border-primary shadow-none text-on-surface'
   switch (tier) {
     case 'premium':
       return {
-        variant: 'elevated' as const,
-        elevation: 4 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary text-on-surface',
+        variant: 'chameleon' as const,
+        elevation: 0 as const,
+        className: `${baseChameleon} shadow-elev-2`,
         showPremiumBadge: true,
       }
     case 'gold':
       return {
-        variant: 'outlined' as const,
+        variant: 'chameleon' as const,
         elevation: 0 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary shadow-none text-on-surface',
+        className: baseChameleon,
         showPremiumBadge: false,
       }
     default:
       return {
-        variant: 'outlined' as const,
+        variant: 'chameleon' as const,
         elevation: 0 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-outline shadow-none text-on-surface',
+        className: baseChameleon,
         showPremiumBadge: false,
       }
   }
@@ -133,14 +134,19 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
     >
       {tierProps.showPremiumBadge && <PremiumBadge />}
       <div
-        className="flex flex-col gap-3 cursor-pointer"
+        className="card-trigger flex flex-col gap-3 cursor-pointer min-w-0"
         onClick={() => router.push(href)}
         onKeyDown={(e) => e.key === 'Enter' && router.push(href)}
         role="button"
         tabIndex={0}
+        dir="rtl"
       >
-        <div className="flex items-start gap-3">
-          <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-outline bg-surface">
+        <div className="flex items-start gap-3 ps-1 pe-1">
+          <div className="flex-1 min-w-0 text-start">
+            <h3 className="text-title-medium text-primary font-semibold truncate">{item.name_ar}</h3>
+            <p className="text-body-small text-on-surface-variant line-clamp-2 mt-0.5">{item.description_ar || item.description_en || ''}</p>
+          </div>
+          <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-[0.5px] border-primary bg-surface">
             {item.logo_url ? (
               <img src={item.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : (
@@ -148,10 +154,6 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
                 {item.name_ar?.[0] || '?'}
               </div>
             )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-title-medium text-primary font-semibold truncate">{item.name_ar}</h3>
-            <p className="text-body-small text-on-surface-variant line-clamp-2 mt-0.5">{item.description_ar || item.description_en || ''}</p>
           </div>
         </div>
         <InteractionsBar
@@ -194,13 +196,14 @@ export function BanCardPosts({ item, onInteractionUpdate }: { item: PostFeedItem
     >
       {tierProps.showPremiumBadge && <PremiumBadge />}
       <div
-        className="cursor-pointer"
+        className="card-trigger cursor-pointer"
         onClick={() => place?.id && router.push(`/places/${place.id}`)}
         onKeyDown={(e) => place?.id && e.key === 'Enter' && router.push(`/places/${place.id}`)}
         role="button"
         tabIndex={0}
+        dir="rtl"
       >
-        <div className="flex items-center gap-3 p-3 pb-0">
+        <div className="flex items-center gap-3 p-3 pb-0 ps-1 pe-1">
           <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-outline bg-surface">
             {place?.logo_url ? (
               <img src={place.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
@@ -266,11 +269,12 @@ export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFe
     >
       {tierProps.showPremiumBadge && <PremiumBadge />}
       <div
-        className="cursor-pointer"
+        className="card-trigger cursor-pointer"
         onClick={() => router.push(href)}
         onKeyDown={(e) => e.key === 'Enter' && router.push(href)}
         role="button"
         tabIndex={0}
+        dir="rtl"
       >
         <div className="aspect-square w-full relative bg-surface">
           {imageUrl ? (

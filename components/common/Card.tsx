@@ -1,6 +1,7 @@
 /**
- * M3 base container: rounded-extra-large, shadow levels 0–5, surface tokens.
- * Touch-friendly. Dark-mode via CSS variables.
+ * M3 base container (النظام الموحد) — Chameleon:
+ * خلفية فحمية (bg-surface)، حدود رفيعة ذهبية (0.5px primary)، بدون خلفية صفراء.
+ * rounded-extra-large, shadow levels 0–5.
  */
 
 'use client'
@@ -11,7 +12,7 @@ type ShadowLevel = 0 | 1 | 2 | 3 | 4 | 5
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
-  variant?: 'filled' | 'outlined' | 'elevated'
+  variant?: 'filled' | 'outlined' | 'elevated' | 'chameleon'
   padding?: 'none' | 'sm' | 'md' | 'lg'
   elevation?: ShadowLevel
   hover?: boolean
@@ -30,7 +31,7 @@ const shadowClasses: Record<ShadowLevel, string> = {
 
 export default function Card({
   children,
-  variant = 'filled',
+  variant = 'chameleon',
   padding = 'md',
   elevation = 0,
   hover = false,
@@ -46,10 +47,12 @@ export default function Card({
     lg: 'p-6 md:p-8',
   }
 
+  /** Chameleon: bg-surface + حدود ذهبية رفيعة 0.5px (بدون خلفية صفراء) */
   const variantClasses = {
     filled: 'bg-surface border-0',
     outlined: 'bg-surface border border-outline',
     elevated: 'bg-surface border-0',
+    chameleon: 'bg-surface border-[0.5px] border-primary shadow-none',
   }
 
   const level = variant === 'elevated' ? elevation : 0
