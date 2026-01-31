@@ -212,9 +212,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.setProperty('--text-muted', `rgba(${c.onBackground === '#1c1c1e' ? '28, 28, 30' : '245, 245, 245'}, 0.7)`)
     root.style.setProperty('--text-subtle', `rgba(${c.onBackground === '#1c1c1e' ? '28, 28, 30' : '245, 245, 245'}, 0.6)`)
 
-    /* Chameleon – سطح يتكيّف مع الثيم (شفاف + زجاج) */
+    /* Chameleon – خلفية خفيفة مع ضبابية قوية؛ على الموبايل عتامة أعلى قليلاً لو الـ blur ضعيف */
     root.style.setProperty('--surface-chameleon', isDark ? 'rgba(45, 45, 45, 0.88)' : 'rgba(245, 245, 245, 0.88)')
-    root.style.setProperty('--surface-chameleon-glass', isDark ? 'rgba(45, 45, 45, 0.75)' : 'rgba(255, 255, 255, 0.72)')
+    root.style.setProperty('--surface-chameleon-glass', isDark ? 'rgba(45, 45, 45, 0.42)' : 'rgba(255, 255, 255, 0.4)')
 
     localStorage.setItem('ban-theme', isDark ? 'dark' : 'light')
   }, [isDark, role, mounted])

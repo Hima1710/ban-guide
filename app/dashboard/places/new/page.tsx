@@ -10,6 +10,7 @@ import YouTubeUpload from '@/components/YouTubeUpload'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useUploadImage } from '@/hooks/useUploadImage'
 import { LoadingSpinner, PageSkeleton } from '@/components/common'
+import { Button } from '@/components/m3'
 
 const MapPicker = dynamic(() => import('@/components/MapPicker'), { ssr: false })
 
@@ -228,16 +229,16 @@ export default function NewPlacePage() {
                   className="w-32 h-32 object-cover rounded-lg border-2"
                   style={{ borderColor: colors.outline }}
                 />
-                <button
+                <Button
                   type="button"
                   onClick={removeLogo}
-                  className="absolute -top-2 -right-2 rounded-full p-1 transition-colors"
-                  style={{ background: colors.error, color: colors.onPrimary }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  variant="filled"
+                  size="sm"
+                  className="absolute -top-2 -right-2 !min-h-0 !p-1.5"
+                  style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                 >
                   <X size={16} />
-                </button>
+                </Button>
                 {uploadingLogo && (
                   <div className="absolute inset-0 rounded-lg flex items-center justify-center" style={{ backgroundColor: colors.overlay }}>
                     <LoadingSpinner size="sm" iconOnly />
@@ -301,26 +302,22 @@ export default function NewPlacePage() {
           <div>
             <label className="block text-sm font-semibold mb-2" style={{ color: colors.onSurface }}>فيديو YouTube</label>
             <div className="mb-3 flex gap-2">
-              <button
+              <Button
                 type="button"
+                variant={uploadMethod === 'url' ? 'filled' : 'outlined'}
+                size="sm"
                 onClick={() => setUploadMethod('url')}
-                className="px-4 py-2 rounded-lg transition-colors"
-                style={uploadMethod === 'url' ? { background: colors.primary, color: colors.onPrimary } : { background: colors.surfaceContainer, color: colors.onSurface }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
               >
                 إدخال رابط
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={uploadMethod === 'upload' ? 'filled' : 'outlined'}
+                size="sm"
                 onClick={() => setUploadMethod('upload')}
-                className="px-4 py-2 rounded-lg transition-colors"
-                style={uploadMethod === 'upload' ? { background: colors.primary, color: colors.onPrimary } : { background: colors.surfaceContainer, color: colors.onSurface }}
-                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9' }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
               >
                 رفع فيديو
-              </button>
+              </Button>
             </div>
 
             {uploadMethod === 'url' ? (
@@ -392,25 +389,12 @@ export default function NewPlacePage() {
           </div>
 
           <div className="flex gap-4">
-            <button
-              type="submit"
-              className="flex-1 px-6 py-3 rounded-lg transition-colors"
-              style={{ background: colors.primary, color: colors.onPrimary }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-            >
+            <Button type="submit" variant="filled" className="flex-1">
               إضافة المكان
-            </button>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-6 py-3 rounded-lg transition-colors"
-              style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceVariant || colors.surfaceContainer }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
-            >
+            </Button>
+            <Button type="button" variant="outlined" onClick={() => router.back()}>
               إلغاء
-            </button>
+            </Button>
           </div>
         </form>
       </div>

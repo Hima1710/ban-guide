@@ -44,10 +44,10 @@ export default function Button({
 
   const variantStyles =
     variant === 'filled'
-      ? { backgroundColor: colors.primary, color: colors.onPrimary, border: 0 }
+      ? { backgroundColor: colors.primary, color: colors.onPrimary, borderWidth: 0, borderStyle: 'solid', borderColor: 'transparent' }
       : variant === 'outlined'
         ? { backgroundColor: 'transparent', color: colors.primary, borderWidth: 2, borderStyle: 'solid', borderColor: colors.primary }
-        : { backgroundColor: 'transparent', color: colors.primary, border: 0 }
+        : { backgroundColor: 'transparent', color: colors.primary, borderWidth: 0, borderStyle: 'solid', borderColor: 'transparent' }
 
   const disabledStyle =
     disabled || loading

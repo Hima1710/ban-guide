@@ -169,22 +169,20 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="hidden lg:flex flex-col fixed right-0 bottom-0 border-l z-40 transition-all duration-300"
+      className="hidden lg:flex flex-col fixed right-0 bottom-0 border-l z-40 transition-all duration-300 surface-chameleon-glass"
       style={{
         top: 'var(--header-height, 56px)',
         width: collapsed ? '80px' : '280px',
         borderColor: colors.outline,
-        backgroundColor: colors.background,
       }}
     >
       {/* Collapse Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -left-3 top-4 w-6 h-6 rounded-full border flex items-center justify-center transition-all hover:scale-110"
+        className="absolute -left-3 top-4 w-6 h-6 rounded-full border flex items-center justify-center transition-all hover:scale-110 surface-chameleon-glass"
         style={{
           borderColor: colors.outline,
           color: colors.onSurface,
-          backgroundColor: colors.background,
         }}
       >
         {collapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}

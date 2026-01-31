@@ -130,11 +130,11 @@ export default function StoryViewer({ placeName, placeLogo, stories, onClose }: 
           variant="text"
           size="sm"
           onClick={onClose}
-          className="!min-h-0 !p-2 rounded-full"
+          className="!min-h-0 !p-2 w-9 h-9 shrink-0 rounded-full"
           style={{ color: '#fff' }}
           aria-label="إغلاق"
         >
-          <X size={24} />
+          <X size={20} />
         </Button>
       </div>
 

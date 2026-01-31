@@ -9,16 +9,19 @@ import { MessageCircle, Search, Users, Package, MapPin } from 'lucide-react'
 import { PageSkeleton } from '@/components/common'
 import { formatDistanceToNow } from 'date-fns'
 import { ar } from 'date-fns/locale'
+import { Button, TitleSmall, LabelMedium } from '@/components/m3'
 
 export default function MessagesPage() {
   const router = useRouter()
   const { user } = useAuthContext()
   const { colors } = useTheme()
-  const { getConversations, openConversation } = useConversationContext()
+  const { getConversations, openConversation, userPlaces } = useConversationContext()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<'all' | 'places' | 'products' | 'employees'>('all')
+  const [selectedPlaceFilter, setSelectedPlaceFilter] = useState<string | null>(null)
   
   const conversations = useMemo(() => getConversations(), [getConversations])
+  const placesToShow = (userPlaces ?? []).slice(0, 2)
   
   const loading = false
   const unreadCounts = useMemo(() => {
@@ -26,24 +29,26 @@ export default function MessagesPage() {
     return { total }
   }, [conversations])
 
-  // Filter conversations
-  const filteredConversations = (conversations || []).filter(conv => {
-    // Search filter
-    const lastMessageText = typeof conv.lastMessage === 'string' ? conv.lastMessage : ''
-    const matchesSearch = searchQuery.trim() === '' || 
-      conv.placeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lastMessageText.toLowerCase().includes(searchQuery.toLowerCase())
-
-    // Type filter
-    let matchesType = true
-    if (filterType !== 'all') {
-      if (filterType === 'places') matchesType = !conv.productId && !conv.employeeId
-      if (filterType === 'products') matchesType = !!conv.productId
-      if (filterType === 'employees') matchesType = !!conv.employeeId
+  // Filter conversations: أولاً بالمكان (صاحب المكان)، ثم البحث ونوع الفلتر
+  const filteredConversations = useMemo(() => {
+    let list = conversations || []
+    if (selectedPlaceFilter) {
+      list = list.filter((c) => c.placeId === selectedPlaceFilter)
     }
-
-    return matchesSearch && matchesType
-  })
+    return list.filter(conv => {
+      const lastMessageText = typeof conv.lastMessage === 'string' ? conv.lastMessage : ''
+      const matchesSearch = searchQuery.trim() === '' || 
+        conv.placeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lastMessageText.toLowerCase().includes(searchQuery.toLowerCase())
+      let matchesType = true
+      if (filterType !== 'all') {
+        if (filterType === 'places') matchesType = !conv.productId && !conv.employeeId
+        if (filterType === 'products') matchesType = !!conv.productId
+        if (filterType === 'employees') matchesType = !!conv.employeeId
+      }
+      return matchesSearch && matchesType
+    })
+  }, [conversations, selectedPlaceFilter, searchQuery, filterType])
 
   // Get conversation icon based on type
   const getConversationIcon = (conv: any) => {
@@ -89,16 +94,9 @@ export default function MessagesPage() {
           >
             قم بتسجيل الدخول لعرض رسائلك
           </p>
-          <button
-            onClick={() => router.push('/auth/login')}
-            className="px-6 py-3 rounded-full font-medium"
-            style={{
-              backgroundColor: colors.primary,
-              color: colors.onPrimary
-            }}
-          >
+          <Button onClick={() => router.push('/auth/login')} variant="filled" size="md">
             تسجيل الدخول
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -127,12 +125,67 @@ export default function MessagesPage() {
           </p>
         </div>
 
+        {/* شريط الأماكن — صاحب المكان: مكان أو اثنين، النقر يعرض عملاء هذا المكان فقط */}
+        {placesToShow.length > 0 && (
+          <div
+            className="flex gap-2 mb-4 overflow-x-auto pb-2"
+            style={{ borderWidth: 0, borderStyle: 'solid', borderColor: colors.outline }}
+          >
+            {selectedPlaceFilter && (
+              <Button
+                type="button"
+                onClick={() => setSelectedPlaceFilter(null)}
+                variant="outlined"
+                size="sm"
+                className="shrink-0"
+                style={{ borderColor: colors.outline, color: colors.onSurfaceVariant }}
+              >
+                <LabelMedium as="span">الكل</LabelMedium>
+              </Button>
+            )}
+            {placesToShow.map((place: { id: string; name_ar?: string | null; logo_url?: string | null }) => (
+              <Button
+                key={place.id}
+                type="button"
+                onClick={() => setSelectedPlaceFilter(selectedPlaceFilter === place.id ? null : place.id)}
+                variant={selectedPlaceFilter === place.id ? 'filled' : 'outlined'}
+                size="sm"
+                className="shrink-0 flex items-center gap-2"
+                style={
+                  selectedPlaceFilter === place.id
+                    ? {}
+                    : { borderColor: colors.outline, color: colors.onSurface }
+                }
+              >
+                {place.logo_url ? (
+                  <img src={place.logo_url} alt="" className="w-7 h-7 rounded-full object-cover" />
+                ) : (
+                  <span
+                    className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs"
+                    style={{
+                      backgroundColor: selectedPlaceFilter === place.id ? colors.onPrimary : colors.outline,
+                      color: selectedPlaceFilter === place.id ? colors.primary : colors.onSurfaceVariant,
+                    }}
+                  >
+                    {(place.name_ar || '?')[0]}
+                  </span>
+                )}
+                <TitleSmall as="span" className="truncate max-w-[100px]">
+                  {place.name_ar || 'مكان'}
+                </TitleSmall>
+              </Button>
+            ))}
+          </div>
+        )}
+
         {/* Search Bar */}
         <div className="mb-4">
           <div 
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl border"
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl"
             style={{
               backgroundColor: colors.surfaceVariant,
+              borderWidth: 1,
+              borderStyle: 'solid',
               borderColor: colors.outline
             }}
           >
@@ -148,7 +201,7 @@ export default function MessagesPage() {
           </div>
         </div>
 
-        {/* Filter Tabs */}
+        {/* Filter Tabs — M3 Button */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[
             { id: 'all', label: 'الكل', count: (conversations || []).length },
@@ -156,36 +209,32 @@ export default function MessagesPage() {
             { id: 'products', label: 'المنتجات', count: (conversations || []).filter(c => c.productId).length },
             { id: 'employees', label: 'الموظفين', count: (conversations || []).filter(c => c.employeeId).length }
           ].map((tab) => (
-            <button
+            <Button
               key={tab.id}
+              type="button"
               onClick={() => setFilterType(tab.id as any)}
-              className="px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all flex items-center gap-2"
-              style={{
-                backgroundColor: filterType === tab.id 
-                  ? colors.surfaceContainer 
-                  : colors.surfaceVariant,
-                color: filterType === tab.id 
-                  ? colors.primary 
-                  : colors.onSurface
-              }}
+              variant={filterType === tab.id ? 'filled' : 'outlined'}
+              size="sm"
+              className="shrink-0 flex items-center gap-2"
+              style={
+                filterType === tab.id
+                  ? {}
+                  : { borderColor: colors.outline, color: colors.onSurface }
+              }
             >
-              {tab.label}
+              <LabelMedium as="span">{tab.label}</LabelMedium>
               {tab.count > 0 && (
-                <span 
+                <span
                   className="px-2 py-0.5 rounded-full text-xs font-bold"
                   style={{
-                    backgroundColor: filterType === tab.id 
-                      ? colors.primary 
-                      : colors.outline,
-                    color: filterType === tab.id 
-                      ? colors.onPrimary 
-                      : colors.onSurface
+                    backgroundColor: filterType === tab.id ? colors.onPrimary : colors.outline,
+                    color: filterType === tab.id ? colors.primary : colors.onSurface,
                   }}
                 >
                   {tab.count}
                 </span>
               )}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -206,14 +255,16 @@ export default function MessagesPage() {
               className="text-xl font-bold mb-2"
               style={{ color: colors.onSurface }}
             >
-              {searchQuery || filterType !== 'all' 
-                ? 'لا توجد نتائج' 
+              {searchQuery || filterType !== 'all' || selectedPlaceFilter
+                ? 'لا توجد نتائج'
                 : 'لا توجد رسائل بعد'}
             </h3>
             <p style={{ color: colors.onSurface }}>
-              {searchQuery || filterType !== 'all'
-                ? 'جرب البحث بكلمات مختلفة أو غيّر الفلتر'
-                : 'ابدأ محادثة مع أحد الأماكن'}
+              {selectedPlaceFilter && !searchQuery && filterType === 'all'
+                ? 'لا يوجد عملاء راسلوا هذا المكان بعد'
+                : searchQuery || filterType !== 'all'
+                  ? 'جرب البحث بكلمات مختلفة أو غيّر الفلتر'
+                  : 'ابدأ محادثة مع أحد الأماكن'}
             </p>
           </div>
         ) : (

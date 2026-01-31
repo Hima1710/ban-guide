@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Card } from '@/components/common'
+import { Button } from '@/components/m3'
 import type { PlaceFeedItem, PostFeedItem, ProductFeedItem, SubscriptionTier } from '@/hooks/useUnifiedFeed'
 
 const DEFAULT_TIER: SubscriptionTier = 'basic'
@@ -16,41 +17,42 @@ const PREMIUM_ARIA = 'معتمد / بريميوم'
 const INTERACTION_BTN_CLASS =
   'flex items-center gap-1.5 rounded-extra-large px-2 py-2 min-h-[48px] min-w-[48px] justify-center touch-manipulation bg-transparent border-0 shadow-none hover:opacity-90 active:opacity-80 disabled:opacity-60'
 
-/** Card styling by tier: bg-surface (Dark Charcoal), Royal Gold only for borders/icons/titles. */
+/** Card styling by tier — ألوان من الثيم فقط (surface, primary, outline). */
 function getTierCardProps(tier: SubscriptionTier) {
   switch (tier) {
     case 'premium':
       return {
         variant: 'elevated' as const,
         elevation: 4 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary',
+        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary text-on-surface',
         showPremiumBadge: true,
       }
     case 'gold':
       return {
         variant: 'outlined' as const,
         elevation: 0 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary shadow-none',
+        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-primary shadow-none text-on-surface',
         showPremiumBadge: false,
       }
     default:
       return {
         variant: 'outlined' as const,
         elevation: 0 as const,
-        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-outline shadow-none',
+        className: 'rounded-extra-large overflow-hidden !bg-surface border-2 border-outline shadow-none text-on-surface',
         showPremiumBadge: false,
       }
   }
 }
 
+/** شارة بريميوم — ألوان من الثيم: surface, primary فقط */
 function PremiumBadge() {
   return (
     <span
-      className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-surface px-2 py-1 shadow-sm border border-primary"
+      className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-surface px-2 py-1 shadow-sm border-2 border-primary text-primary"
       aria-label={PREMIUM_ARIA}
     >
-      <BadgeCheck size={14} className="text-primary flex-shrink-0" />
-      <span className="text-label-small text-primary font-semibold">{PREMIUM_BADGE_LABEL}</span>
+      <BadgeCheck size={14} className="flex-shrink-0" />
+      <span className="text-label-small font-semibold">{PREMIUM_BADGE_LABEL}</span>
     </span>
   )
 }
@@ -138,7 +140,7 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
         tabIndex={0}
       >
         <div className="flex items-start gap-3">
-          <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-primary bg-surface">
+          <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-outline bg-surface">
             {item.logo_url ? (
               <img src={item.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : (
@@ -199,7 +201,7 @@ export function BanCardPosts({ item, onInteractionUpdate }: { item: PostFeedItem
         tabIndex={0}
       >
         <div className="flex items-center gap-3 p-3 pb-0">
-          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-primary bg-surface">
+          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-outline bg-surface">
             {place?.logo_url ? (
               <img src={place.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
             ) : (
@@ -278,7 +280,7 @@ export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFe
               {item.name_ar?.[0] || '?'}
             </div>
           )}
-          <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface border border-primary text-primary">
+          <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface border-2 border-primary text-primary">
             {item.price != null ? `${item.price} ${item.currency}` : '—'}
           </span>
         </div>
@@ -317,32 +319,38 @@ function InteractionsBar({
 }) {
   return (
     <div className="flex items-center gap-4 min-h-[48px]">
-      <button
+      <Button
         type="button"
+        variant="text"
+        size="sm"
         onClick={(e) => { e.stopPropagation(); onLike(); }}
         disabled={!canInteract}
-        className={`${INTERACTION_BTN_CLASS} ${isLiked ? 'text-primary' : 'text-on-surface-variant'}`}
+        className={`!min-h-0 !p-2 rounded-extra-large ${isLiked ? 'text-primary' : 'text-on-surface-variant'}`}
         aria-label={isLiked ? 'إلغاء الإعجاب' : 'إعجاب'}
       >
         <Heart size={20} className={ICON_CLASS} fill={isLiked ? 'currentColor' : 'transparent'} />
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="text"
+        size="sm"
         onClick={(e) => { e.stopPropagation(); onComment(); }}
-        className={`${INTERACTION_BTN_CLASS} text-on-surface-variant`}
+        className="!min-h-0 !p-2 rounded-extra-large text-on-surface-variant"
         aria-label="تعليق"
       >
         <MessageCircle size={20} className={ICON_CLASS} />
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="text"
+        size="sm"
         onClick={(e) => { e.stopPropagation(); onFavorite(); }}
         disabled={!canInteract}
-        className={`${INTERACTION_BTN_CLASS} ${isFavorited ? 'text-primary' : 'text-on-surface-variant'}`}
+        className={`!min-h-0 !p-2 rounded-extra-large ${isFavorited ? 'text-primary' : 'text-on-surface-variant'}`}
         aria-label={isFavorited ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
       >
         <Star size={20} className={ICON_CLASS} fill={isFavorited ? 'currentColor' : 'transparent'} />
-      </button>
+      </Button>
     </div>
   )
 }

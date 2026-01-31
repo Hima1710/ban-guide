@@ -517,19 +517,20 @@ export default function PackagesPage() {
             >
               <div className="flex items-center justify-between mb-4">
                 <TitleLarge style={{ color: colors.onSurface }}>رفع إيصال الدفع</TitleLarge>
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setShowReceiptModal(false)
                     setReceiptFile(null)
                     setReceiptPreview(null)
                   }}
-                  className="p-2 rounded-full transition-opacity hover:opacity-80"
-                  style={{ color: colors.onSurfaceVariant }}
+                  variant="text"
+                  size="sm"
+                  className="!min-h-0 !p-2"
                   aria-label="إغلاق"
                 >
                   <X size={24} />
-                </button>
+                </Button>
               </div>
 
               <div className="mb-4">
@@ -554,15 +555,17 @@ export default function PackagesPage() {
                       className="w-full h-64 object-contain rounded-2xl"
                       style={{ border: `1px solid ${colors.outline}` }}
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={handleRemoveReceipt}
-                      className="absolute top-2 left-2 p-2 rounded-full transition-opacity hover:opacity-90"
+                      variant="filled"
+                      size="sm"
+                      className="absolute top-2 left-2 !min-h-0 !p-2"
                       style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                       aria-label="إزالة الصورة"
                     >
                       <X size={20} />
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <label

@@ -5,12 +5,14 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { useConversationContextOptional } from '@/contexts/ConversationContext'
 import { MessageCircle, X } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
+import { Button, TitleSmall, LabelMedium } from '@/components/m3'
 
 export default function ConversationsSidebar() {
   const { user } = useAuthContext()
   const { colors } = useTheme()
   const ctx = useConversationContextOptional()
   const [isMounted, setIsMounted] = useState(false)
+  const [selectedPlaceFilter, setSelectedPlaceFilter] = useState<string | null>(null)
 
   const isOpen = ctx?.isSidebarOpen ?? false
   const openSidebar = ctx?.openSidebar ?? (() => {})
@@ -36,28 +38,28 @@ export default function ConversationsSidebar() {
   const {
     getConversations,
     openConversation,
+    userPlaces,
   } = ctx
 
-  const conversations = getConversations()
+  const allConversations = getConversations()
+  const placesToShow = (userPlaces ?? []).slice(0, 2)
+  const conversations = selectedPlaceFilter
+    ? allConversations.filter((c) => c.placeId === selectedPlaceFilter)
+    : allConversations
 
   return (
     <>
-      {/* Desktop Toggle Button */}
-      <button
+      {/* Desktop Toggle Button — M3 */}
+      <Button
         onClick={() => (isOpen ? closeSidebar() : openSidebar())}
-        className="hidden lg:flex fixed w-14 h-14 rounded-full shadow-lg transition-all z-[70] items-center justify-center relative"
-        style={{
-          background: colors.primary,
-          color: colors.onPrimary,
-          top: '5.5rem',
-          left: '1rem',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        variant="filled"
+        size="sm"
+        className="hidden lg:flex fixed w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-[70] items-center justify-center relative"
+        style={{ top: '5.5rem', left: '1rem' }}
         aria-label="فتح/إغلاق المحادثات"
       >
         <MessageCircle size={24} />
-        {conversations.filter((c) => c.unreadCount > 0).length > 0 && (
+        {allConversations.filter((c) => c.unreadCount > 0).length > 0 && (
           <span
             className="absolute -top-1 -left-1 w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center border-2"
             style={{
@@ -66,20 +68,21 @@ export default function ConversationsSidebar() {
               borderColor: colors.surface,
             }}
           >
-            {conversations.reduce((sum, c) => sum + c.unreadCount, 0)}
+            {allConversations.reduce((sum, c) => sum + c.unreadCount, 0)}
           </span>
         )}
-      </button>
+      </Button>
 
-      {/* Mobile Toggle Button */}
-      <button
+      {/* Mobile Toggle Button — M3 */}
+      <Button
         onClick={() => (isOpen ? closeSidebar() : openSidebar())}
-        className="lg:hidden fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg transition-all z-50 flex items-center justify-center relative"
-        style={{ background: colors.primary, color: colors.onPrimary }}
+        variant="filled"
+        size="sm"
+        className="lg:hidden fixed bottom-4 right-4 w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-50 flex items-center justify-center relative"
         aria-label="فتح/إغلاق المحادثات"
       >
         <MessageCircle size={24} />
-        {conversations.filter((c) => c.unreadCount > 0).length > 0 && (
+        {allConversations.filter((c) => c.unreadCount > 0).length > 0 && (
           <span
             className="absolute -top-1 -left-1 w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center border-2"
             style={{
@@ -88,10 +91,10 @@ export default function ConversationsSidebar() {
               borderColor: colors.surface,
             }}
           >
-            {conversations.reduce((sum, c) => sum + c.unreadCount, 0)}
+            {allConversations.reduce((sum, c) => sum + c.unreadCount, 0)}
           </span>
         )}
-      </button>
+      </Button>
 
       {/* Backdrop for Desktop */}
       {isOpen && (
@@ -121,21 +124,70 @@ export default function ConversationsSidebar() {
           <h2 className="text-xl font-bold" style={{ color: colors.onSurface }}>
             المحادثات
           </h2>
-          <button
+          <Button
             onClick={closeSidebar}
-            className="p-2 rounded-full transition-colors"
+            variant="text"
+            size="sm"
+            className="!min-h-0 !p-2"
             style={{ color: colors.onSurfaceVariant }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.surfaceContainer
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-            }}
             aria-label="إغلاق"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
+
+        {/* شريط الأماكن — صاحب المكان: مكان أو اثنين أعلى المحادثات، النقر يفلتر العملاء */}
+        {placesToShow.length > 0 && (
+          <div
+            className="px-4 pt-3 pb-2 border-b flex gap-2 overflow-x-auto"
+            style={{ borderColor: colors.outline, backgroundColor: colors.surface }}
+          >
+            {selectedPlaceFilter && (
+              <Button
+                type="button"
+                onClick={() => setSelectedPlaceFilter(null)}
+                variant="outlined"
+                size="sm"
+                className="shrink-0 !min-h-0 py-2"
+                style={{ borderColor: colors.outline, color: colors.onSurfaceVariant }}
+              >
+                <LabelMedium as="span">الكل</LabelMedium>
+              </Button>
+            )}
+            {placesToShow.map((place: { id: string; name_ar?: string | null; logo_url?: string | null }) => (
+              <Button
+                key={place.id}
+                type="button"
+                onClick={() => setSelectedPlaceFilter(selectedPlaceFilter === place.id ? null : place.id)}
+                variant={selectedPlaceFilter === place.id ? 'filled' : 'outlined'}
+                size="sm"
+                className="shrink-0 flex items-center gap-2 !min-h-0 py-2"
+                style={
+                  selectedPlaceFilter === place.id
+                    ? {}
+                    : { borderColor: colors.outline, color: colors.onSurface }
+                }
+              >
+                {place.logo_url ? (
+                  <img src={place.logo_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
+                    style={{
+                      backgroundColor: selectedPlaceFilter === place.id ? colors.onPrimary : colors.outline,
+                      color: selectedPlaceFilter === place.id ? colors.primary : colors.onSurfaceVariant,
+                    }}
+                  >
+                    {(place.name_ar || '?')[0]}
+                  </div>
+                )}
+                <TitleSmall as="span" className="truncate max-w-[120px]">
+                  {place.name_ar || 'مكان'}
+                </TitleSmall>
+              </Button>
+            ))}
+          </div>
+        )}
 
         <div className="p-4">
           {conversations.length === 0 ? (
@@ -145,7 +197,11 @@ export default function ConversationsSidebar() {
                 className="mx-auto mb-4"
                 style={{ color: colors.onSurfaceVariant }}
               />
-              <p style={{ color: colors.onSurfaceVariant }}>لا توجد محادثات بعد</p>
+              <p style={{ color: colors.onSurfaceVariant }}>
+                {selectedPlaceFilter
+                  ? 'لا يوجد عملاء راسلوا هذا المكان بعد'
+                  : 'لا توجد محادثات بعد'}
+              </p>
             </div>
           ) : (
             <div className="space-y-2">

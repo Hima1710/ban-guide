@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { AudioRecorder } from '@/lib/audio-recorder'
-import { showError, showSuccess } from '@/components/SweetAlert'
+import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
+import { uploadImageFile } from '@/lib/api/upload'
 import { createLogger } from '@/lib/logger'
 import type { 
   ConversationMessage, 
@@ -363,22 +364,17 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
     setSendingMessages(prev => new Set(prev).add(tempId))
 
     try {
-      let imageUrl = null
+      let imageUrl: string | null = null
       if (selectedImage) {
-        const formData = new FormData()
-        formData.append('file', selectedImage)
-
-        const uploadResponse = await fetch('/api/upload-image', {
-          method: 'POST',
-          body: formData
-        })
-
-        if (!uploadResponse.ok) {
-          throw new Error('فشل رفع الصورة')
+        showLoading('جاري رفع الصورة...')
+        try {
+          imageUrl = await uploadImageFile(selectedImage)
+        } catch (uploadErr: any) {
+          closeLoading()
+          showError(uploadErr?.message || 'فشل رفع الصورة')
+          return
         }
-
-        const uploadData = await uploadResponse.json()
-        imageUrl = uploadData.url
+        closeLoading()
       }
 
       const messageData: any = {

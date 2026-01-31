@@ -9,6 +9,7 @@ import { UserPlus, CheckCircle, X, Shield, MessageSquare, Package } from 'lucide
 import Link from 'next/link'
 import { useTheme } from '@/contexts/ThemeContext'
 import { PageSkeleton } from '@/components/common'
+import { Button } from '@/components/m3'
 
 export default function PlaceEmployeesPage() {
   const params = useParams()
@@ -346,50 +347,37 @@ export default function PlaceEmployeesPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <button
-                      onClick={() => handleAcceptRequest(request.id, 'basic')}
-                      className="px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
-                      style={{
-                        backgroundColor: colors.primary,
-                        color: colors.onPrimary,
-                      }}
-                    >
+                    <Button variant="filled" size="sm" onClick={() => handleAcceptRequest(request.id, 'basic')}>
                       <CheckCircle size={16} />
                       قبول
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="filled"
+                      size="sm"
                       onClick={() => handleAcceptRequest(request.id, 'messages_posts')}
-                      className="px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
-                      style={{
-                        backgroundColor: colors.success,
-                        color: colors.onPrimary,
-                      }}
+                      style={{ backgroundColor: colors.success, color: colors.onPrimary }}
                     >
                       <MessageSquare size={16} />
                       قبول ورد على العملاء ومنشورات
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="filled"
+                      size="sm"
                       onClick={() => handleAcceptRequest(request.id, 'full')}
-                      className="px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
-                      style={{
-                        backgroundColor: colors.secondary,
-                        color: colors.onPrimary,
-                      }}
+                      style={{ backgroundColor: colors.secondary, color: colors.onPrimary }}
                     >
                       <Shield size={16} />
                       قبول ورد على العملاء وإضافة/حذف منتجات ومنشورات
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="filled"
+                      size="sm"
                       onClick={() => handleRejectRequest(request.id)}
-                      className="px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
-                      style={{
-                        backgroundColor: colors.error,
-                        color: colors.onPrimary,
-                      }}
+                      style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                     >
                       <X size={16} />
                       رفض
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -461,17 +449,15 @@ export default function PlaceEmployeesPage() {
                         })}
                       </p>
                     </div>
-                    <button
+                    <Button
+                      variant="filled"
+                      size="sm"
                       onClick={() => handleRemoveEmployee(employee.id)}
-                      className="px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
-                      style={{
-                        backgroundColor: colors.error,
-                        color: colors.onPrimary,
-                      }}
+                      style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                     >
                       <X size={16} />
                       إزالة
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}

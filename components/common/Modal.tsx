@@ -3,7 +3,7 @@
 import { ReactNode, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
-import { TitleLarge } from '@/components/m3'
+import { TitleLarge, Button } from '@/components/m3'
 
 interface ModalProps {
   isOpen: boolean
@@ -67,7 +67,7 @@ export default function Modal({
     >
       <div
         className={`w-full rounded-3xl ${sizeStyles[size]} max-h-[90vh] overflow-y-auto`}
-        style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        style={{ backgroundColor: colors.surface, borderWidth: 1, borderStyle: 'solid', borderColor: colors.outline }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -77,15 +77,17 @@ export default function Modal({
           {title && (
             <TitleLarge style={{ color: colors.onSurface }}>{title}</TitleLarge>
           )}
-          <button
+          <Button
             type="button"
+            variant="text"
+            size="sm"
             onClick={onClose}
-            className="p-1 rounded-full hover:opacity-70 transition-opacity ml-auto"
+            className="!min-h-0 !p-1 ml-auto"
             style={{ color: colors.onSurfaceVariant }}
             aria-label="إغلاق"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
         <div>{children}</div>
       </div>

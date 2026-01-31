@@ -56,9 +56,9 @@
   --overlay-bg: rgba(0, 0, 0, 0.5);
   --overlay-bg-light: rgba(0, 0, 0, 0.3);
 
-  /* Chameleon – سطح يتكيّف مع الثيم/الخلفية (شفاف + اختياريًا زجاج) */
+  /* Chameleon – سطح يتكيّف مع الثيم/الخلفية (شفاف + زجاج ضبابي) */
   --surface-chameleon: rgba(245, 245, 245, 0.88);
-  --surface-chameleon-glass: rgba(255, 255, 255, 0.72);
+  --surface-chameleon-glass: rgba(255, 255, 255, 0.4);
 
   /* M3 Premium – Chat Drawer */
   --chat-drawer-bg: #1a1a1c;
@@ -715,10 +715,9 @@ p {
   background: var(--surface-chameleon) !important;
   color: var(--color-on-surface);
 }
+/* سطح صلبة — ما يبان اللي تحته (هيدر، شريط سفلي، جناح، تابات) */
 .surface-chameleon-glass {
-  background: var(--surface-chameleon-glass) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--color-surface) !important;
   color: var(--color-on-surface);
 }
 

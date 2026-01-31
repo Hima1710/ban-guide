@@ -8,6 +8,7 @@ import { Upload, X, Plus, Trash2 } from 'lucide-react'
 import { convertToWebP, uploadImageToImgBB } from '@/lib/imgbb'
 import { useTheme } from '@/contexts/ThemeContext'
 import { PageSkeleton } from '@/components/common'
+import { Button } from '@/components/m3'
 import type { Package } from '@/lib/types'
 import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
@@ -432,14 +433,16 @@ export default function NewProductPage() {
               {imageUrls.map((url, index) => (
                 <div key={index} className="relative">
                   <img src={url} alt={`Image ${index + 1}`} className="w-full h-32 object-cover rounded" />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-2 left-2 rounded-full p-1"
+                    variant="filled"
+                    size="sm"
+                    className="absolute top-2 left-2 !min-h-0 !p-1.5"
                     style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                   >
                     <X size={16} />
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -472,18 +475,10 @@ export default function NewProductPage() {
                 فيديوهات YouTube ({videos.filter((v) => v.trim()).length}/{subscription?.max_product_videos || DEFAULT_MAX_VIDEOS})
               </label>
               {(subscription?.max_product_videos || 0) > 0 && (
-                <button
-                  type="button"
-                  onClick={addVideo}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
-                  style={{
-                    backgroundColor: colors.primary,
-                    color: colors.onPrimary,
-                  }}
-                >
+                <Button type="button" onClick={addVideo} variant="filled" size="sm" className="inline-flex items-center gap-2">
                   <Plus size={16} />
                   إضافة فيديو
-                </button>
+                </Button>
               )}
             </div>
             {videos.map((video, index) => (
@@ -500,17 +495,16 @@ export default function NewProductPage() {
                     color: colors.onSurface,
                   }}
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => removeVideo(index)}
-                  className="p-2 rounded-lg transition-colors"
-                  style={{
-                    backgroundColor: colors.errorContainer,
-                    color: colors.error,
-                  }}
+                  variant="text"
+                  size="sm"
+                  className="!min-h-0 !p-2"
+                  style={{ color: colors.error }}
                 >
                   <Trash2 size={20} />
-                </button>
+                </Button>
               </div>
             ))}
             {videos.length === 0 && (subscription?.max_product_videos || 0) === 0 && (
@@ -532,18 +526,10 @@ export default function NewProductPage() {
               >
                 المتغيرات (ألوان، أحجام)
               </label>
-              <button
-                type="button"
-                onClick={addVariant}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
-                style={{
-                  backgroundColor: colors.primary,
-                  color: colors.onPrimary,
-                }}
-              >
+              <Button type="button" onClick={addVariant} variant="filled" size="sm" className="inline-flex items-center gap-2">
                 <Plus size={20} />
                 إضافة متغير
-              </button>
+              </Button>
             </div>
             {variants.map((variant, index) => (
               <div 
@@ -558,16 +544,16 @@ export default function NewProductPage() {
                   >
                     متغير {index + 1}
                   </h4>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => removeVariant(index)}
-                    className="p-1 rounded transition-colors"
-                    style={{
-                      color: colors.error,
-                    }}
+                    variant="text"
+                    size="sm"
+                    className="!min-h-0 !p-1"
+                    style={{ color: colors.error }}
                   >
                     <Trash2 size={18} />
-                  </button>
+                  </Button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -675,29 +661,14 @@ export default function NewProductPage() {
             ))}
           </div>
 
-          {/* Actions */}
+          {/* Actions – M3 Button (النظام الموحد) */}
           <div className="flex gap-4">
-            <button
-              type="submit"
-              className="flex-1 px-6 py-3 rounded-lg transition-colors font-semibold"
-              style={{
-                backgroundColor: colors.primary,
-                color: colors.onPrimary,
-              }}
-            >
+            <Button type="submit" variant="filled" className="flex-1">
               إضافة المنتج
-            </button>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-6 py-3 rounded-lg transition-colors"
-              style={{
-                backgroundColor: colors.surfaceContainer,
-                color: colors.onSurface,
-              }}
-            >
+            </Button>
+            <Button type="button" variant="outlined" onClick={() => router.back()}>
               إلغاء
-            </button>
+            </Button>
           </div>
         </form>
       </div>

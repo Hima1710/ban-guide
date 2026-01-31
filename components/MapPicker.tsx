@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { getLocationInfo, LocationInfo } from '@/lib/geocoding'
 import { MapPin, Navigation } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
-import { BodySmall } from '@/components/m3'
+import { BodySmall, Button } from '@/components/m3'
 import { LoadingSpinner, BanSkeleton } from '@/components/common'
 
 // Dynamically import Leaflet components to avoid SSR issues
@@ -224,26 +224,15 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
         </div>
       )}
 
-      {/* Button to get current location */}
-      <button
+      {/* Button to get current location — M3 */}
+      <Button
         type="button"
         onClick={handleGetCurrentLocation}
         disabled={loadingLocation}
-        className="absolute bottom-4 left-4 z-[1000] p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110 active:scale-95 flex items-center justify-center"
-        style={{
-          background: loadingLocation ? colors.onSurfaceVariant : colors.primary,
-          color: colors.onPrimary,
-        }}
-        onMouseEnter={(e) => {
-          if (!loadingLocation) {
-            e.currentTarget.style.opacity = '0.9'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!loadingLocation) {
-            e.currentTarget.style.opacity = '1'
-          }
-        }}
+        variant="filled"
+        size="sm"
+        className="absolute bottom-4 left-4 z-[1000] !min-h-0 !p-3 rounded-full shadow-lg"
+        style={loadingLocation ? { backgroundColor: colors.onSurfaceVariant, color: colors.onPrimary } : undefined}
         title="تحديد موقعي"
       >
         {loadingLocation ? (
@@ -251,7 +240,7 @@ export default function MapPicker({ latitude, longitude, onLocationChange }: Map
         ) : (
           <Navigation size={20} />
         )}
-      </button>
+      </Button>
 
       <MapContainer
         center={[markerPosition[0], markerPosition[1]]}

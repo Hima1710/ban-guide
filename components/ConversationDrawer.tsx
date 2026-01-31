@@ -7,6 +7,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import MessageItem from './MessageItem'
 import ChatInput from './ChatInput'
 import { X, Users, Package } from 'lucide-react'
+import { Button } from '@/components/m3'
 
 const DRAWER_WIDTH = 'min(100vw, 420px)'
 
@@ -101,14 +102,16 @@ export default function ConversationDrawer() {
             backgroundColor: 'var(--chat-drawer-surface)',
           }}
         >
-          <button
+          <Button
             onClick={closeConversation}
-            className="p-2 rounded-full transition-colors hover:opacity-80"
+            variant="text"
+            size="sm"
+            className="!min-h-0 !p-2"
             style={{ color: 'var(--chat-on-bubble-received)' }}
             aria-label="إغلاق"
           >
             <X size={22} />
-          </button>
+          </Button>
           {partnerAvatar ? (
             <img
               src={partnerAvatar}
@@ -323,13 +326,15 @@ export default function ConversationDrawer() {
                 {selectedProduct.name_ar ?? selectedProduct.name_en}
               </p>
             </div>
-            <button
+            <Button
               onClick={() => setSelectedProduct(null)}
-              className="text-xs font-medium hover:underline shrink-0"
+              variant="text"
+              size="sm"
+              className="text-xs !min-h-0 !p-1 shrink-0"
               style={{ color: 'var(--chat-bubble-sent)' }}
             >
               إزالة
-            </button>
+            </Button>
           </div>
         )}
       </div>

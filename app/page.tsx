@@ -7,7 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { useStoriesForFollowedPlaces, type PlaceWithStories } from '@/hooks/useStories'
 import { BanCard, BanSkeleton } from '@/components/common'
-import { BodySmall, BodyMedium, TitleSmall, LabelSmall } from '@/components/m3'
+import { BodySmall, BodyMedium, TitleSmall, LabelSmall, Button } from '@/components/m3'
 import { Plus } from 'lucide-react'
 import StoryViewer from '@/components/StoryViewer'
 import { useAddStorySheet } from '@/contexts/AddStoryContext'
@@ -122,10 +122,12 @@ export default function HomePage() {
           ) : (
             <>
               {myFirstPlaceId && (
-                <button
+                <Button
                   type="button"
+                  variant="text"
+                  size="sm"
                   onClick={() => openAddStorySheet(myFirstPlaceId, myFirstPlaceName)}
-                  className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation border-0 bg-transparent cursor-pointer p-0 text-inherit"
+                  className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] !min-h-0 !p-0 !rounded-full"
                   aria-label="إضافة حالة"
                 >
                   <div
@@ -140,7 +142,7 @@ export default function HomePage() {
                   <LabelSmall color="onSurface" className="truncate max-w-[64px] text-center">
                     إضافة حالة
                   </LabelSmall>
-                </button>
+                </Button>
               )}
               {placesToShowInStrip.map((place) => {
               const hasStories = placesWithStoriesMap.has(place.id)
@@ -172,15 +174,17 @@ export default function HomePage() {
               )
               if (hasStories && placeWithStories) {
                 return (
-                  <button
+                  <Button
                     key={place.id}
                     type="button"
+                    variant="text"
+                    size="sm"
                     onClick={() => setStoryViewerPlace(placeWithStories)}
-                    className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] min-h-[48px] touch-manipulation border-0 bg-transparent cursor-pointer p-0 text-inherit"
+                    className="flex flex-col items-center gap-1.5 shrink-0 min-w-[64px] !min-h-0 !p-0 !rounded-full"
                     aria-label={`عرض حالات ${place.name_ar || EMPTY_PLACE_LABEL}`}
                   >
                     {content}
-                  </button>
+                  </Button>
                 )
               }
               return (
@@ -221,14 +225,16 @@ export default function HomePage() {
         <div className="flex px-4">
           {TABS.map((tab) => (
             <div key={tab.key} className="flex-1 flex flex-col items-center">
-              <button
+              <Button
                 type="button"
                 role="tab"
                 aria-selected={activeTab === tab.key}
                 aria-controls="feed-panel"
                 id={`tab-${tab.key}`}
+                variant="text"
+                size="md"
                 onClick={() => setActiveTab(tab.key)}
-                className="w-full min-h-[48px] rounded-extra-large transition-colors border-0 shadow-none hover:opacity-90 active:opacity-80"
+                className="w-full !min-h-[48px] rounded-extra-large !shadow-none"
                 style={{
                   color: activeTab === tab.key ? colors.primary : colors.onSurface,
                   backgroundColor:
@@ -238,7 +244,7 @@ export default function HomePage() {
                 <TitleSmall as="span" color={activeTab === tab.key ? 'primary' : 'onSurface'}>
                   {tab.label}
                 </TitleSmall>
-              </button>
+              </Button>
               {activeTab === tab.key && (
                 <span
                   className="w-10 h-1 rounded-full mt-0.5 shrink-0"

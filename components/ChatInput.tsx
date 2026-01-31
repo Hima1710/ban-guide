@@ -3,6 +3,7 @@
 import { Send, ImageIcon, Mic, Square, Package, X } from 'lucide-react'
 import { ChatInputProps } from '@/types'
 import { useTheme } from '@/contexts/ThemeContext'
+import { Button } from '@/components/m3'
 
 export default function ChatInput({
   value,
@@ -62,13 +63,15 @@ export default function ChatInput({
               <p className="text-sm italic" style={{ color: textMuted }}>صورة</p>
             )}
           </div>
-          <button
+          <Button
             onClick={onCancelReply}
-            className="p-1 rounded transition-colors hover:opacity-70"
+            variant="text"
+            size="sm"
+            className="!min-h-0 !p-1"
             style={{ color: textMuted }}
           >
             <X size={14} />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -126,32 +129,38 @@ export default function ChatInput({
               disabled={disabled}
             />
           </label>
-          <button
+          <Button
             onClick={onProductSelect}
-            className="p-2 rounded transition-colors hover:opacity-70"
+            variant="text"
+            size="sm"
+            className="!min-h-0 !p-2"
             style={{ color: isDark ? accent : colors.secondary }}
             disabled={disabled}
           >
             <Package size={20} />
-          </button>
+          </Button>
           {!isRecording ? (
-            <button
+            <Button
               onClick={onStartRecording}
-              className="p-2 rounded transition-colors hover:opacity-70"
+              variant="text"
+              size="sm"
+              className="!min-h-0 !p-2"
               style={{ color: accent }}
               disabled={disabled}
             >
               <Mic size={20} />
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={onStopRecording}
-              className="chat-drawer-btn-danger p-2 rounded transition-colors hover:opacity-70"
+              variant="text"
+              size="sm"
+              className="!min-h-0 !p-2"
               style={{ color: colors.error }}
             >
               <Square size={20} />
-            </button>
+            </Button>
           )}
         </div>
         <textarea
@@ -166,19 +175,23 @@ export default function ChatInput({
             maxHeight: '120px',
             fontSize: '16px',
             backgroundColor: isDark ? 'var(--chat-drawer-bg)' : colors.surface,
-            border: `1px solid ${border}`,
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: border,
             color: text,
           }}
           rows={1}
         />
-        <button
+        <Button
           onClick={onSend}
-          disabled={disabled || (!value.trim() && !selectedImage)}
-          className="p-2 rounded transition-colors disabled:opacity-50"
+          variant="text"
+          size="sm"
+          className="!min-h-0 !p-2"
           style={{ color: accent }}
+          disabled={disabled || (!value.trim() && !selectedImage)}
         >
           <Send size={20} />
-        </button>
+        </Button>
       </div>
     </div>
   )

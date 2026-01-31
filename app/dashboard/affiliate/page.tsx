@@ -127,26 +127,24 @@ export default function AffiliateDashboardPage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto">
-          <button
+          <Button
             onClick={() => setActiveTab('earnings')}
-            className="px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap"
-            style={{
-              backgroundColor: activeTab === 'earnings' ? colors.surfaceContainer : colors.outline,
-              color: activeTab === 'earnings' ? colors.primary : colors.onSurface
-            }}
+            variant={activeTab === 'earnings' ? 'filled' : 'outlined'}
+            size="sm"
+            className="whitespace-nowrap rounded-full"
+            style={activeTab === 'earnings' ? {} : { borderColor: colors.outline, color: colors.onSurface }}
           >
             💰 أرباحي
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setActiveTab('places')}
-            className="px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap"
-            style={{
-              backgroundColor: activeTab === 'places' ? colors.surfaceContainer : colors.outline,
-              color: activeTab === 'places' ? colors.primary : colors.onSurface
-            }}
+            variant={activeTab === 'places' ? 'filled' : 'outlined'}
+            size="sm"
+            className="whitespace-nowrap rounded-full"
+            style={activeTab === 'places' ? {} : { borderColor: colors.outline, color: colors.onSurface }}
           >
             🏪 أماكني
-          </button>
+          </Button>
         </div>
 
         {/* Earnings Tab */}
@@ -170,19 +168,15 @@ export default function AffiliateDashboardPage() {
                   >
                     <DollarSign size={24} style={{ color: colors.success }} />
                   </div>
-                  <button
+                  <Button
                     onClick={() => setShowWithdrawalModal(true)}
                     disabled={stats.pendingBalance <= 0}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{
-                      backgroundColor: colors.primary,
-                      color: colors.onPrimary
-                    }}
-                    onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '0.9')}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                    variant="filled"
+                    size="sm"
+                    className="!min-h-0 py-1.5 px-3 rounded-full text-xs"
                   >
                     سحب
-                  </button>
+                  </Button>
                 </div>
                 <p 
                   className="text-sm mb-1"
@@ -311,19 +305,10 @@ export default function AffiliateDashboardPage() {
                 >
                   {affiliate.code}
                 </div>
-                <button
-                  onClick={copyCode}
-                  className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-medium transition-opacity"
-                  style={{
-                    backgroundColor: colors.primary,
-                    color: colors.onPrimary
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
+                <Button onClick={copyCode} variant="filled" size="md" className="inline-flex items-center justify-center gap-2">
                   <Copy size={20} />
                   <span className="hidden sm:inline">نسخ الكود</span>
-                </button>
+                </Button>
               </div>
               <div className="mt-4 flex flex-wrap gap-4">
                 <p 
@@ -494,19 +479,15 @@ export default function AffiliateDashboardPage() {
               >
                 إدارة الصيدليات والمحلات والأماكن الخاصة بك
               </p>
-              <button
+              <Button
                 onClick={() => router.push('/dashboard/places')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-opacity"
-                style={{
-                  backgroundColor: colors.primary,
-                  color: colors.onPrimary
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                variant="filled"
+                size="sm"
+                className="inline-flex items-center gap-2"
               >
                 <Plus size={20} />
                 انتقل إلى أماكني
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -551,28 +532,12 @@ export default function AffiliateDashboardPage() {
                 }}
               />
               <div className="flex gap-3">
-                <button
-                  onClick={handleWithdrawal}
-                  className="flex-1 py-3 rounded-full font-medium transition-opacity"
-                  style={{
-                    backgroundColor: colors.primary,
-                    color: colors.onPrimary
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
+                <Button onClick={handleWithdrawal} variant="filled" size="md" className="flex-1">
                   تأكيد
-                </button>
-                <button
-                  onClick={() => setShowWithdrawalModal(false)}
-                  className="flex-1 py-3 rounded-full font-medium transition-colors"
-                  style={{
-                    backgroundColor: colors.outline,
-                    color: colors.onSurface
-                  }}
-                >
+                </Button>
+                <Button onClick={() => setShowWithdrawalModal(false)} variant="outlined" size="md" className="flex-1">
                   إلغاء
-                </button>
+                </Button>
               </div>
             </div>
           </div>

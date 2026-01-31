@@ -13,6 +13,7 @@ import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
 import { useUploadImage } from '@/hooks/useUploadImage'
 import { LoadingSpinner, PageSkeleton } from '@/components/common'
+import { Button } from '@/components/m3'
 
 export default function PlacePostsPage() {
   const params = useParams()
@@ -293,17 +294,10 @@ export default function PlacePostsPage() {
               </h1>
               <p style={{ color: colors.onSurfaceVariant }}>إضافة وتعديل منشورات المكان</p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105 active:scale-95"
-              style={{
-                backgroundColor: colors.primary,
-                color: colors.onPrimary,
-              }}
-            >
+            <Button onClick={() => setShowAddModal(true)} variant="filled" size="sm" className="inline-flex items-center gap-2">
               <Plus size={20} />
               إضافة منشور
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -356,26 +350,24 @@ export default function PlacePostsPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button
+                      <Button
                         onClick={() => handleEdit(post)}
-                        className="p-1.5 rounded-lg transition-all hover:scale-110"
-                        style={{
-                          color: colors.primary,
-                          backgroundColor: `${colors.primary}15`,
-                        }}
+                        variant="outlined"
+                        size="sm"
+                        className="!min-h-0 !p-2"
+                        style={{ color: colors.primary, borderColor: colors.primary }}
                       >
                         <Edit size={16} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => handleDelete(post.id)}
-                        className="p-1.5 rounded-lg transition-all hover:scale-110"
-                        style={{
-                          color: colors.error,
-                          backgroundColor: `${colors.error}15`,
-                        }}
+                        variant="text"
+                        size="sm"
+                        className="!min-h-0 !p-2"
+                        style={{ color: colors.error }}
                       >
                         <Trash2 size={16} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -429,13 +421,9 @@ export default function PlacePostsPage() {
                 >
                   {editingPost ? 'تعديل المنشور' : 'إضافة منشور جديد'}
                 </h2>
-                <button
-                  onClick={handleCancel}
-                  className="transition-colors"
-                  style={{ color: colors.onSurfaceVariant }}
-                >
+                <Button onClick={handleCancel} variant="text" size="sm" className="!min-h-0 !p-2">
                   <X size={24} />
-                </button>
+                </Button>
               </div>
 
               {/* Post Type Selection */}
@@ -446,52 +434,45 @@ export default function PlacePostsPage() {
                 >
                   نوع المنشور
                 </label>
-                <div className="flex gap-2">
-                  <button
+                <div className="flex gap-2 flex-wrap">
+                  <Button
                     onClick={() => setPostData({ ...postData, post_type: 'text', image_url: '', video_url: '' })}
-                    className="px-4 py-2 rounded-lg transition-all flex items-center gap-2 hover:scale-105"
-                    style={{
-                      backgroundColor: postData.post_type === 'text' 
-                        ? colors.primary 
-                        : colors.surfaceVariant,
-                      color: postData.post_type === 'text' 
-                        ? colors.onPrimary 
-                        : colors.onSurfaceVariant,
-                    }}
+                    variant={postData.post_type === 'text' ? 'filled' : 'outlined'}
+                    size="sm"
+                    className="inline-flex items-center gap-2"
+                    style={postData.post_type === 'text' ? {} : { borderColor: colors.outline, color: colors.onSurfaceVariant }}
                   >
                     <FileText size={18} />
                     نص فقط
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setPostData({ ...postData, post_type: 'image', video_url: '' })}
-                    className="px-4 py-2 rounded-lg transition-all flex items-center gap-2 hover:scale-105"
-                    style={{
-                      backgroundColor: postData.post_type === 'image' 
-                        ? colors.success 
-                        : colors.surfaceVariant,
-                      color: postData.post_type === 'image' 
-                        ? colors.onPrimary 
-                        : colors.onSurfaceVariant,
-                    }}
+                    variant={postData.post_type === 'image' ? 'filled' : 'outlined'}
+                    size="sm"
+                    className="inline-flex items-center gap-2"
+                    style={
+                      postData.post_type === 'image'
+                        ? { backgroundColor: colors.success ?? colors.primary, color: colors.onPrimary }
+                        : { borderColor: colors.outline, color: colors.onSurfaceVariant }
+                    }
                   >
                     <ImageIcon size={18} />
                     صورة وكتابة
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => setPostData({ ...postData, post_type: 'video', image_url: '' })}
-                    className="px-4 py-2 rounded-lg transition-all flex items-center gap-2 hover:scale-105"
-                    style={{
-                      backgroundColor: postData.post_type === 'video' 
-                        ? colors.error 
-                        : colors.surfaceVariant,
-                      color: postData.post_type === 'video' 
-                        ? colors.onPrimary 
-                        : colors.onSurfaceVariant,
-                    }}
+                    variant={postData.post_type === 'video' ? 'filled' : 'outlined'}
+                    size="sm"
+                    className="inline-flex items-center gap-2"
+                    style={
+                      postData.post_type === 'video'
+                        ? { backgroundColor: colors.error ?? colors.primary, color: colors.onPrimary }
+                        : { borderColor: colors.outline, color: colors.onSurfaceVariant }
+                    }
                   >
                     <Video size={18} />
                     فيديو وكتابة
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -533,16 +514,15 @@ export default function PlacePostsPage() {
                         alt="Preview"
                         className="w-full max-w-md mx-auto rounded-lg mb-2"
                       />
-                      <button
+                      <Button
                         onClick={() => setPostData({ ...postData, image_url: '' })}
-                        className="absolute top-2 right-2 p-1 rounded-full"
-                        style={{
-                          backgroundColor: colors.error,
-                          color: colors.onPrimary,
-                        }}
+                        variant="filled"
+                        size="sm"
+                        className="absolute top-2 right-2 !min-h-0 !p-1.5"
+                        style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                       >
                         <X size={16} />
-                      </button>
+                      </Button>
                     </div>
                   ) : (
                     <div 
@@ -606,29 +586,15 @@ export default function PlacePostsPage() {
                 </div>
               )}
 
-              {/* Actions */}
+              {/* Actions – M3 Button (النظام الموحد) */}
               <div className="flex gap-3">
-                <button
-                  onClick={handleSave}
-                  className="flex-1 px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 hover:scale-105 active:scale-95"
-                  style={{
-                    backgroundColor: colors.primary,
-                    color: colors.onPrimary,
-                  }}
-                >
+                <Button onClick={handleSave} variant="filled" size="sm" className="flex-1">
                   <Save size={18} />
                   {editingPost ? 'تحديث' : 'إضافة'}
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="px-4 py-2 rounded-lg transition-all hover:scale-105 active:scale-95"
-                  style={{
-                    backgroundColor: colors.surfaceContainer,
-                    color: colors.onSurfaceVariant,
-                  }}
-                >
+                </Button>
+                <Button onClick={handleCancel} variant="outlined" size="sm">
                   إلغاء
-                </button>
+                </Button>
               </div>
             </div>
           </div>
