@@ -14,6 +14,7 @@ import ConversationDrawer from '@/components/ConversationDrawer'
 import { ConversationProvider } from '@/contexts/ConversationContext'
 import { AddStoryProvider } from '@/contexts/AddStoryContext'
 import { CommentsProvider } from '@/contexts/CommentsContext'
+import { NavigationProvider, useNavigationContext } from '@/contexts/NavigationContext'
 
 const BOTTOM_NAV_HEIGHT = 64
 
@@ -25,10 +26,11 @@ interface AppShellProps {
   hideNav?: boolean
 }
 
-export default function AppShell({ children, hideHeader, hideNav }: AppShellProps) {
+function AppShellContent({ children, hideHeader, hideNav }: AppShellProps) {
   const pathname = usePathname()
   const { colors } = useTheme()
   const { isWebView, loading, safeAreaInsets } = useWebView()
+  const { isNavigating } = useNavigationContext() ?? { isNavigating: false }
 
   const isAuthPage = pathname.startsWith('/auth/')
   const showHeader = !hideHeader && !isAuthPage
@@ -46,9 +48,7 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
   const headerHeight = showHeader ? HEADER_HEIGHT : 0
 
   return (
-    <ConversationProvider>
-      <CommentsProvider>
-      <AddStoryProvider>
+    <>
       <div
         className={`min-h-screen ${isWebView ? 'webview-optimized' : ''}`}
         style={{
@@ -61,7 +61,7 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
         {showHeader && pathname !== '/' && <Breadcrumbs />}
 
         <main
-          className="min-h-screen transition-all duration-300"
+          className="min-h-screen transition-all duration-300 relative"
           style={{
             paddingTop: showHeader ? 8 : 0,
             paddingBottom: bottomNavHeight,
@@ -72,6 +72,15 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
           <div className="lg:pr-[280px] min-h-0 flex flex-col">
             {children}
           </div>
+          {isNavigating && (
+            <div
+              className="absolute inset-0 z-40 flex items-start justify-center pt-4"
+              style={{ backgroundColor: colors.background }}
+              aria-busy="true"
+            >
+              <PageSkeleton variant="default" className="w-full max-w-2xl" />
+            </div>
+          )}
         </main>
 
         {showNav && (
@@ -88,8 +97,6 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
         <ConversationDrawer />
 
       </div>
-      </AddStoryProvider>
-      </CommentsProvider>
 
       {process.env.NODE_ENV === 'development' && isWebView && (
         <div
@@ -125,6 +132,20 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
           }
         }
       `}</style>
-    </ConversationProvider>
+    </>
+  )
+}
+
+export default function AppShell(props: AppShellProps) {
+  return (
+    <NavigationProvider>
+      <ConversationProvider>
+        <CommentsProvider>
+          <AddStoryProvider>
+            <AppShellContent {...props} />
+          </AddStoryProvider>
+        </CommentsProvider>
+      </ConversationProvider>
+    </NavigationProvider>
   )
 }

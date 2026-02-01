@@ -458,7 +458,7 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
       setRecordingTime(0)
 
       const formData = new FormData()
-      formData.append('file', audioBlob, 'recording.webm')
+      formData.append('audio', audioBlob, 'recording.webm')
 
       const uploadResponse = await fetch('/api/upload-audio', {
         method: 'POST',

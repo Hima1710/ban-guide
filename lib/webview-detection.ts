@@ -196,3 +196,18 @@ export function applyWebViewOptimizations() {
     document.body.classList.add(`webview-${platform}`)
   }
 }
+
+/** جسر أندرويد: اهتزاز خفيف عند التفاعل (مثلاً ضغط الشريط السفلي) */
+declare global {
+  interface Window {
+    Android?: { vibrate?: (durationMs: number) => void }
+  }
+}
+
+export function triggerHapticFeedback(): void {
+  if (typeof window === 'undefined') return
+  const w = window as Window & { Android?: { vibrate?: (durationMs: number) => void } }
+  if (w.Android?.vibrate) {
+    w.Android.vibrate(10)
+  }
+}

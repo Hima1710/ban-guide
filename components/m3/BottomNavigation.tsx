@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useConversationContextOptional } from '@/contexts/ConversationContext'
+import { useNavigationContext } from '@/contexts/NavigationContext'
 import { useNotifications } from '@/hooks/useNotifications'
+import { triggerHapticFeedback } from '@/lib/webview-detection'
 import { getBottomNavigation, getUserRole, isNavigationItemActive } from '@/config/navigation'
 
 export default function BottomNavigation() {
@@ -13,10 +15,13 @@ export default function BottomNavigation() {
   const { user, profile } = useAuthContext()
   const { colors, isDark } = useTheme()
   const convCtx = useConversationContextOptional()
+  const navCtx = useNavigationContext()
   const { unreadCount } = useNotifications(user?.id)
 
   const role = getUserRole(profile)
   const navItems = getBottomNavigation(role)
+  const optimisticTabId = navCtx?.optimisticTabId ?? null
+  const startNavigation = navCtx?.startNavigation ?? (() => {})
 
   if (pathname.startsWith('/auth/')) return null
 
@@ -24,7 +29,7 @@ export default function BottomNavigation() {
     <nav
       className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t safe-area-bottom surface-chameleon-glass"
       style={{
-        borderColor: 'var(--color-outline)',
+        borderColor: colors.outline,
         boxShadow: 'var(--shadow-top)',
         paddingBottom: 'env(safe-area-inset-bottom, 0)',
       }}
@@ -34,9 +39,13 @@ export default function BottomNavigation() {
           const Icon = item.icon
           const isMessages = item.id === 'messages'
           const isSidebarOpen = convCtx?.isSidebarOpen ?? false
-          const isActive = isMessages
+          /* استجابة فورية: إن وُجد تبويب تفاؤلي نعتمد عليه، وإلا pathname */
+          const isActiveByPath = isMessages
             ? pathname === '/messages' || isSidebarOpen
             : isNavigationItemActive(item, pathname)
+          const isActive = optimisticTabId !== null
+            ? optimisticTabId === item.id
+            : isActiveByPath
           const badge = isMessages
             ? (convCtx?.totalUnreadCount ?? unreadCount)
             : item.badge
@@ -47,7 +56,8 @@ export default function BottomNavigation() {
                 <Icon size={24} strokeWidth={isActive ? 2.5 : 2} className="transition-all" />
                 {badge != null && Number(badge) > 0 && (
                   <span
-                    className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold rounded-full px-1 bg-error text-on-error"
+                    className="absolute -top-1 -right-1 min-w-[16px] h-4 flex items-center justify-center text-[9px] font-bold rounded-full px-1"
+                    style={{ backgroundColor: colors.error, color: 'var(--color-on-error, #fff)' }}
                   >
                     {Number(badge) > 9 ? '9+' : badge}
                   </span>
@@ -58,32 +68,43 @@ export default function BottomNavigation() {
               </span>
               {isActive && (
                 <span
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-t-full bg-primary"
+                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-t-full"
+                  style={{ backgroundColor: colors.primary }}
                   aria-hidden
                 />
               )}
             </>
           )
 
-          /* MD3 الموحد: نهاري = خلفية ذهبية خفيفة للعنصر النشط؛ ليلي = حدود ذهبية فقط */
+          /* MD3 الموحد: ألوان من الثيم — Chameleon */
           const baseClass = 'flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-extra-large transition-all duration-200 relative min-w-[64px] min-h-[48px]'
           const activeClass = isActive
             ? isDark
-              ? 'bg-transparent border-[0.5px] border-primary text-primary'
-              : 'border-[0.5px] border-primary text-primary'
-            : 'text-on-surface border-[0.5px] border-transparent'
+              ? 'border-[0.5px] text-primary'
+              : 'border-[0.5px] text-primary'
+            : 'border-[0.5px] border-transparent'
           const className = `bottom-nav-item ${baseClass} ${activeClass}`
-          const activeStyle =
-            isActive && !isDark
-              ? { backgroundColor: `rgba(${colors.primaryRgb}, 0.18)` }
-              : undefined
+          const activeStyle = isActive
+            ? {
+                borderColor: colors.primary,
+                ...(isDark ? {} : { backgroundColor: `rgba(${colors.primaryRgb}, 0.18)` }),
+              }
+            : { borderColor: 'transparent', color: colors.onSurface }
+
+          const handleTap = () => {
+            triggerHapticFeedback()
+          }
 
           if (isMessages && convCtx) {
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => convCtx.openSidebar()}
+                onClick={() => {
+                  handleTap()
+                  startNavigation('messages')
+                  convCtx.openSidebar()
+                }}
                 className={className}
                 style={activeStyle}
                 aria-label={item.label}
@@ -94,7 +115,17 @@ export default function BottomNavigation() {
           }
 
           return (
-            <Link key={item.id} href={item.href} className={className} style={activeStyle}>
+            <Link
+              key={item.id}
+              href={item.href}
+              prefetch={true}
+              className={className}
+              style={activeStyle}
+              onClick={() => {
+                handleTap()
+                startNavigation(item.id)
+              }}
+            >
               {content}
             </Link>
           )
