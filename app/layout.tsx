@@ -21,9 +21,7 @@ const siteTitle = 'بان — دليلك للأماكن والخدمات'
 const siteDescription = 'دليلك للأماكن والخدمات'
 
 export const metadata: Metadata = {
-  metadataBase: process.env.NEXT_PUBLIC_SITE_URL
-    ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
-    : undefined,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://ban-guide.vercel.app'),
   title: siteTitle,
   description: siteDescription,
   icons: {
