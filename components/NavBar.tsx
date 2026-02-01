@@ -50,7 +50,7 @@ export default function NavBar() {
             <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
               <Image
                 src="/logo.webp"
-                alt="بان - دليل المحلات"
+                alt="بان - دليلك للأماكن والخدمات"
                 fill
                 sizes="56px"
                 className="object-contain"
@@ -59,7 +59,7 @@ export default function NavBar() {
               />
             </div>
             <TitleMedium className="hidden sm:inline">
-              دليل المحلات
+              دليلك للأماكن والخدمات
             </TitleMedium>
           </Link>
 

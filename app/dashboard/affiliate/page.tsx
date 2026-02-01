@@ -475,7 +475,7 @@ export default function AffiliateDashboardPage() {
                 className="mb-6"
                 style={{ color: colors.onSurface }}
               >
-                إدارة الصيدليات والمحلات والأماكن الخاصة بك
+                إدارة الأماكن والخدمات الخاصة بك
               </p>
               <Button
                 onClick={() => router.push('/dashboard/places')}

@@ -60,7 +60,7 @@ export async function sendWelcomeNotification(userId: string) {
     userId,
     titleAr: 'مرحباً بك في بان! 🎉',
     titleEn: 'Welcome to BAN! 🎉',
-    messageAr: 'نحن سعداء بانضمامك إلينا. استكشف المحلات والصيدليات القريبة منك الآن!',
+    messageAr: 'نحن سعداء بانضمامك إلينا. استكشف الأماكن والخدمات القريبة منك الآن!',
     messageEn: 'We are happy to have you join us. Explore nearby stores and pharmacies now!',
     type: NotificationType.SYSTEM,
     link: '/dashboard',

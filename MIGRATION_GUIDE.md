@@ -1,6 +1,6 @@
 # 🚀 Database Migration Guide
 
-**Project:** BAN - دليل المحلات  
+**Project:** BAN - دليلك للأماكن والخدمات  
 **Date:** 2026-01-21  
 **Migration:** complete_schema_migration.sql
 

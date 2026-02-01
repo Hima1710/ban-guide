@@ -23,7 +23,7 @@
 1. إذا ظهرت رسالة "Configure consent screen"، اضغط عليها
 2. اختر **External** (للتطوير) أو **Internal** (للمؤسسات)
 3. املأ المعلومات:
-   - **App name**: دليل المحلات والصيدليات
+   - **App name**: دليلك للأماكن والخدمات
    - **User support email**: بريدك الإلكتروني
    - **Developer contact information**: بريدك الإلكتروني
 4. اضغط **Save and Continue**

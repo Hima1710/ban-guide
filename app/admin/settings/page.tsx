@@ -17,8 +17,8 @@ export default function AdminSettingsPage() {
   const { isAdmin, loading: adminLoading } = useAdminManager()
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({
-    siteName: 'دليل المحلات والصيدليات',
-    siteDescription: 'دليل شامل للمحلات والصيدليات',
+    siteName: 'دليلك للأماكن والخدمات',
+    siteDescription: 'دليلك للأماكن والخدمات',
     siteEmail: '',
     maintenanceMode: false,
     allowRegistrations: true,

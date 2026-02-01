@@ -1,6 +1,6 @@
 # 📊 Database Migration - Executive Summary
 
-**Project:** BAN - دليل المحلات  
+**Project:** BAN - دليلك للأماكن والخدمات  
 **Date:** 2026-01-21  
 **Status:** ✅ Ready to Execute
 

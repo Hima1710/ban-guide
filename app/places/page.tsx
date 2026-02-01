@@ -43,7 +43,7 @@ export default function PlacesPage() {
             <HeadlineLarge style={{ color: colors.onSurface }}>الأماكن</HeadlineLarge>
           </div>
           <BodyMedium color="onSurfaceVariant">
-            اكتشف المحلات والصيدليات والأماكن القريبة منك
+            اكتشف الأماكن والخدمات القريبة منك
           </BodyMedium>
         </div>
 

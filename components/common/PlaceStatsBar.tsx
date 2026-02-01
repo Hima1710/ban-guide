@@ -42,23 +42,30 @@ export default function PlaceStatsBar({
     async (e: React.MouseEvent) => {
       if (stopPropagation) e.stopPropagation()
       const url = typeof window !== 'undefined' ? new URL(shareHref, window.location.origin).href : shareHref
+      const title = placeName || 'مكان'
+      const text = `شاهد "${title}" على بان`
+
       try {
+        // Web Share API: يفتح قائمة التطبيقات (واتساب، تليجرام، إلخ) على الموبايل وفي متصفحات تدعمها
         if (typeof navigator !== 'undefined' && navigator.share) {
           await navigator.share({
-            title: placeName || 'مكان',
+            title,
+            text,
             url,
           })
-        } else {
-          await navigator.clipboard?.writeText(url)
-          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('toast', { detail: 'تم نسخ الرابط' }))
+          return
         }
+      } catch (err: unknown) {
+        // المستخدم ألغى المشاركة — لا ننسخ ولا نعرض رسالة
+        if (err instanceof Error && err.name === 'AbortError') return
+        // غير ذلك: نحاول نسخ الرابط كبديل
+      }
+
+      try {
+        await navigator.clipboard?.writeText(url)
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('toast', { detail: 'تم نسخ الرابط' }))
       } catch {
-        try {
-          await navigator.clipboard?.writeText(url)
-          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('toast', { detail: 'تم نسخ الرابط' }))
-        } catch {
-          // لا شيء
-        }
+        // لا شيء
       }
     },
     [shareHref, placeName, stopPropagation]

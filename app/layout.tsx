@@ -17,13 +17,32 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const siteTitle = 'بان — دليلك للأماكن والخدمات'
+const siteDescription = 'دليلك للأماكن والخدمات'
+
 export const metadata: Metadata = {
-  title: 'دليل المحلات والصيدليات',
-  description: 'دليل شامل للمحلات والصيدليات والأماكن التجارية والخدمات',
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL
+    ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
+    : undefined,
+  title: siteTitle,
+  description: siteDescription,
   icons: {
     icon: [{ url: '/logo.webp', sizes: 'any' }, { url: '/logo.webp', type: 'image/webp' }],
     shortcut: '/logo.webp',
     apple: '/logo.webp',
+  },
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    images: [{ url: '/logo.webp', width: 512, height: 512, alt: 'بان' }],
+    locale: 'ar_AR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteTitle,
+    description: siteDescription,
+    images: ['/logo.webp'],
   },
 }
 
