@@ -503,10 +503,10 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
   }, [audioRecorder, userId, selectedConversation, selectedPlaceId, recordingTimer, replyingTo, currentEmployee])
 
   // ==================== REAL-TIME SUBSCRIPTIONS ====================
+  // يتطلب تفعيل Realtime لجدول messages في Supabase: Database → Replication → جدول messages
 
   useEffect(() => {
     if (!userId) return
-
 
     // Cleanup previous subscription
     if (subscriptionRef.current) {
@@ -606,9 +606,18 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
         return [...prev, fullMessage]
       })
     } else if (payload.eventType === 'UPDATE') {
-      setMessages(prev => prev.map(m => 
-        m.id === payload.new.id ? { ...m, ...payload.new } : m
-      ))
+      const next = payload.new as Record<string, unknown>
+      setMessages(prev => prev.map(m => {
+        if (m.id !== next.id) return m
+        // دمج الحقول القياسية فقط حتى لا نطمس العلاقات (sender, place)
+        return {
+          ...m,
+          is_read: next.is_read !== undefined ? (next.is_read as boolean) : m.is_read,
+          content: (next.content as string) ?? m.content,
+          image_url: (next.image_url as string | null) ?? m.image_url,
+          audio_url: (next.audio_url as string | null) ?? m.audio_url,
+        }
+      }))
     } else if (payload.eventType === 'DELETE') {
       setMessages(prev => prev.filter(m => m.id !== payload.old.id))
     }
