@@ -71,6 +71,8 @@ export function useMessages(options: UseMessagesOptions = {}): UseMessagesReturn
         setUnreadCount(unread)
       }
     } catch (err: any) {
+      // تجاهل إلغاء الطلب (مثلاً عند تغيير الصفحة أو فك تركيب المكون)
+      if (err?.name === 'AbortError' || err?.message?.includes('aborted')) return
       console.error('Error loading messages:', err)
       setError(err.message || 'فشل في تحميل الرسائل')
       setMessages([])

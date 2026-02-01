@@ -52,6 +52,27 @@ export interface Place {
   updated_at: string
 }
 
+/** العملات المدعومة للمنتجات — مصدر واحد للقائمة */
+export const PRODUCT_CURRENCIES = [
+  { code: 'IQD', labelAr: 'دينار عراقي', labelEn: 'IQD' },
+  { code: 'USD', labelAr: 'دولار أمريكي', labelEn: 'USD' },
+  { code: 'EUR', labelAr: 'يورو', labelEn: 'EUR' },
+  { code: 'GBP', labelAr: 'جنيه إسترليني', labelEn: 'GBP' },
+  { code: 'SAR', labelAr: 'ريال سعودي', labelEn: 'SAR' },
+  { code: 'AED', labelAr: 'درهم إماراتي', labelEn: 'AED' },
+  { code: 'EGP', labelAr: 'جنيه مصري', labelEn: 'EGP' },
+  { code: 'TRY', labelAr: 'ليرة تركية', labelEn: 'TRY' },
+  { code: 'KWD', labelAr: 'دينار كويتي', labelEn: 'KWD' },
+  { code: 'BHD', labelAr: 'دينار بحريني', labelEn: 'BHD' },
+  { code: 'OMR', labelAr: 'ريال عماني', labelEn: 'OMR' },
+  { code: 'QAR', labelAr: 'ريال قطري', labelEn: 'QAR' },
+  { code: 'JOD', labelAr: 'دينار أردني', labelEn: 'JOD' },
+  { code: 'LBP', labelAr: 'ليرة لبنانية', labelEn: 'LBP' },
+  { code: 'SYP', labelAr: 'ليرة سورية', labelEn: 'SYP' },
+] as const
+
+export type ProductCurrencyCode = (typeof PRODUCT_CURRENCIES)[number]['code']
+
 export interface Product {
   id: string
   place_id: string

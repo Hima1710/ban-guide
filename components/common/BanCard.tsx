@@ -180,6 +180,10 @@ export function BanCardPosts({
   )
 }
 
+/**
+ * كارت المنتج الموحد — نفس لغة المكان والمنشور:
+ * flex-col، خلفية surface، حدود primary 0.5px، صورة بعرض الكارت وزوايا منحنية، ثم الهيدر (الاسم + السعر) ثم شريط التفاعل.
+ */
 export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFeedItem; onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void }) {
   const router = useRouter()
   const [isLiked, setIsLiked] = useState(item.isLiked)
@@ -198,65 +202,59 @@ export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFe
   const { toggleLike, toggleFavorite, canInteract } = useInteractionToggle(item.id, 'product', isLiked, isFavorited, handleUpdate)
   const tierProps = getTierCardProps(item.tier ?? DEFAULT_TIER)
 
+  const content = (
+    <>
+      {/* صورة بعرض الكارت وزوايا منحنية (مثل المنشور) */}
+      <div className="w-full aspect-[4/3] relative bg-surface overflow-hidden rounded-t-extra-large">
+        {imageUrl ? (
+          <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-large">
+            {item.name_ar?.[0] || '?'}
+          </div>
+        )}
+        <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface/95 border-[0.5px] border-primary text-primary backdrop-blur-sm">
+          {item.price != null ? `${item.price} ${item.currency}` : '—'}
+        </span>
+      </div>
+      {/* الهيدر: الاسم + وصف سطر واحد */}
+      <div className="p-3 pt-2 flex flex-col gap-1">
+        <h3 className="text-title-small text-on-surface font-semibold line-clamp-2">{item.name_ar}</h3>
+        {(item.description_ar || item.description_en) && (
+          <p className="text-body-small text-on-surface-variant line-clamp-1">
+            {item.description_ar || item.description_en}
+          </p>
+        )}
+      </div>
+      {/* شريط التفاعل (أيقونات ذهبية رفيعة بدون كتل لونية — مثل المنشور) */}
+      <div className="px-3 pb-3 pt-0">
+        <InteractionsBar
+          isLiked={isLiked}
+          isFavorited={isFavorited}
+          onLike={toggleLike}
+          onFavorite={toggleFavorite}
+          onComment={() => canNavigate && router.push(`${href}#comments`)}
+          canInteract={canInteract}
+        />
+      </div>
+    </>
+  )
+
   return (
     <Card
       variant={tierProps.variant}
       elevation={tierProps.elevation}
       padding="none"
-      className={`relative ${tierProps.className}`}
+      className={`relative flex flex-col overflow-hidden ${tierProps.className}`}
     >
       {tierProps.showPremiumBadge && <PremiumBadge />}
       {canNavigate ? (
-        <Link href={href} className="card-trigger cursor-pointer block no-underline text-inherit" dir="rtl">
-          <div className="aspect-square w-full relative bg-surface">
-            {imageUrl ? (
-              <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-large">
-                {item.name_ar?.[0] || '?'}
-              </div>
-            )}
-            <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface border-2 border-primary text-primary">
-              {item.price != null ? `${item.price} ${item.currency}` : '—'}
-            </span>
-          </div>
-          <div className="p-3">
-            <h3 className="text-title-small text-on-surface font-semibold line-clamp-2">{item.name_ar}</h3>
-            <InteractionsBar
-              isLiked={isLiked}
-              isFavorited={isFavorited}
-              onLike={toggleLike}
-              onFavorite={toggleFavorite}
-              onComment={() => canNavigate && router.push(`${href}#comments`)}
-              canInteract={canInteract}
-            />
-          </div>
+        <Link href={href} className="card-trigger flex flex-col cursor-pointer no-underline text-inherit w-full" dir="rtl">
+          {content}
         </Link>
       ) : (
-        <div className="card-trigger" dir="rtl">
-          <div className="aspect-square w-full relative bg-surface">
-            {imageUrl ? (
-              <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-large">
-                {item.name_ar?.[0] || '?'}
-              </div>
-            )}
-            <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface border-2 border-primary text-primary">
-              {item.price != null ? `${item.price} ${item.currency}` : '—'}
-            </span>
-          </div>
-          <div className="p-3">
-            <h3 className="text-title-small text-on-surface font-semibold line-clamp-2">{item.name_ar}</h3>
-            <InteractionsBar
-              isLiked={isLiked}
-              isFavorited={isFavorited}
-              onLike={toggleLike}
-              onFavorite={toggleFavorite}
-              onComment={() => {}}
-              canInteract={canInteract}
-            />
-          </div>
+        <div className="card-trigger flex flex-col w-full" dir="rtl">
+          {content}
         </div>
       )}
     </Card>

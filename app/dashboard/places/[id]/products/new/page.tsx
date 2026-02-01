@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
-import { Upload, X, Plus, Trash2 } from 'lucide-react'
+import { X, Plus, Trash2 } from 'lucide-react'
 import { convertToWebP, uploadImageToImgBB } from '@/lib/imgbb'
 import { useTheme } from '@/contexts/ThemeContext'
-import { PageSkeleton } from '@/components/common'
-import { Button } from '@/components/m3'
+import { PageSkeleton, Button, ImagePicker, VideoPicker } from '@/components/common'
 import type { Package } from '@/lib/types'
+import { PRODUCT_CURRENCIES } from '@/lib/types'
 import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
 
@@ -87,19 +87,16 @@ export default function NewProductPage() {
     return <PageSkeleton variant="form" />
   }
 
-  const handleImageUpload = async (files: FileList) => {
+  const handleImagesSelected = async (files: File[]) => {
     const maxImages = subscription?.max_product_images || DEFAULT_MAX_IMAGES
     if (imageUrls.length + files.length > maxImages) {
       showError(`الحد الأقصى للصور هو ${maxImages}`)
       return
     }
 
-    const newImages = Array.from(files)
-
-    // Upload images
     showLoading('جاري رفع الصور...')
     try {
-      const uploadPromises = newImages.map(async (file) => {
+      const uploadPromises = files.map(async (file) => {
         const webpBlob = await convertToWebP(file)
         const webpFile = new File([webpBlob], file.name.replace(/\.[^/.]+$/, '.webp'), {
           type: 'image/webp',
@@ -108,12 +105,53 @@ export default function NewProductPage() {
       })
 
       const urls = await Promise.all(uploadPromises)
-      setImageUrls([...imageUrls, ...urls])
+      setImageUrls((prev) => [...prev, ...urls])
       closeLoading()
       showSuccess('تم رفع الصور بنجاح')
     } catch (error) {
       closeLoading()
       showError('حدث خطأ في رفع الصور')
+    }
+  }
+
+  const handleVideoSelected = async (file: File) => {
+    const maxVideos = subscription?.max_product_videos ?? DEFAULT_MAX_VIDEOS
+    if (videos.filter((v) => v.trim()).length >= maxVideos) {
+      showError(`الحد الأقصى للفيديوهات هو ${maxVideos}`)
+      return
+    }
+    if (file.size > 2 * 1024 * 1024 * 1024) {
+      showError('حجم الفيديو كبير جداً. الحد الأقصى هو 2GB')
+      return
+    }
+
+    showLoading('جاري رفع الفيديو...')
+    try {
+      const formDataUpload = new FormData()
+      formDataUpload.append('video', file)
+      formDataUpload.append('title', formData.name_ar?.trim() || 'فيديو منتج')
+      formDataUpload.append('description', formData.description_ar || '')
+      formDataUpload.append('privacyStatus', 'unlisted')
+
+      const response = await fetch('/api/youtube/upload', {
+        method: 'POST',
+        body: formDataUpload,
+      })
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'فشل رفع الفيديو')
+      }
+      if (data.videoUrl) {
+        setVideos((prev) => [...prev, data.videoUrl])
+        closeLoading()
+        showSuccess('تم رفع الفيديو بنجاح')
+      } else {
+        throw new Error('لم يتم إرجاع رابط الفيديو')
+      }
+    } catch (error: any) {
+      closeLoading()
+      showError(error.message || 'حدث خطأ في رفع الفيديو. تأكد من ربط حساب YouTube في لوحة الإدارة.')
     }
   }
 
@@ -395,9 +433,11 @@ export default function NewProductPage() {
                   color: colors.onSurface,
                 }}
               >
-                <option value="IQD">دينار عراقي (IQD)</option>
-                <option value="USD">دولار أمريكي (USD)</option>
-                <option value="EUR">يورو (EUR)</option>
+                {PRODUCT_CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.labelAr} ({c.code})
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -421,18 +461,18 @@ export default function NewProductPage() {
             </div>
           </div>
 
-          {/* Images */}
+          {/* Images — مكون موحد: رفع من الجهاز أو التقاط بالكاميرا */}
           <div>
-            <label 
-              className="block text-sm font-medium mb-2"
-              style={{ color: colors.onSurface }}
-            >
-              الصور ({imageUrls.length}/{subscription?.max_product_images || DEFAULT_MAX_IMAGES})
-            </label>
-            <div className="grid grid-cols-4 gap-4 mb-4">
+            <ImagePicker
+              label="الصور"
+              maxFiles={subscription?.max_product_images ?? DEFAULT_MAX_IMAGES}
+              currentCount={imageUrls.length}
+              onImagesSelected={handleImagesSelected}
+            />
+            <div className="grid grid-cols-4 gap-4 mt-4">
               {imageUrls.map((url, index) => (
                 <div key={index} className="relative">
-                  <img src={url} alt={`Image ${index + 1}`} className="w-full h-32 object-cover rounded" />
+                  <img src={url} alt={`صورة ${index + 1}`} className="w-full h-32 object-cover rounded-lg" style={{ border: `1px solid ${colors.outline}` }} />
                   <Button
                     type="button"
                     onClick={() => removeImage(index)}
@@ -445,41 +485,33 @@ export default function NewProductPage() {
                 </div>
               ))}
             </div>
-            <label 
-              className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
-              style={{
-                backgroundColor: colors.surfaceContainer,
-                color: colors.onSurface,
-              }}
-            >
-              <Upload size={20} />
-              رفع صور
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
-              />
-            </label>
           </div>
 
-          {/* Videos */}
+          {/* Videos — مكون موحد: رفع من الجهاز أو تصوير فيديو + رابط YouTube */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <label 
                 className="block text-sm font-medium"
                 style={{ color: colors.onSurface }}
               >
-                فيديوهات YouTube ({videos.filter((v) => v.trim()).length}/{subscription?.max_product_videos || DEFAULT_MAX_VIDEOS})
+                فيديوهات ({videos.filter((v) => v.trim()).length}/{subscription?.max_product_videos ?? DEFAULT_MAX_VIDEOS})
               </label>
-              {(subscription?.max_product_videos || 0) > 0 && (
+              {(subscription?.max_product_videos ?? 0) > 0 && (
                 <Button type="button" onClick={addVideo} variant="filled" size="sm" className="inline-flex items-center gap-2">
                   <Plus size={16} />
-                  إضافة فيديو
+                  إضافة رابط YouTube
                 </Button>
               )}
             </div>
+            {(subscription?.max_product_videos ?? 0) > 0 && (
+              <div className="mb-4">
+                <VideoPicker
+                  label="رفع فيديو أو تصويره (يُرفع إلى YouTube)"
+                  onVideoSelected={handleVideoSelected}
+                  disabled={videos.filter((v) => v.trim()).length >= (subscription?.max_product_videos ?? 0)}
+                />
+              </div>
+            )}
             {videos.map((video, index) => (
               <div key={index} className="flex gap-2 mb-2">
                 <input

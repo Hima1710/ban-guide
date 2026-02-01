@@ -38,10 +38,10 @@ async function getOwnerCredentials() {
     }
   }
 
-  // If not in env, try to get from database (admin user)
+  // If not in env, try to get from database (admin user — supabaseAdmin لتجاوز RLS في API)
   try {
-    const { supabase } = await import('@/lib/supabase')
-    const { data: adminRow, error: dbError } = await supabase
+    const { supabaseAdmin } = await import('@/lib/supabase')
+    const { data: adminRow, error: dbError } = await supabaseAdmin
       .from('user_profiles')
       .select('youtube_access_token, youtube_refresh_token, youtube_token_expiry')
       .eq('is_admin', true)
@@ -88,9 +88,9 @@ async function refreshOwnerToken(refreshToken: string) {
       process.env.YOUTUBE_TOKEN_EXPIRY = new Date(credentials.expiry_date).toISOString()
     }
   } else {
-    // Update in database
-    const { supabase } = await import('@/lib/supabase')
-    const { data: adminRow } = await supabase
+    // Update in database (supabaseAdmin لتجاوز RLS في API routes)
+    const { supabaseAdmin } = await import('@/lib/supabase')
+    const { data: adminRow } = await supabaseAdmin
       .from('user_profiles')
       .select('id')
       .eq('is_admin', true)
@@ -106,7 +106,7 @@ async function refreshOwnerToken(refreshToken: string) {
           ? new Date(credentials.expiry_date).toISOString()
           : null,
       }
-      await supabase
+      await supabaseAdmin
         .from('user_profiles')
         .update(updatePayload as never)
         .eq('id', adminProfile.id)
@@ -114,6 +114,40 @@ async function refreshOwnerToken(refreshToken: string) {
   }
 
   return credentials
+}
+
+/** تجديد التوكن عند انتهاء الصلاحية أو قبلها بدقائق */
+async function ensureValidCredentials(credentials: {
+  access_token: string
+  refresh_token: string
+  expiry_date: number | null
+}) {
+  const bufferMs = 5 * 60 * 1000 // 5 دقائق
+  const isExpired =
+    credentials.expiry_date != null &&
+    credentials.expiry_date < Date.now() + bufferMs
+
+  if (!isExpired) return credentials
+
+  if (!credentials.refresh_token) {
+    throw new Error('انتهت صلاحية حساب YouTube ولا يوجد مفتاح تجديد. يرجى إعادة ربط الحساب من لوحة الإدارة.')
+  }
+
+  try {
+    const refreshed = await refreshOwnerToken(credentials.refresh_token)
+    return {
+      access_token: refreshed.access_token as string,
+      refresh_token: (refreshed.refresh_token as string) || credentials.refresh_token,
+      expiry_date: refreshed.expiry_date ? new Date(refreshed.expiry_date).getTime() : null,
+    }
+  } catch (refreshError: any) {
+    console.error('YouTube token refresh failed:', refreshError?.message ?? refreshError)
+    const hint =
+      refreshError?.response?.data?.error === 'invalid_grant'
+        ? 'تم إلغاء صلاحية الربط. يرجى إعادة ربط حساب YouTube من لوحة الإدارة (إعادة ربط الحساب).'
+        : 'يرجى إعادة ربط حساب YouTube من لوحة الإدارة.'
+    throw new Error(`فشل في تجديد صلاحية حساب YouTube. ${hint}`)
+  }
 }
 
 export async function uploadVideo(
@@ -124,33 +158,11 @@ export async function uploadVideo(
   privacyStatus: 'private' | 'unlisted' | 'public' = 'unlisted'
 ): Promise<string> {
   try {
-    // Get owner's credentials
     let credentials = await getOwnerCredentials()
-    let accessToken = credentials.access_token
+    credentials = await ensureValidCredentials(credentials)
 
-    // Check if token is expired and refresh if needed
-    if (credentials.expiry_date && credentials.expiry_date < Date.now()) {
-      if (!credentials.refresh_token) {
-        throw new Error('YouTube token expired and no refresh token available. Please re-authenticate.')
-      }
-
-      try {
-        const refreshedCredentials = await refreshOwnerToken(credentials.refresh_token)
-        credentials = {
-          access_token: refreshedCredentials.access_token as string,
-          refresh_token: refreshedCredentials.refresh_token as string,
-          expiry_date: refreshedCredentials.expiry_date ? new Date(refreshedCredentials.expiry_date).getTime() : null,
-        }
-        accessToken = credentials.access_token
-      } catch (refreshError: any) {
-        console.error('Error refreshing YouTube token:', refreshError)
-        throw new Error('فشل في تجديد صلاحية حساب YouTube. يرجى إعادة ربط حساب YouTube من لوحة الإدارة.')
-      }
-    }
-
-    // Set credentials
     oauth2Client.setCredentials({
-      access_token: accessToken,
+      access_token: credentials.access_token,
       refresh_token: credentials.refresh_token,
     })
 
@@ -159,29 +171,50 @@ export async function uploadVideo(
       auth: oauth2Client,
     })
 
-    // Convert Buffer to Stream for YouTube API
     const { Readable } = await import('stream')
     const videoStream = new Readable()
     videoStream.push(videoFile)
-    videoStream.push(null) // End the stream
+    videoStream.push(null)
 
-    // Upload video
-    const response = await youtube.videos.insert({
-      part: ['snippet', 'status'],
-      requestBody: {
-        snippet: {
-          title,
-          description,
-          tags,
+    const doUpload = () =>
+      youtube.videos.insert({
+        part: ['snippet', 'status'],
+        requestBody: {
+          snippet: { title, description, tags },
+          status: { privacyStatus },
         },
-        status: {
-          privacyStatus,
+        media: { body: videoStream },
+      })
+
+    let response: Awaited<ReturnType<typeof doUpload>>
+    try {
+      response = await doUpload()
+    } catch (firstError: any) {
+      // إذا رجع 401 جرّب تجديد التوكن ثم إعادة المحاولة مرة واحدة
+      const is401 =
+        firstError?.code === 401 ||
+        firstError?.response?.status === 401 ||
+        firstError?.response?.data?.error?.code === 401
+      if (!is401 || !credentials.refresh_token) throw firstError
+
+      const refreshed = await ensureValidCredentials(credentials)
+      oauth2Client.setCredentials({
+        access_token: refreshed.access_token,
+        refresh_token: refreshed.refresh_token,
+      })
+      const youtubeRetry = google.youtube({ version: 'v3', auth: oauth2Client })
+      const streamRetry = new Readable()
+      streamRetry.push(videoFile)
+      streamRetry.push(null)
+      response = await youtubeRetry.videos.insert({
+        part: ['snippet', 'status'],
+        requestBody: {
+          snippet: { title, description, tags },
+          status: { privacyStatus },
         },
-      },
-      media: {
-        body: videoStream,
-      },
-    })
+        media: { body: streamRetry },
+      })
+    }
 
     if (response.data.id) {
       return `https://www.youtube.com/watch?v=${response.data.id}`

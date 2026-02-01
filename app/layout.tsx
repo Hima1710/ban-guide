@@ -48,7 +48,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning style={{ height: '100%', overflow: 'hidden' }}>
+    <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth" style={{ height: '100%', overflow: 'hidden' }}>
       <head>
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)" />
