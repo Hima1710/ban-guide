@@ -1,17 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { usePlaces } from '@/hooks/usePlaces'
-import PlaceCard from '@/components/PlaceCard'
-import { BanSkeleton } from '@/components/common'
+import { BanCard, BanSkeleton } from '@/components/common'
 import { Search, MapPin, Filter } from 'lucide-react'
 import { HeadlineLarge, HeadlineMedium, BodyMedium, BodySmall, LabelMedium } from '@/components/m3'
 import { Button } from '@/components/m3'
+import type { PlaceFeedItem } from '@/hooks/useUnifiedFeed'
+
+/** تحويل Place من usePlaces إلى PlaceFeedItem للنظام الموحد (BanCard) */
+function toPlaceFeedItem(place: ReturnType<typeof usePlaces>['places'][0]): PlaceFeedItem {
+  return {
+    ...place,
+    tier: 'basic',
+    isLiked: false,
+    isFavorited: false,
+  }
+}
 
 export default function PlacesPage() {
-  const router = useRouter()
   const { colors } = useTheme()
   const { places, loading, error, refresh } = usePlaces({ autoLoad: true })
   const [searchQuery, setSearchQuery] = useState('')
@@ -85,11 +93,11 @@ export default function PlacesPage() {
           </div>
         </div>
 
-        {/* Places Grid */}
+        {/* قائمة الأماكن — نفس شكل الكروت الموحد */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6" aria-busy="true">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <BanSkeleton key={`place-skeleton-${i}`} variant="card" lines={2} showImage={true} />
+          <div className="flex flex-col gap-4" aria-busy="true">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <BanSkeleton key={`place-skeleton-${i}`} variant="card" lines={2} showImage={false} />
             ))}
           </div>
         ) : error ? (
@@ -137,16 +145,14 @@ export default function PlacesPage() {
               </BodySmall>
             </div>
 
-            {/* Places Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {/* قائمة رأسية — نفس كارت الأماكن الموحد (BanCard) كما في الصفحة الرئيسية */}
+            <div className="flex flex-col gap-4">
               {filteredPlaces.map((place) => (
-                <div
+                <BanCard
                   key={place.id}
-                  onClick={() => router.push(`/places/${place.id}`)}
-                  className="cursor-pointer transition-transform hover:scale-[1.02]"
-                >
-                  <PlaceCard place={place} />
-                </div>
+                  layout="places"
+                  item={toPlaceFeedItem(place)}
+                />
               ))}
             </div>
           </>
