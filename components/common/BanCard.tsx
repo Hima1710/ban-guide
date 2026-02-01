@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { BadgeCheck, Heart, MessageCircle, Star } from 'lucide-react'
 import { useState, useCallback } from 'react'
@@ -111,7 +112,6 @@ function useInteractionToggle(
 }
 
 export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedItem; onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void }) {
-  const router = useRouter()
   const href = `/places/${item.id}`
   const tierProps = getTierCardProps(item.tier ?? DEFAULT_TIER)
 
@@ -123,12 +123,9 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
       className={`relative ${tierProps.className}`}
     >
       {tierProps.showPremiumBadge && <PremiumBadge />}
-      <div
-        className="card-trigger flex flex-col gap-3 cursor-pointer min-w-0"
-        onClick={() => router.push(href)}
-        onKeyDown={(e) => e.key === 'Enter' && router.push(href)}
-        role="button"
-        tabIndex={0}
+      <Link
+        href={href}
+        className="card-trigger flex flex-col gap-3 cursor-pointer min-w-0 no-underline text-inherit"
         dir="rtl"
       >
         <div className="flex items-start gap-3 ps-1 pe-1">
@@ -146,16 +143,14 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
             )}
           </div>
         </div>
-        <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.key === 'Enter' && e.stopPropagation()}>
-          <PlaceStatsBar
-            todayViews={item.today_views ?? 0}
-            totalViews={item.total_views ?? 0}
-            shareHref={href}
-            placeName={item.name_ar ?? undefined}
-            stopPropagation
-          />
-        </div>
-      </div>
+        <PlaceStatsBar
+          todayViews={item.today_views ?? 0}
+          totalViews={item.total_views ?? 0}
+          shareHref={href}
+          placeName={item.name_ar ?? undefined}
+          stopPropagation
+        />
+      </Link>
     </Card>
   )
 }
@@ -211,38 +206,59 @@ export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFe
       className={`relative ${tierProps.className}`}
     >
       {tierProps.showPremiumBadge && <PremiumBadge />}
-      <div
-        className="card-trigger cursor-pointer"
-        onClick={() => canNavigate && router.push(href)}
-        onKeyDown={(e) => e.key === 'Enter' && canNavigate && router.push(href)}
-        role="button"
-        tabIndex={0}
-        dir="rtl"
-      >
-        <div className="aspect-square w-full relative bg-surface">
-          {imageUrl ? (
-            <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-large">
-              {item.name_ar?.[0] || '?'}
-            </div>
-          )}
-          <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface border-2 border-primary text-primary">
-            {item.price != null ? `${item.price} ${item.currency}` : '—'}
-          </span>
+      {canNavigate ? (
+        <Link href={href} className="card-trigger cursor-pointer block no-underline text-inherit" dir="rtl">
+          <div className="aspect-square w-full relative bg-surface">
+            {imageUrl ? (
+              <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-large">
+                {item.name_ar?.[0] || '?'}
+              </div>
+            )}
+            <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface border-2 border-primary text-primary">
+              {item.price != null ? `${item.price} ${item.currency}` : '—'}
+            </span>
+          </div>
+          <div className="p-3">
+            <h3 className="text-title-small text-on-surface font-semibold line-clamp-2">{item.name_ar}</h3>
+            <InteractionsBar
+              isLiked={isLiked}
+              isFavorited={isFavorited}
+              onLike={toggleLike}
+              onFavorite={toggleFavorite}
+              onComment={() => canNavigate && router.push(`${href}#comments`)}
+              canInteract={canInteract}
+            />
+          </div>
+        </Link>
+      ) : (
+        <div className="card-trigger" dir="rtl">
+          <div className="aspect-square w-full relative bg-surface">
+            {imageUrl ? (
+              <img src={imageUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-title-large">
+                {item.name_ar?.[0] || '?'}
+              </div>
+            )}
+            <span className="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-label-medium font-semibold min-h-[32px] flex items-center bg-surface border-2 border-primary text-primary">
+              {item.price != null ? `${item.price} ${item.currency}` : '—'}
+            </span>
+          </div>
+          <div className="p-3">
+            <h3 className="text-title-small text-on-surface font-semibold line-clamp-2">{item.name_ar}</h3>
+            <InteractionsBar
+              isLiked={isLiked}
+              isFavorited={isFavorited}
+              onLike={toggleLike}
+              onFavorite={toggleFavorite}
+              onComment={() => {}}
+              canInteract={canInteract}
+            />
+          </div>
         </div>
-        <div className="p-3">
-          <h3 className="text-title-small text-on-surface font-semibold line-clamp-2">{item.name_ar}</h3>
-          <InteractionsBar
-            isLiked={isLiked}
-            isFavorited={isFavorited}
-            onLike={toggleLike}
-            onFavorite={toggleFavorite}
-            onComment={() => canNavigate && router.push(`${href}#comments`)}
-            canInteract={canInteract}
-          />
-        </div>
-      </div>
+      )}
     </Card>
   )
 }

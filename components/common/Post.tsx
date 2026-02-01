@@ -6,6 +6,7 @@
 
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
@@ -135,33 +136,15 @@ export default function Post({
     }
   }, [placeId, place?.user_id, conversationContext])
 
-  const handleCardClick = useCallback(() => {
-    if (onClick) {
-      onClick()
-    } else if (placeId) {
-      router.push(href)
-    }
-  }, [onClick, placeId, href, router])
-
   const postImage = item.image_url || item.video_url
   const publishedAt = item.created_at
     ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: ar })
     : ''
 
-  return (
-    <article
-      className="post-card-chameleon flex flex-col w-full rounded-extra-large overflow-hidden bg-surface border-[0.5px] border-primary text-on-surface shadow-elev-0 min-h-[48px]"
-      dir="rtl"
-    >
+  const cardContent = (
+    <>
       {/* Header: خلفية شفافة/فحمية، اسم الناشر ذهبي فقط — Chameleon */}
-      <div
-        className="post-header-trigger flex flex-col gap-1 p-3 pb-0 ps-1 pe-1 cursor-pointer shrink-0 bg-transparent"
-        onClick={handleCardClick}
-        onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
-        role="button"
-        tabIndex={0}
-        aria-label={`الانتقال إلى ${place?.name_ar || PLACEHOLDER_NAME}`}
-      >
+      <div className="post-header-trigger flex flex-col gap-1 p-3 pb-0 ps-1 pe-1 shrink-0 bg-transparent">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-[0.5px] border-primary bg-surface">
             {place?.logo_url ? (
@@ -199,15 +182,37 @@ export default function Post({
         </div>
       )}
       {item.content && (
-        <p
-          className="text-body-medium text-on-surface p-3 pt-2 line-clamp-2 cursor-pointer shrink-0"
-          onClick={handleCardClick}
-          onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
+        <p className="text-body-medium text-on-surface p-3 pt-2 line-clamp-2 shrink-0">
+          {item.content}
+        </p>
+      )}
+    </>
+  )
+
+  return (
+    <article
+      className="post-card-chameleon flex flex-col w-full rounded-extra-large overflow-hidden bg-surface border-[0.5px] border-primary text-on-surface shadow-elev-0 min-h-[48px]"
+      dir="rtl"
+    >
+      {placeId && href !== '#' ? (
+        <Link
+          href={href}
+          className="post-header-trigger cursor-pointer no-underline text-inherit block"
+          aria-label={`الانتقال إلى ${place?.name_ar || PLACEHOLDER_NAME}`}
+          onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
+        >
+          {cardContent}
+        </Link>
+      ) : (
+        <div
+          className="cursor-pointer"
+          onClick={onClick ?? (() => placeId && router.push(href))}
+          onKeyDown={(e) => e.key === 'Enter' && (onClick ? onClick() : placeId && router.push(href))}
           role="button"
           tabIndex={0}
         >
-          {item.content}
-        </p>
+          {cardContent}
+        </div>
       )}
 
       {/* Footer: شريط تفاعل — أيقونات ذهبية رفيعة بدون كتل لونية (Chameleon) */}

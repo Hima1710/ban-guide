@@ -4,12 +4,13 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthContext, usePlaces, useMessages } from '@/hooks'
 import Link from 'next/link'
-import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown, FileCheck, LogOut } from 'lucide-react'
+import { Plus, Package as PackageIcon, MessageSquare, TrendingUp, Clock, Settings, Users, ChevronDown, FileCheck, LogOut, Mic } from 'lucide-react'
 import { showSuccess, showError } from '@/components/SweetAlert'
 import { PageSkeleton } from '@/components/common'
 import { Button, HeadlineLarge, HeadlineMedium, TitleMedium, TitleLarge, BodyMedium, BodySmall, LabelSmall } from '@/components/m3'
 import { supabase } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useWebView } from '@/lib/webview-detection'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function YouTubeAuthHandler() {
@@ -33,10 +34,15 @@ function YouTubeAuthHandler() {
   return null
 }
 
+type MicStatus = 'unknown' | 'granted' | 'denied' | 'prompt'
+
 export default function DashboardPage() {
   const router = useRouter()
   const { colors } = useTheme()
   const [adminMenuOpen, setAdminMenuOpen] = useState(false)
+  const [micStatus, setMicStatus] = useState<MicStatus>('unknown')
+  const [micRequesting, setMicRequesting] = useState(false)
+  const { isWebView, platform } = useWebView()
 
   // Use custom hooks for data fetching
   const { user, profile, loading: authLoading } = useAuthContext(true)
@@ -61,6 +67,40 @@ export default function DashboardPage() {
   })
 
   const loading = authLoading || (user && placesLoading)
+
+  // التحقق من حالة إذن الميكروفون (إن وُجدت واجهة الصلاحيات)
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return
+    navigator.permissions
+      .query({ name: 'microphone' as PermissionDescriptor['name'] })
+      .then((result) => {
+        setMicStatus(result.state as MicStatus)
+        result.onchange = () => setMicStatus(result.state as MicStatus)
+      })
+      .catch(() => {})
+  }, [])
+
+  const requestMicrophone = async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      showError('المتصفح لا يدعم الوصول إلى الميكروفون')
+      return
+    }
+    setMicRequesting(true)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream.getTracks().forEach((t) => t.stop())
+      setMicStatus('granted')
+      showSuccess('تم منح إذن الميكروفون. يمكنك إرسال رسائل صوتية في المحادثات.')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'تم رفض الإذن أو حدث خطأ'
+      setMicStatus('denied')
+      showError(msg.includes('Permission') || msg.includes('NotAllowed') || msg.includes('denied')
+        ? 'لم يتم منح إذن الميكروفون. يمكنك تفعيله لاحقاً من إعدادات المتصفح.'
+        : 'فشل في الوصول إلى الميكروفون. تأكد من إعدادات الجهاز والمتصفح.')
+    } finally {
+      setMicRequesting(false)
+    }
+  }
 
   if (loading) {
     return <PageSkeleton variant="dashboard" />
@@ -480,6 +520,50 @@ export default function DashboardPage() {
             </Link>
           </div>
         )}
+
+        {/* صلاحيات التطبيق — الميكروفون للرسائل الصوتية */}
+        <div
+          className="shadow p-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          <TitleLarge style={{ color: colors.onSurface }} className="mb-4">صلاحيات التطبيق</TitleLarge>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <Mic size={22} style={{ color: colors.primary }} className="shrink-0" />
+              <div className="flex-1 min-w-0">
+                <BodyMedium style={{ color: colors.onSurface }}>الميكروفون</BodyMedium>
+                <BodySmall color="onSurfaceVariant">مطلوب لإرسال رسائل صوتية في المحادثات</BodySmall>
+              </div>
+              <Button
+                variant="outlined"
+                size="sm"
+                onClick={requestMicrophone}
+                disabled={micRequesting || micStatus === 'granted'}
+                loading={micRequesting}
+                aria-label="طلب إذن الميكروفون"
+              >
+                {micRequesting ? 'جاري الطلب...' : micStatus === 'granted' ? 'تم منح الإذن' : 'طلب إذن الميكروفون'}
+              </Button>
+            </div>
+            {micStatus !== 'unknown' && (
+              <LabelSmall color="onSurfaceVariant">
+                {micStatus === 'granted' && '✓ مسموح'}
+                {micStatus === 'denied' && '✗ مرفوض — يمكنك تفعيله من إعدادات المتصفح'}
+                {micStatus === 'prompt' && '— سيُطلب منك عند الضغط على الزر'}
+              </LabelSmall>
+            )}
+            {isWebView && platform === 'android' && (
+              <div
+                className="rounded-xl p-3"
+                style={{ backgroundColor: colors.surfaceContainer, border: `1px solid ${colors.outlineVariant}` }}
+              >
+                <BodySmall color="onSurfaceVariant">
+                  <strong>عند استخدام التطبيق من داخل تطبيق أندرويد (WebView):</strong> تأكد من منح تطبيق بان إذن الميكروفون من إعدادات الجهاز: الإعدادات ← التطبيقات ← بان ← الصلاحيات.
+                </BodySmall>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Legal & Privacy Links */}
         <div

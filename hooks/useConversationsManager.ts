@@ -413,7 +413,6 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
       setReplyingTo(null)
       setSelectedProduct(null)
       setShowProductPicker(false)
-      showSuccess('تم إرسال الرسالة')
     } catch (error: any) {
       console.error('Error sending message:', error)
       showError(error.message || 'فشل إرسال الرسالة')
@@ -498,7 +497,6 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
 
       setMessages(prev => [...prev, data!])
       setReplyingTo(null)
-      showSuccess('تم إرسال الرسالة الصوتية')
     } catch (error: any) {
       showError(error.message || 'فشل إرسال الرسالة الصوتية')
     }
