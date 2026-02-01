@@ -49,12 +49,12 @@ export default function ConversationsSidebar() {
 
   return (
     <>
-      {/* Desktop Toggle Button — M3 */}
+      {/* زر المحادثات (ديسكتوب) — MD3 الموحد: حدود ذهبية فقط، بدون خلفية مصمتة */}
       <Button
         onClick={() => (isOpen ? closeSidebar() : openSidebar())}
         variant="filled"
         size="sm"
-        className="hidden lg:flex fixed w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-[70] items-center justify-center relative"
+        className="conversations-fab hidden lg:flex fixed w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-[70] items-center justify-center relative"
         style={{ top: '5.5rem', left: '1rem' }}
         aria-label="فتح/إغلاق المحادثات"
       >
@@ -73,12 +73,12 @@ export default function ConversationsSidebar() {
         )}
       </Button>
 
-      {/* Mobile Toggle Button — M3 */}
+      {/* زر المحادثات (موبايل) — MD3 الموحد: حدود ذهبية فقط، بدون خلفية مصمتة */}
       <Button
         onClick={() => (isOpen ? closeSidebar() : openSidebar())}
         variant="filled"
         size="sm"
-        className="lg:hidden fixed bottom-4 right-4 w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-50 flex items-center justify-center relative"
+        className="conversations-fab lg:hidden fixed bottom-4 right-4 w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-50 flex items-center justify-center relative"
         aria-label="فتح/إغلاق المحادثات"
       >
         <MessageCircle size={24} />
@@ -149,7 +149,6 @@ export default function ConversationsSidebar() {
                 variant="outlined"
                 size="sm"
                 className="shrink-0 !min-h-0 py-2"
-                style={{ borderColor: colors.outline, color: colors.onSurfaceVariant }}
               >
                 <LabelMedium as="span">الكل</LabelMedium>
               </Button>
@@ -162,11 +161,6 @@ export default function ConversationsSidebar() {
                 variant={selectedPlaceFilter === place.id ? 'filled' : 'outlined'}
                 size="sm"
                 className="shrink-0 flex items-center gap-2 !min-h-0 py-2"
-                style={
-                  selectedPlaceFilter === place.id
-                    ? {}
-                    : { borderColor: colors.outline, color: colors.onSurface }
-                }
               >
                 {place.logo_url ? (
                   <img src={place.logo_url} alt="" className="w-8 h-8 rounded-full object-cover" />
@@ -174,7 +168,7 @@ export default function ConversationsSidebar() {
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
                     style={{
-                      backgroundColor: selectedPlaceFilter === place.id ? colors.onPrimary : colors.outline,
+                      backgroundColor: selectedPlaceFilter === place.id ? colors.surfaceContainer : colors.outline,
                       color: selectedPlaceFilter === place.id ? colors.primary : colors.onSurfaceVariant,
                     }}
                   >

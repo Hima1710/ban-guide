@@ -1,7 +1,7 @@
 /**
- * M3 Button – ألوان من useTheme() (النظام الموحد)، لا لون افتراضي.
- * Variants: filled (primary + onPrimary), outlined (border primary), text.
- * All rounded-extra-large, min 48px height for touch.
+ * M3 Button – نظام موحد حسب الثيم.
+ * يستخدم متغيرات CSS (--color-primary, --color-on-primary) فقط؛ لا قيم ثابتة.
+ * النهاري: filled. الليلي: outlined. Focus و Active واضحان في كلا الوضعين.
  */
 
 'use client'
@@ -11,7 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 import LoadingSpinner from './LoadingSpinner'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'filled' | 'outlined' | 'text'
+  variant?: 'filled' | 'outlined' | 'text' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   fullWidth?: boolean
@@ -31,7 +31,7 @@ export default function Button({
   style = {},
   ...restProps
 }: ButtonProps) {
-  const { colors } = useTheme()
+  const { isDark } = useTheme()
 
   const sizeClasses = {
     sm: 'px-4 text-sm min-h-[48px]',
@@ -39,19 +39,61 @@ export default function Button({
     lg: 'px-8 text-lg min-h-[48px]',
   }
 
+  /* Base: انتقالات سلسة + Focus (حلقة primary) + Active (ضغط واضح) */
   const variantBaseClasses =
-    'font-semibold rounded-extra-large inline-flex items-center justify-center gap-2 transition-all duration-200 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]'
+    'font-semibold rounded-extra-large inline-flex items-center justify-center gap-2 transition-all duration-200 disabled:cursor-not-allowed ' +
+    'hover:scale-[1.02] active:scale-[0.97] active:opacity-90 ' +
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-background)]'
 
-  const variantStyles =
-    variant === 'filled'
-      ? { backgroundColor: colors.primary, color: colors.onPrimary, borderWidth: 0, borderStyle: 'solid', borderColor: 'transparent' }
-      : variant === 'outlined'
-        ? { backgroundColor: 'transparent', color: colors.primary, borderWidth: 2, borderStyle: 'solid', borderColor: colors.primary }
-        : { backgroundColor: 'transparent', color: colors.primary, borderWidth: 0, borderStyle: 'solid', borderColor: 'transparent' }
+  /* كل الأنماط تعتمد على متغيرات CSS فقط */
+  const outlinedPrimary = {
+    backgroundColor: 'transparent',
+    color: 'var(--color-primary)',
+    borderWidth: 2,
+    borderStyle: 'solid' as const,
+    borderColor: 'var(--color-primary)',
+  }
+  const filledPrimary = {
+    backgroundColor: 'var(--color-primary)',
+    color: 'var(--color-on-primary)',
+    borderWidth: 0,
+    borderStyle: 'solid' as const,
+    borderColor: 'transparent',
+  }
+  const outlinedDanger = {
+    backgroundColor: 'transparent',
+    color: 'var(--color-error)',
+    borderWidth: 2,
+    borderStyle: 'solid' as const,
+    borderColor: 'var(--color-error)',
+  }
+  const filledDanger = {
+    backgroundColor: 'var(--color-error)',
+    color: 'var(--color-on-primary)',
+    borderWidth: 0,
+    borderStyle: 'solid' as const,
+    borderColor: 'transparent',
+  }
 
+  const getVariantStyles = () => {
+    if (variant === 'danger') {
+      return isDark ? outlinedDanger : filledDanger
+    }
+    if (variant === 'filled') {
+      return isDark ? outlinedPrimary : filledPrimary
+    }
+    if (variant === 'outlined') {
+      return { ...outlinedPrimary, borderColor: 'var(--color-primary)' }
+    }
+    return { backgroundColor: 'transparent', color: 'var(--color-primary)', borderWidth: 0, borderStyle: 'solid' as const, borderColor: 'transparent' }
+  }
+
+  const variantStyles = getVariantStyles()
+
+  const showOutlinedWhenActive = variant === 'outlined' || variant === 'text' || (variant === 'filled' && isDark) || (variant === 'danger' && isDark)
   const disabledStyle =
     disabled || loading
-      ? { opacity: 0.6, ...(variant !== 'filled' && { borderColor: colors.outline, color: colors.onSurfaceVariant }) }
+      ? { opacity: 0.6, ...(showOutlinedWhenActive ? { borderColor: 'var(--color-outline)', color: 'var(--color-on-surface-variant)' } : {}) }
       : {}
 
   return (

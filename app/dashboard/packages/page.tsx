@@ -486,7 +486,6 @@ export default function PackagesPage() {
                   fullWidth
                   disabled={disabled}
                   onClick={() => handleSubscribeClick(pkg)}
-                  style={disabled ? { background: colors.surfaceVariant, color: colors.onSurfaceVariant } : undefined}
                 >
                   {isCurrentPackage
                     ? 'الباقة الحالية'
@@ -558,10 +557,9 @@ export default function PackagesPage() {
                     <Button
                       type="button"
                       onClick={handleRemoveReceipt}
-                      variant="filled"
+                      variant="danger"
                       size="sm"
                       className="absolute top-2 left-2 !min-h-0 !p-2"
-                      style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                       aria-label="إزالة الصورة"
                     >
                       <X size={20} />

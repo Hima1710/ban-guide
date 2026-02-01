@@ -95,10 +95,10 @@ async function fetchUserInteractions(
   const idSet = new Set(entityIds)
   const { data: rows, error } = await supabase
     .from('interactions')
-    .select('entity_id, interaction_type')
+    .select('entity_id, type')
     .eq('user_id', userId)
     .eq('entity_type', entityType)
-  const data = rows as { entity_id: string; interaction_type: string }[] | null
+  const data = rows as { entity_id: string; type: string }[] | null
 
   if (error) {
     interactionsApiDisabled = true
@@ -107,10 +107,10 @@ async function fetchUserInteractions(
 
   const allowed = new Set(['like', 'favorite'])
   for (const row of data || []) {
-    if (!idSet.has(row.entity_id) || !allowed.has(row.interaction_type)) continue
+    if (!idSet.has(row.entity_id) || !allowed.has(row.type)) continue
     const current = map.get(row.entity_id) || { like: false, favorite: false }
-    if (row.interaction_type === 'like') current.like = true
-    if (row.interaction_type === 'favorite') current.favorite = true
+    if (row.type === 'like') current.like = true
+    if (row.type === 'favorite') current.favorite = true
     map.set(row.entity_id, current)
   }
   return map

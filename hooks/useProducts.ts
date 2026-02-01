@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Product } from '@/lib/types'
 import { getProductsByPlace, searchProducts } from '@/lib/api/products'
 import { validateArray, ProductSchema } from '@/types/schemas'
+import { isValidPlaceId } from '@/lib/validation'
 
 interface UseProductsOptions {
   placeId?: string
@@ -27,16 +28,17 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   const [error, setError] = useState<string | null>(null)
 
   const loadProducts = useCallback(async () => {
-    if (!placeId) {
+    if (!isValidPlaceId(placeId)) {
       setProducts([])
       setLoading(false)
       return
     }
 
+    const id = placeId as string
     try {
       setLoading(true)
       setError(null)
-      const data = await getProductsByPlace(placeId)
+      const data = await getProductsByPlace(id)
       setProducts(data)
     } catch (err: any) {
       console.error('Error loading products:', err)
@@ -75,12 +77,14 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
   }, [placeId, loadProducts])
 
   useEffect(() => {
-    if (autoLoad) {
-      if (searchQuery) {
-        handleSearch(searchQuery)
-      } else if (placeId) {
-        loadProducts()
-      }
+    if (!autoLoad) return
+    if (searchQuery) {
+      handleSearch(searchQuery)
+    } else if (isValidPlaceId(placeId)) {
+      loadProducts()
+    } else {
+      setProducts([])
+      setLoading(false)
     }
   }, [autoLoad, placeId, searchQuery, loadProducts, handleSearch])
 

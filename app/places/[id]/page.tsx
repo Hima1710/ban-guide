@@ -15,6 +15,7 @@ import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
 import { useConversationContextOptional } from '@/contexts/ConversationContext'
 import { TitleLarge, TitleMedium, BodyMedium, BodySmall, LabelMedium, LabelLarge, Button } from '@/components/m3'
+import { isValidPlaceId } from '@/lib/validation'
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function ProductIdHandler({ children }: { children: (productId: string | null) => React.ReactNode }) {
@@ -32,7 +33,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
   // Use custom hooks
   const { user } = useAuthContext()
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const { place, loading: placeLoading } = usePlace(placeId)
   const { products } = useProducts({ placeId, autoLoad: !!placeId })
   const conversationContext = useConversationContextOptional()
@@ -60,17 +61,24 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const [videoUploadMethod, setVideoUploadMethod] = useState<'link' | 'upload'>('link')
   const [isFollowing, setIsFollowing] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
+  const lastCountedPlaceIdRef = useRef<string | null>(null)
+
+  /* عدّ المشاهدة فور دخول الصفحة (مرة واحدة لكل placeId) دون انتظار تحميل place */
+  useEffect(() => {
+    if (!placeId || !isValidPlaceId(placeId)) return
+    if (lastCountedPlaceIdRef.current === placeId) return
+    lastCountedPlaceIdRef.current = placeId
+    incrementPlaceView(placeId).catch(console.error)
+  }, [placeId])
 
   useEffect(() => {
     if (place) {
-      incrementPlaceView(placeId).catch(console.error)
       loadPosts()
     }
-    // Set loading to false when place loading completes (whether successful or not)
     if (!placeLoading) {
       setLoading(false)
     }
-  }, [place, placeId, placeLoading])
+  }, [place, placeLoading])
 
   useEffect(() => {
     // Check if user is employee or has pending request
@@ -81,7 +89,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
   // Load follow state for logged-in user
   useEffect(() => {
-    if (!user || !placeId) return
+    if (!user || !isValidPlaceId(placeId)) return
     let cancelled = false
     const checkFollow = async () => {
       const { data, error } = await supabase
@@ -632,14 +640,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     size="sm"
                     onClick={() => conversationContext?.openConversation(placeId, place.user_id)}
                     aria-label="إرسال رسالة"
-                    style={{
-                      backgroundColor: colors.surfaceContainer,
-                      borderColor: colors.outline,
-                      color: colors.primary,
-                    }}
+                    className="shrink-0"
                   >
-                    <MessageCircle size={18} style={{ color: 'inherit' }} />
-                    <span className="font-semibold" style={{ color: 'inherit' }}>إرسال رسالة</span>
+                    <MessageCircle size={18} />
+                    <span>إرسال رسالة</span>
                   </Button>
                 </div>
               )}
@@ -699,7 +703,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                 />
               </div>
               <div className="flex gap-3">
-                <Button variant="filled"  fullWidth onClick={handleEmployeeRequest}>
+                <Button variant="filled" fullWidth onClick={handleEmployeeRequest}>
                   إرسال الطلب
                 </Button>
                 <Button
@@ -730,16 +734,28 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               <button
                 type="button"
                 onClick={() => setActiveTab('posts')}
-                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0"
+                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0 border"
                 style={{
-                  color: activeTab === 'posts' ? colors.onPrimary : colors.onSurfaceVariant,
-                  backgroundColor: activeTab === 'posts' ? colors.primary : 'transparent',
+                  color: activeTab === 'posts' ? colors.primary : colors.onSurfaceVariant,
+                  backgroundColor:
+                    activeTab === 'posts' && !isDark
+                      ? `rgba(${colors.primaryRgb}, 0.2)`
+                      : activeTab === 'posts'
+                        ? 'transparent'
+                        : 'transparent',
+                  borderColor: activeTab === 'posts' ? colors.primary : colors.outline,
+                  borderWidth: activeTab === 'posts' ? 2 : 1,
                 }}
                 onMouseEnter={(e) => {
                   if (activeTab !== 'posts') e.currentTarget.style.backgroundColor = colors.surfaceContainer
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = activeTab === 'posts' ? colors.primary : 'transparent'
+                  e.currentTarget.style.backgroundColor =
+                    activeTab === 'posts' && !isDark
+                      ? `rgba(${colors.primaryRgb}, 0.2)`
+                      : activeTab === 'posts'
+                        ? 'transparent'
+                        : 'transparent'
                 }}
               >
                 <span className="font-semibold text-sm">المنشورات ({posts.length})</span>
@@ -747,16 +763,28 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               <button
                 type="button"
                 onClick={() => setActiveTab('products')}
-                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0"
+                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0 border"
                 style={{
-                  color: activeTab === 'products' ? colors.onPrimary : colors.onSurfaceVariant,
-                  backgroundColor: activeTab === 'products' ? colors.primary : 'transparent',
+                  color: activeTab === 'products' ? colors.primary : colors.onSurfaceVariant,
+                  backgroundColor:
+                    activeTab === 'products' && !isDark
+                      ? `rgba(${colors.primaryRgb}, 0.2)`
+                      : activeTab === 'products'
+                        ? 'transparent'
+                        : 'transparent',
+                  borderColor: activeTab === 'products' ? colors.primary : colors.outline,
+                  borderWidth: activeTab === 'products' ? 2 : 1,
                 }}
                 onMouseEnter={(e) => {
                   if (activeTab !== 'products') e.currentTarget.style.backgroundColor = colors.surfaceContainer
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = activeTab === 'products' ? colors.primary : 'transparent'
+                  e.currentTarget.style.backgroundColor =
+                    activeTab === 'products' && !isDark
+                      ? `rgba(${colors.primaryRgb}, 0.2)`
+                      : activeTab === 'products'
+                        ? 'transparent'
+                        : 'transparent'
                 }}
               >
                 <span className="font-semibold text-sm">المنتجات ({products.length})</span>
@@ -777,11 +805,10 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             )}
             {canManageProducts && activeTab === 'products' && (
               <Button
-                variant="filled"
+                variant="outlined"
                 size="sm"
                 onClick={() => router.push(`/dashboard/places/${placeId}/products/new`)}
                 className="flex items-center gap-2 shrink-0"
-                style={{ backgroundColor: colors.secondary, color: colors.onSecondary }}
               >
                 <Plus size={16} />
                 إضافة منتج
@@ -989,11 +1016,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   <button
                     type="button"
                     onClick={() => setPostData({ ...postData, post_type: 'text', image_url: '', video_url: '' })}
-                    className="px-4 py-2 rounded-xl transition-colors"
+                    className="px-4 py-2 rounded-extra-large border transition-colors"
                     style={
                       postData.post_type === 'text'
-                        ? { background: colors.primary, color: colors.onPrimary }
-                        : { background: colors.surfaceContainer, color: colors.onSurface }
+                        ? { background: 'transparent', color: colors.primary, borderColor: colors.primary, borderWidth: 2 }
+                        : { background: colors.surfaceContainer, color: colors.onSurface, borderColor: colors.outline, borderWidth: 1 }
                     }
                   >
                     نص
@@ -1001,11 +1028,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   <button
                     type="button"
                     onClick={() => setPostData({ ...postData, post_type: 'image', video_url: '' })}
-                    className="px-4 py-2 rounded-xl transition-colors"
+                    className="px-4 py-2 rounded-extra-large border transition-colors"
                     style={
                       postData.post_type === 'image'
-                        ? { background: colors.primary, color: colors.onPrimary }
-                        : { background: colors.surfaceContainer, color: colors.onSurface }
+                        ? { background: 'transparent', color: colors.primary, borderColor: colors.primary, borderWidth: 2 }
+                        : { background: colors.surfaceContainer, color: colors.onSurface, borderColor: colors.outline, borderWidth: 1 }
                     }
                   >
                     صورة
@@ -1013,11 +1040,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   <button
                     type="button"
                     onClick={() => setPostData({ ...postData, post_type: 'video', image_url: '' })}
-                    className="px-4 py-2 rounded-xl transition-colors"
+                    className="px-4 py-2 rounded-extra-large border transition-colors"
                     style={
                       postData.post_type === 'video'
-                        ? { background: colors.primary, color: colors.onPrimary }
-                        : { background: colors.surfaceContainer, color: colors.onSurface }
+                        ? { background: 'transparent', color: colors.primary, borderColor: colors.primary, borderWidth: 2 }
+                        : { background: colors.surfaceContainer, color: colors.onSurface, borderColor: colors.outline, borderWidth: 1 }
                     }
                   >
                     فيديو
@@ -1232,17 +1259,16 @@ function PlacePageContent({ productId }: { productId: string | null }) {
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">
-                <button
+                <Button
+                  variant="filled"
+                  fullWidth
                   onClick={handleSavePost}
                   disabled={uploadingImage || uploadingVideo || !postData.content.trim() || (postData.post_type === 'video' && videoUploadMethod === 'upload' && !postData.video_url)}
-                  className="flex-1 px-4 py-2 rounded-lg transition-colors font-medium disabled:cursor-not-allowed"
-                  style={{ background: (uploadingImage || uploadingVideo || !postData.content.trim() || (postData.post_type === 'video' && videoUploadMethod === 'upload' && !postData.video_url)) ? colors.onSurfaceVariant : colors.primary, color: colors.onPrimary }}
-                  onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '0.9')}
-                  onMouseLeave={(e) => !e.currentTarget.disabled && (e.currentTarget.style.opacity = '1')}
                 >
                   {uploadingVideo ? 'جاري الرفع...' : 'إضافة المنشور'}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outlined"
                   onClick={() => {
                     setShowAddPostModal(false)
                     setPostData({ content: '', post_type: 'text', image_url: '', video_url: '' })
@@ -1250,11 +1276,9 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                     setVideoTitle('')
                     setVideoUploadMethod('link')
                   }}
-                  className="px-4 py-2 rounded-xl transition-colors"
-                  style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}
                 >
                   إلغاء
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1270,12 +1294,12 @@ function PlacePageContent({ productId }: { productId: string | null }) {
         >
           <div className="relative max-w-7xl max-h-full">
             <button
-              onClick={() => setEnlargedImage(null)}
-              className="absolute -top-12 right-0 hover:opacity-70 transition-opacity"
-              style={{ color: colors.onPrimary }}
+              onClick={(e) => { e.stopPropagation(); setEnlargedImage(null) }}
+              className="absolute -top-12 right-0 hover:opacity-70 transition-opacity p-2 rounded-full border-2"
+              style={{ color: colors.primary, borderColor: colors.primary, backgroundColor: colors.surface }}
               aria-label="إغلاق"
             >
-              <X size={32} />
+              <X size={28} />
             </button>
             <img
               src={enlargedImage}

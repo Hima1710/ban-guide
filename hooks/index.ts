@@ -14,5 +14,9 @@ export { useAdminManager } from './useAdminManager'
 export { useAffiliateManager } from './useAffiliateManager'
 export { useUnifiedFeed } from './useUnifiedFeed'
 export type { EntityType, UnifiedFeedItem, PlaceFeedItem, PostFeedItem, ProductFeedItem, UseUnifiedFeedOptions, UseUnifiedFeedReturn } from './useUnifiedFeed'
-
-// Add other hooks as they are created
+export { useEntityCounts } from './useEntityCounts'
+export type { UseEntityCountsOptions, UseEntityCountsReturn } from './useEntityCounts'
+export { useSiteStats } from './useSiteStats'
+export type { UseSiteStatsReturn } from './useSiteStats'
+export { usePlacesViewsStats } from './usePlacesViewsStats'
+export type { UsePlacesViewsStatsReturn } from './usePlacesViewsStats'

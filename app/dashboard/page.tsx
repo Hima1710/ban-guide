@@ -139,13 +139,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Logout Button */}
-              <Button
-                variant="text"
-                size="sm"
-                onClick={handleLogout}
-                style={{ color: colors.error }}
-              >
+              <Button variant="danger" size="sm" onClick={handleLogout} className="!min-h-0 py-2">
                 <LogOut size={18} />
                 <span className="hidden sm:inline">خروج</span>
               </Button>

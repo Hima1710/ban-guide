@@ -148,12 +148,12 @@ export default function MessagesPage() {
                 key={place.id}
                 type="button"
                 onClick={() => setSelectedPlaceFilter(selectedPlaceFilter === place.id ? null : place.id)}
-                variant={selectedPlaceFilter === place.id ? 'filled' : 'outlined'}
+                variant="outlined"
                 size="sm"
                 className="shrink-0 flex items-center gap-2"
                 style={
                   selectedPlaceFilter === place.id
-                    ? {}
+                    ? { borderColor: colors.primary, color: colors.primary }
                     : { borderColor: colors.outline, color: colors.onSurface }
                 }
               >
@@ -163,7 +163,7 @@ export default function MessagesPage() {
                   <span
                     className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs"
                     style={{
-                      backgroundColor: selectedPlaceFilter === place.id ? colors.onPrimary : colors.outline,
+                      backgroundColor: selectedPlaceFilter === place.id ? colors.surfaceContainer : colors.outline,
                       color: selectedPlaceFilter === place.id ? colors.primary : colors.onSurfaceVariant,
                     }}
                   >

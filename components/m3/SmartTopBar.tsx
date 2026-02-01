@@ -8,6 +8,7 @@ import { ChevronRight, Moon, Sun, User, LogOut } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useNotifications } from '@/hooks/useNotifications'
+import { usePlacesViewsStats } from '@/hooks/usePlacesViewsStats'
 import { supabase } from '@/lib/supabase'
 import NotificationBell from '@/components/NotificationBell'
 import { Button } from '@/components/common'
@@ -30,6 +31,7 @@ export default function SmartTopBar() {
   const { user, profile } = useAuthContext()
   const { colors, isDark, toggleTheme } = useTheme()
   useNotifications(user?.id)
+  const { today: viewsToday, total: viewsTotal } = usePlacesViewsStats()
 
   const [canGoBack, setCanGoBack] = useState(false)
 
@@ -102,7 +104,25 @@ export default function SmartTopBar() {
       }}
     >
       <div className="flex items-center justify-between w-full h-full px-3 sm:px-4">
-        {/* Left: Back button — M3 Icon Button، لون من الثيم، hover خفيف */}
+        {/* أقصى اليمين (RTL): اللوجو */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 flex-shrink-0 min-h-[48px] min-w-[48px] justify-center"
+          aria-label="بان - الصفحة الرئيسية"
+        >
+          <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0">
+            <Image
+              src="/logo.webp"
+              alt="بان"
+              fill
+              sizes="44px"
+              className="object-contain"
+              priority
+            />
+          </div>
+        </Link>
+
+        {/* زر الرجوع */}
         <div className="flex items-center min-w-[48px] min-h-[48px] shrink-0">
           {canGoBack ? (
             <button
@@ -119,32 +139,28 @@ export default function SmartTopBar() {
           )}
         </div>
 
-        {/* Center: Logo or page title */}
-        <div className="flex-1 flex justify-center min-w-0">
-          <Link
-            href="/"
-            className="flex items-center gap-2 flex-shrink-0 min-h-[48px] justify-center"
-          >
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 flex-shrink-0">
-              <Image
-                src="/logo.webp"
-                alt="بان"
-                fill
-                sizes="44px"
-                className="object-contain"
-                priority
-              />
-            </div>
+        {/* الوسط: عنوان الصفحة + المشاهدات (لا نعرض «بان» على الرئيسية) */}
+        <div className="flex-1 flex flex-col sm:flex-row items-center justify-center min-w-0 gap-0.5 sm:gap-3">
+          {headerTitle !== 'بان' && (
             <span
-              className="hidden sm:inline text-title-large font-semibold truncate max-w-[180px]"
+              className="text-title-large font-semibold truncate max-w-[180px] text-center sm:text-start"
               style={{ color: colors.onSurface }}
             >
               {headerTitle}
             </span>
-          </Link>
+          )}
+          <span
+            className="text-label-small flex items-center gap-1.5 shrink-0"
+            style={{ color: colors.onSurfaceVariant }}
+            aria-label={`مشاهدات اليوم ${viewsToday}، الإجمالي ${viewsTotal}`}
+          >
+            <span>اليوم: <strong style={{ color: colors.onSurface }}>{viewsToday}</strong></span>
+            <span aria-hidden>|</span>
+            <span>الإجمالي: <strong style={{ color: colors.onSurface }}>{viewsTotal}</strong></span>
+          </span>
         </div>
 
-        {/* Right: Theme + Notifications + User */}
+        {/* أقصى اليسار (RTL): الثيم + الإشعارات + المستخدم */}
         <div className="flex items-center gap-1 min-w-[48px] min-h-[48px] shrink-0 justify-end">
           <button
             type="button"

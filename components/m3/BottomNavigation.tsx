@@ -11,14 +11,14 @@ import { getBottomNavigation, getUserRole, isNavigationItemActive } from '@/conf
 export default function BottomNavigation() {
   const pathname = usePathname()
   const { user, profile } = useAuthContext()
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const convCtx = useConversationContextOptional()
   const { unreadCount } = useNotifications(user?.id)
 
   const role = getUserRole(profile)
   const navItems = getBottomNavigation(role)
 
-  if (pathname.startsWith('/auth/') || pathname.startsWith('/places/')) return null
+  if (pathname.startsWith('/auth/')) return null
 
   return (
     <nav
@@ -58,18 +58,25 @@ export default function BottomNavigation() {
               </span>
               {isActive && (
                 <span
-                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-1 rounded-t-full bg-primary"
+                  className="absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-t-full bg-primary"
                   aria-hidden
                 />
               )}
             </>
           )
 
-          const className = `
-            flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-extra-large
-            transition-all duration-200 relative min-w-[64px] min-h-[48px]
-            ${isActive ? 'bg-primary/10 text-primary' : 'text-on-surface'}
-          `
+          /* MD3 الموحد: نهاري = خلفية ذهبية خفيفة للعنصر النشط؛ ليلي = حدود ذهبية فقط */
+          const baseClass = 'flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-extra-large transition-all duration-200 relative min-w-[64px] min-h-[48px]'
+          const activeClass = isActive
+            ? isDark
+              ? 'bg-transparent border-[0.5px] border-primary text-primary'
+              : 'border-[0.5px] border-primary text-primary'
+            : 'text-on-surface border-[0.5px] border-transparent'
+          const className = `bottom-nav-item ${baseClass} ${activeClass}`
+          const activeStyle =
+            isActive && !isDark
+              ? { backgroundColor: `rgba(${colors.primaryRgb}, 0.18)` }
+              : undefined
 
           if (isMessages && convCtx) {
             return (
@@ -78,6 +85,7 @@ export default function BottomNavigation() {
                 type="button"
                 onClick={() => convCtx.openSidebar()}
                 className={className}
+                style={activeStyle}
                 aria-label={item.label}
               >
                 {content}
@@ -86,7 +94,7 @@ export default function BottomNavigation() {
           }
 
           return (
-            <Link key={item.id} href={item.href} className={className}>
+            <Link key={item.id} href={item.href} className={className} style={activeStyle}>
               {content}
             </Link>
           )

@@ -2,19 +2,17 @@
 
 /* ============================================
    M3 Design Tokens – Single source of truth
-   Primary: Royal Gold #D4AF37
-   Surface: Dark Charcoal (dark), light surface (light)
+   القيم الافتراضية (وضع نهاري). ThemeContext يحدّثها عند التبديل.
+   Primary / On-Primary / Surface / On-Surface = مصدر واحد للثيم.
    ============================================ */
 
 :root {
-  /* M3 Primary – Royal Gold */
-  --color-primary: #D4AF37;
-  --color-primary-rgb: 212, 175, 55;
-  --color-on-primary: #1c1c1e;
-  --color-primary-container: #2d2d2d;
-  --color-on-primary-container: #f5f5f5;
+  /* M3 Primary & On-Primary — النهاري: ذهبي غني (تشبع كافٍ). الليلي يحدّده ThemeContext (ذهبي ملكي) */
+  --color-primary: #B8942E;
+  --color-primary-rgb: 184, 148, 46;
+  --color-on-primary: #0d0d0e;
 
-  /* M3 Surface & Background */
+  /* M3 Surface & On-Surface — النهاري: رمادي فاتح. الليلي: فحمي (يحدّده ThemeContext) */
   --color-background: #ffffff;
   --color-on-background: #1c1c1e;
   --color-surface: #f5f5f5;
@@ -216,25 +214,70 @@ main {
 }
 
 /* ============================================
-   Scrollbar
+   Scrollbar – Premium UI (Chameleon)
+   موبايل: إخفاء الشريط أو ظهوره كـ overlay رفيع أثناء السكرول.
+   ديسكتوب: مسار شفاف/سطح، قبضة ذهبية رفيعة تظهر عند الـ hover فقط.
    ============================================ */
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* موبايل: إخفاء الشريط (يظهر كـ overlay رفيع أثناء السكرول حسب النظام) */
+@media (max-width: 768px) {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-surface);
+/* ديسكتوب: Chameleon — مسار شفاف/سطح، قبضة ذهبية عند الـ hover فقط */
+@media (min-width: 769px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-surface);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+    border-color: var(--color-surface);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background: var(--color-primary);
+    border-color: var(--color-surface);
+    background-clip: padding-box;
+  }
+
+  /* Firefox – ديسكتوب */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent var(--color-surface);
+  }
+  *:hover {
+    scrollbar-color: var(--color-primary) var(--color-surface);
+  }
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-outline-variant);
-  border-radius: var(--radius-sm);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-on-surface-variant);
+/* التمرير السلس عالمياً — مع احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 .scrollbar-hide {
@@ -267,7 +310,7 @@ button,
 input[type="button"],
 input[type="submit"],
 [role="button"] {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
   border-radius: var(--border-radius);
@@ -275,7 +318,7 @@ input[type="submit"],
   font-size: var(--md-sys-typescale-body-large-size);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -289,19 +332,54 @@ input[type="submit"],
   font-weight: inherit;
 }
 
-button:active,
-input[type="button"]:active,
-input[type="submit"]:active,
-[role="button"]:active {
-  transform: scale(0.98);
-  opacity: 0.9;
+/* كارت المنشور (Chameleon): خلفية فحمية، حدود ذهبية 0.5px، لا كتل صفراء — الهيدر وشريط التفاعل شفافان */
+.post-card-chameleon {
+  background: var(--color-surface) !important;
+  border: 0.5px solid var(--color-primary);
+}
+.post-card-chameleon [role="button"] {
+  background: transparent !important;
+  color: inherit;
+  border: none;
+}
+.post-card-chameleon .post-header-trigger {
+  padding: 0;
+}
+.post-card-chameleon .post-interaction-bar button {
+  background: transparent !important;
+  color: var(--color-on-surface-variant);
+  border: none;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0.5rem;
+}
+.post-card-chameleon .post-interaction-bar button.text-primary {
+  color: var(--color-primary) !important;
+}
+
+/* زر المحادثات (FAB): حدود ذهبية فقط، بدون خلفية مصمتة — MD3 الموحد */
+button.conversations-fab {
+  background: transparent !important;
+}
+
+/* شريط التنقل السفلي: عناصر الشريط (بما فيها زر المحادثات) بدون خلفية مصمتة — MD3 الموحد */
+.bottom-nav-item {
+  background: transparent !important;
+}
+
+button:active:not(:disabled),
+input[type="button"]:active:not(:disabled),
+input[type="submit"]:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
+  opacity: 0.92;
 }
 
 button:hover:not(:disabled),
 input[type="button"]:hover:not(:disabled),
 input[type="submit"]:hover:not(:disabled),
 [role="button"]:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.94;
 }
 
 button:disabled,
@@ -320,8 +398,9 @@ button:focus,
 }
 button:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-background);
 }
 
 button.secondary,
@@ -404,7 +483,7 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
 }
 
 input::placeholder,
@@ -654,19 +733,21 @@ p {
 }
 
 /* ============================================
-   M3 utility classes (tokens only)
+   M3 utility classes — مرتبطة بالمتغيرات الأساسية فقط
+   Primary → --color-primary   On-Primary → --color-on-primary
+   Surface → --color-surface   On-Surface → --color-on-surface
    ============================================ */
 
-.bg-primary { background-color: var(--primary-color) !important; }
-.bg-surface { background-color: var(--surface-color) !important; }
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-surface { background-color: var(--color-surface) !important; }
 .bg-surface-bright { background-color: var(--color-surface-bright) !important; }
-.bg-base { background-color: var(--background) !important; }
-.text-primary { color: var(--primary-color) !important; }
+.bg-base { background-color: var(--color-background) !important; }
+.text-primary { color: var(--color-primary) !important; }
 .text-on-primary { color: var(--color-on-primary) !important; }
-.text-content { color: var(--text-color) !important; }
-.text-foreground { color: var(--foreground) !important; }
-.border-primary { border-color: var(--primary-color) !important; }
-.border-outline { border-color: var(--border-color) !important; }
+.text-content { color: var(--color-on-background) !important; }
+.text-foreground { color: var(--color-on-background) !important; }
+.border-primary { border-color: var(--color-primary) !important; }
+.border-outline { border-color: var(--color-outline) !important; }
 .p-main { padding: var(--main-padding) !important; }
 .p-section { padding: var(--section-padding) !important; }
 .gap-element { gap: var(--element-gap) !important; }
@@ -699,7 +780,7 @@ p {
 
 .app-input:focus {
   outline: none !important;
-  border-color: var(--primary-color) !important;
+  border-color: var(--color-primary) !important;
 }
 
 .app-text-main { color: var(--text-color) !important; }
@@ -731,13 +812,13 @@ p {
   color: var(--color-on-surface);
 }
 
-.icon-primary { color: var(--primary-color); }
+.icon-primary { color: var(--color-primary); }
 .icon-muted { color: var(--text-muted); }
 .icon-error { color: var(--color-error); }
 .icon-warning { color: var(--color-warning); }
 
 .badge-primary {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: var(--color-on-primary);
 }
 
@@ -757,8 +838,8 @@ p {
 }
 
 .message-unread {
-  background: rgba(var(--primary-color-rgb), 0.1);
-  border-color: var(--primary-color);
+  background: rgba(var(--color-primary-rgb), 0.1);
+  border-color: var(--color-primary);
 }
 
 .toggle-switch {
@@ -787,8 +868,8 @@ p {
 }
 
 .toggle-switch.checked {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .toggle-switch.checked::after {
@@ -798,7 +879,7 @@ p {
 }
 
 .toggle-switch:focus-within {
-  outline: 2px solid var(--primary-color);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -806,5 +887,5 @@ p {
   background-color: var(--border-color-hover);
 }
 
-.link-primary { color: var(--primary-color); }
+.link-primary { color: var(--color-primary); }
 .link-primary:hover { text-decoration: underline; }

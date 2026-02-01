@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { showError, showSuccess } from '@/components/SweetAlert'
@@ -27,6 +27,7 @@ export default function LoginPage() {
   const { colors } = useTheme()
   const { isWebView, platform } = useWebView()
   const [loading, setLoading] = useState(false)
+  const submittingRef = useRef(false)
 
   useEffect(() => {
     if (searchParams?.get('session_expired') === '1') {
@@ -55,14 +56,15 @@ export default function LoginPage() {
   }, [router])
 
   const handleGoogleLogin = async () => {
+    if (submittingRef.current) return
+    submittingRef.current = true
+    setLoading(true)
     try {
-      setLoading(true)
-      // على المتصفح العادي (كمبيوتر/جوال) نرجع لموقعنا. داخل تطبيق أندرويد فقط نستخدم ban-app://
       const redirectTo =
         typeof window !== 'undefined' && isWebView && platform === 'android'
           ? ANDROID_AUTH_REDIRECT
           : (typeof window !== 'undefined' ? window.location.origin + '/auth/callback' : '/auth/callback')
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo,
@@ -72,9 +74,10 @@ export default function LoginPage() {
       if (error) throw error
     } catch (err: unknown) {
       showError((err as Error)?.message || 'حدث خطأ في تسجيل الدخول')
-    } finally {
+      submittingRef.current = false
       setLoading(false)
     }
+    // عند النجاح الصفحة ستُوجّه لـ OAuth فلا نعيد فتح القفل
   }
 
   return (
@@ -97,6 +100,7 @@ export default function LoginPage() {
           fullWidth
           onClick={handleGoogleLogin}
           loading={loading}
+          disabled={loading}
         >
           {!loading && <GoogleIcon />}
           {loading ? 'جاري التحميل...' : 'تسجيل الدخول بحساب Google'}

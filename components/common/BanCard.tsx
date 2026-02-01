@@ -5,8 +5,9 @@ import { BadgeCheck, Heart, MessageCircle, Star } from 'lucide-react'
 import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { Card } from '@/components/common'
+import { Card, Post, PlaceStatsBar } from '@/components/common'
 import { Button } from '@/components/m3'
+import { isValidPlaceId } from '@/lib/validation'
 import type { PlaceFeedItem, PostFeedItem, ProductFeedItem, SubscriptionTier } from '@/hooks/useUnifiedFeed'
 
 const DEFAULT_TIER: SubscriptionTier = 'basic'
@@ -84,7 +85,7 @@ function useInteractionToggle(
         user_id: user.id,
         entity_id: entityId,
         entity_type: entityType,
-        interaction_type: 'like',
+        type: 'like',
       } as never)
     }
   }, [user?.id, entityId, entityType, currentLike, currentFavorite, onUpdate])
@@ -101,7 +102,7 @@ function useInteractionToggle(
         user_id: user.id,
         entity_id: entityId,
         entity_type: entityType,
-        interaction_type: 'favorite',
+        type: 'favorite',
       } as never)
     }
   }, [user?.id, entityId, entityType, currentLike, currentFavorite, onUpdate])
@@ -111,17 +112,6 @@ function useInteractionToggle(
 
 export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedItem; onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void }) {
   const router = useRouter()
-  const [isLiked, setIsLiked] = useState(item.isLiked)
-  const [isFavorited, setIsFavorited] = useState(item.isFavorited)
-
-  const handleUpdate = useCallback((payload: { isLiked: boolean; isFavorited: boolean }) => {
-    setIsLiked(payload.isLiked)
-    setIsFavorited(payload.isFavorited)
-    onInteractionUpdate?.(item.id, payload)
-  }, [item.id, onInteractionUpdate])
-
-  const { toggleLike, toggleFavorite, canInteract } = useInteractionToggle(item.id, 'place', isLiked, isFavorited, handleUpdate)
-
   const href = `/places/${item.id}`
   const tierProps = getTierCardProps(item.tier ?? DEFAULT_TIER)
 
@@ -156,90 +146,42 @@ export function BanCardPlaces({ item, onInteractionUpdate }: { item: PlaceFeedIt
             )}
           </div>
         </div>
-        <InteractionsBar
-          isLiked={isLiked}
-          isFavorited={isFavorited}
-          onLike={toggleLike}
-          onFavorite={toggleFavorite}
-          onComment={() => router.push(`${href}#comments`)}
-          canInteract={canInteract}
-        />
+        <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.key === 'Enter' && e.stopPropagation()}>
+          <PlaceStatsBar
+            todayViews={item.today_views ?? 0}
+            totalViews={item.total_views ?? 0}
+            shareHref={href}
+            placeName={item.name_ar ?? undefined}
+            stopPropagation
+          />
+        </div>
       </div>
     </Card>
   )
 }
 
-export function BanCardPosts({ item, onInteractionUpdate }: { item: PostFeedItem; onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void }) {
-  const router = useRouter()
-  const [isLiked, setIsLiked] = useState(item.isLiked)
-  const [isFavorited, setIsFavorited] = useState(item.isFavorited)
-
-  const place = item.place as { id?: string; name_ar?: string; logo_url?: string } | undefined
-  const href = place?.id ? `/places/${place.id}` : '#'
-  const postImage = item.image_url || item.video_url
-
-  const handleUpdate = useCallback((payload: { isLiked: boolean; isFavorited: boolean }) => {
-    setIsLiked(payload.isLiked)
-    setIsFavorited(payload.isFavorited)
-    onInteractionUpdate?.(item.id, payload)
-  }, [item.id, onInteractionUpdate])
-
-  const { toggleLike, toggleFavorite, canInteract } = useInteractionToggle(item.id, 'post', isLiked, isFavorited, handleUpdate)
-  const tierProps = getTierCardProps(item.tier ?? DEFAULT_TIER)
-
+/** يستخدم مكون المنشور الموحد (Post) — تعليق يفتح Bottom Sheet، دردشة تفتح الدرج الجانبي */
+export function BanCardPosts({
+  item,
+  onInteractionUpdate,
+  commentCountByEntityId,
+  likeCountByEntityId,
+}: {
+  item: PostFeedItem
+  onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void
+  /** أعداد التعليقات من useEntityCounts */
+  commentCountByEntityId?: Record<string, number>
+  /** أعداد الإعجابات من useEntityCounts */
+  likeCountByEntityId?: Record<string, number>
+}) {
   return (
-    <Card
-      variant={tierProps.variant}
-      elevation={tierProps.elevation}
-      padding="none"
-      className={`relative ${tierProps.className}`}
-    >
-      {tierProps.showPremiumBadge && <PremiumBadge />}
-      <div
-        className="card-trigger cursor-pointer"
-        onClick={() => place?.id && router.push(`/places/${place.id}`)}
-        onKeyDown={(e) => place?.id && e.key === 'Enter' && router.push(`/places/${place.id}`)}
-        role="button"
-        tabIndex={0}
-        dir="rtl"
-      >
-        <div className="flex items-center gap-3 p-3 pb-0 ps-1 pe-1">
-          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-outline bg-surface">
-            {place?.logo_url ? (
-              <img src={place.logo_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-label-large">
-                {place?.name_ar?.[0] || '?'}
-              </div>
-            )}
-          </div>
-          <span className="text-title-small text-primary font-medium truncate">{place?.name_ar || PLACEHOLDER_NAME}</span>
-        </div>
-        {postImage && (
-          <div className="aspect-video w-full mt-3 relative bg-surface">
-            <img
-              src={item.image_url || ''}
-              alt=""
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        )}
-        {item.content && (
-          <p className="text-body-medium text-on-surface p-3 pt-2 line-clamp-2">{item.content}</p>
-        )}
-      </div>
-      <div className="px-3 pb-3">
-        <InteractionsBar
-          isLiked={isLiked}
-          isFavorited={isFavorited}
-          onLike={toggleLike}
-          onFavorite={toggleFavorite}
-          onComment={() => place?.id && router.push(`/places/${place.id}#comments`)}
-          canInteract={canInteract}
-        />
-      </div>
-    </Card>
+    <Post
+      item={item}
+      onInteractionUpdate={onInteractionUpdate}
+      commentCount={commentCountByEntityId?.[item.id] ?? 0}
+      likeCount={likeCountByEntityId?.[item.id] ?? 0}
+      showChat={true}
+    />
   )
 }
 
@@ -249,7 +191,8 @@ export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFe
   const [isFavorited, setIsFavorited] = useState(item.isFavorited)
 
   const imageUrl = item.images?.[0]?.image_url
-  const href = `/places/${item.place_id}?product=${item.id}`
+  const canNavigate = isValidPlaceId(item.place_id)
+  const href = canNavigate ? `/places/${item.place_id}?product=${item.id}` : '#'
 
   const handleUpdate = useCallback((payload: { isLiked: boolean; isFavorited: boolean }) => {
     setIsLiked(payload.isLiked)
@@ -270,8 +213,8 @@ export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFe
       {tierProps.showPremiumBadge && <PremiumBadge />}
       <div
         className="card-trigger cursor-pointer"
-        onClick={() => router.push(href)}
-        onKeyDown={(e) => e.key === 'Enter' && router.push(href)}
+        onClick={() => canNavigate && router.push(href)}
+        onKeyDown={(e) => e.key === 'Enter' && canNavigate && router.push(href)}
         role="button"
         tabIndex={0}
         dir="rtl"
@@ -295,7 +238,7 @@ export function BanCardProducts({ item, onInteractionUpdate }: { item: ProductFe
             isFavorited={isFavorited}
             onLike={toggleLike}
             onFavorite={toggleFavorite}
-            onComment={() => router.push(`${href}#comments`)}
+            onComment={() => canNavigate && router.push(`${href}#comments`)}
             canInteract={canInteract}
           />
         </div>
@@ -359,9 +302,24 @@ function InteractionsBar({
   )
 }
 
-export default function BanCard(props: BanCardProps & { onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void }) {
-  const { onInteractionUpdate } = props
+export default function BanCard(
+  props: BanCardProps & {
+    onInteractionUpdate?: (id: string, payload: { isLiked: boolean; isFavorited: boolean }) => void
+    /** أعداد التعليقات والإعجابات (لتبويب المنشورات) من useEntityCounts */
+    commentCountByEntityId?: Record<string, number>
+    likeCountByEntityId?: Record<string, number>
+  }
+) {
+  const { onInteractionUpdate, commentCountByEntityId, likeCountByEntityId } = props
   if (props.layout === 'places') return <BanCardPlaces item={props.item} onInteractionUpdate={onInteractionUpdate} />
-  if (props.layout === 'posts') return <BanCardPosts item={props.item} onInteractionUpdate={onInteractionUpdate} />
+  if (props.layout === 'posts')
+    return (
+      <BanCardPosts
+        item={props.item}
+        onInteractionUpdate={onInteractionUpdate}
+        commentCountByEntityId={commentCountByEntityId}
+        likeCountByEntityId={likeCountByEntityId}
+      />
+    )
   return <BanCardProducts item={props.item} onInteractionUpdate={onInteractionUpdate} />
 }

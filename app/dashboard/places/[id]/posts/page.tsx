@@ -355,16 +355,14 @@ export default function PlacePostsPage() {
                         variant="outlined"
                         size="sm"
                         className="!min-h-0 !p-2"
-                        style={{ color: colors.primary, borderColor: colors.primary }}
                       >
                         <Edit size={16} />
                       </Button>
                       <Button
                         onClick={() => handleDelete(post.id)}
-                        variant="text"
+                        variant="danger"
                         size="sm"
                         className="!min-h-0 !p-2"
-                        style={{ color: colors.error }}
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -440,7 +438,6 @@ export default function PlacePostsPage() {
                     variant={postData.post_type === 'text' ? 'filled' : 'outlined'}
                     size="sm"
                     className="inline-flex items-center gap-2"
-                    style={postData.post_type === 'text' ? {} : { borderColor: colors.outline, color: colors.onSurfaceVariant }}
                   >
                     <FileText size={18} />
                     نص فقط
@@ -450,11 +447,6 @@ export default function PlacePostsPage() {
                     variant={postData.post_type === 'image' ? 'filled' : 'outlined'}
                     size="sm"
                     className="inline-flex items-center gap-2"
-                    style={
-                      postData.post_type === 'image'
-                        ? { backgroundColor: colors.success ?? colors.primary, color: colors.onPrimary }
-                        : { borderColor: colors.outline, color: colors.onSurfaceVariant }
-                    }
                   >
                     <ImageIcon size={18} />
                     صورة وكتابة
@@ -464,11 +456,6 @@ export default function PlacePostsPage() {
                     variant={postData.post_type === 'video' ? 'filled' : 'outlined'}
                     size="sm"
                     className="inline-flex items-center gap-2"
-                    style={
-                      postData.post_type === 'video'
-                        ? { backgroundColor: colors.error ?? colors.primary, color: colors.onPrimary }
-                        : { borderColor: colors.outline, color: colors.onSurfaceVariant }
-                    }
                   >
                     <Video size={18} />
                     فيديو وكتابة
@@ -516,10 +503,9 @@ export default function PlacePostsPage() {
                       />
                       <Button
                         onClick={() => setPostData({ ...postData, image_url: '' })}
-                        variant="filled"
+                        variant="danger"
                         size="sm"
                         className="absolute top-2 right-2 !min-h-0 !p-1.5"
-                        style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                       >
                         <X size={16} />
                       </Button>

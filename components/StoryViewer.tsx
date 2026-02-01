@@ -127,11 +127,15 @@ export default function StoryViewer({ placeName, placeLogo, stories, onClose }: 
           </TitleSmall>
         </div>
         <Button
-          variant="text"
+          variant="outlined"
           size="sm"
           onClick={onClose}
-          className="!min-h-0 !p-2 w-9 h-9 shrink-0 rounded-full"
-          style={{ color: '#fff' }}
+          className="!min-h-0 !p-2 w-10 h-10 shrink-0 rounded-full border-2"
+          style={{
+            color: colors.primary,
+            borderColor: colors.primary,
+            backgroundColor: 'rgba(0,0,0,0.2)',
+          }}
           aria-label="إغلاق"
         >
           <X size={20} />
@@ -162,18 +166,52 @@ export default function StoryViewer({ placeName, placeLogo, stories, onClose }: 
         )}
 
         {/* نقر يمين/يسار للمتابعة/السابق (في RTL: اليمين = السابق، اليسار = التالي) */}
+        {/* زر السابق (يمين في RTL) مع مؤشر سهم */}
         <button
           type="button"
-          className="absolute inset-y-0 start-0 w-1/3 cursor-pointer"
+          className="absolute inset-y-0 start-0 w-1/3 cursor-pointer flex items-center justify-start ps-4 transition-opacity hover:opacity-100"
           onClick={goPrev}
           aria-label="الحالة السابقة"
-        />
+          style={{ opacity: index > 0 ? 0.7 : 0.3 }}
+        >
+          {index > 0 && (
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center border-2 backdrop-blur-sm"
+              style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderColor: colors.primary,
+                color: colors.primary,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </div>
+          )}
+        </button>
+        {/* زر التالي (يسار في RTL) مع مؤشر سهم */}
         <button
           type="button"
-          className="absolute inset-y-0 end-0 w-1/3 cursor-pointer"
+          className="absolute inset-y-0 end-0 w-1/3 cursor-pointer flex items-center justify-end pe-4 transition-opacity hover:opacity-100"
           onClick={goNext}
           aria-label="الحالة التالية"
-        />
+          style={{ opacity: index < stories.length - 1 ? 0.7 : 0.3 }}
+        >
+          {index < stories.length - 1 && (
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center border-2 backdrop-blur-sm"
+              style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderColor: colors.primary,
+                color: colors.primary,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </div>
+          )}
+        </button>
       </div>
     </div>
   )

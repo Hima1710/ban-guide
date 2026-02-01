@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Product } from '@/lib/types'
+import { isValidPlaceId } from '@/lib/validation'
 
 export async function searchProducts(query: string): Promise<Product[]> {
   const { data, error } = await supabase
@@ -20,6 +21,7 @@ export async function searchProducts(query: string): Promise<Product[]> {
 }
 
 export async function getProductsByPlace(placeId: string): Promise<Product[]> {
+  if (!isValidPlaceId(placeId)) return []
   const { data, error } = await supabase
     .from('products')
     .select(`

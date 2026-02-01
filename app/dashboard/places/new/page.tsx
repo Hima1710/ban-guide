@@ -155,7 +155,17 @@ export default function NewPlacePage() {
   return (
     <div className="min-h-screen py-8" style={{ backgroundColor: colors.background }}>
       <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6" style={{ color: colors.onSurface }}>إضافة مكان جديد</h1>
+        <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
+          <Button
+            variant="outlined"
+            size="sm"
+            onClick={() => router.back()}
+            className="shrink-0"
+          >
+            ← العودة للوحة التحكم
+          </Button>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: colors.onSurface }}>إضافة مكان جديد</h1>
+        </div>
 
         <form onSubmit={handleSubmit} className="shadow-lg p-6 space-y-6 rounded-3xl" style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,10 +242,9 @@ export default function NewPlacePage() {
                 <Button
                   type="button"
                   onClick={removeLogo}
-                  variant="filled"
+                  variant="danger"
                   size="sm"
                   className="absolute -top-2 -right-2 !min-h-0 !p-1.5"
-                  style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                 >
                   <X size={16} />
                 </Button>
@@ -302,22 +311,30 @@ export default function NewPlacePage() {
           <div>
             <label className="block text-sm font-semibold mb-2" style={{ color: colors.onSurface }}>فيديو YouTube</label>
             <div className="mb-3 flex gap-2">
-              <Button
+              <button
                 type="button"
-                variant={uploadMethod === 'url' ? 'filled' : 'outlined'}
-                size="sm"
                 onClick={() => setUploadMethod('url')}
+                className="px-4 py-2 rounded-extra-large border transition-colors text-sm font-semibold"
+                style={
+                  uploadMethod === 'url'
+                    ? { background: 'transparent', color: colors.primary, borderColor: colors.primary, borderWidth: 2 }
+                    : { background: colors.surfaceContainer, color: colors.onSurfaceVariant, borderColor: colors.outline, borderWidth: 1 }
+                }
               >
                 إدخال رابط
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                variant={uploadMethod === 'upload' ? 'filled' : 'outlined'}
-                size="sm"
                 onClick={() => setUploadMethod('upload')}
+                className="px-4 py-2 rounded-extra-large border transition-colors text-sm font-semibold"
+                style={
+                  uploadMethod === 'upload'
+                    ? { background: 'transparent', color: colors.primary, borderColor: colors.primary, borderWidth: 2 }
+                    : { background: colors.surfaceContainer, color: colors.onSurfaceVariant, borderColor: colors.outline, borderWidth: 1 }
+                }
               >
                 رفع فيديو
-              </Button>
+              </button>
             </div>
 
             {uploadMethod === 'url' ? (

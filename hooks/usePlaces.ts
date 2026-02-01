@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { Place } from '@/lib/types'
 import { getPlaces, getPlaceById } from '@/lib/api/places'
 import { validateArray, PlaceListItemSchema } from '@/types/schemas'
+import { isValidPlaceId } from '@/lib/validation'
 
 interface UsePlacesOptions {
   featured?: boolean
@@ -64,7 +65,12 @@ export function usePlaces(options: UsePlacesOptions = {}): UsePlacesReturn {
       }
     } catch (err: any) {
       console.error('Error loading places:', err)
-      setError(err.message || 'فشل في تحميل الأماكن')
+      const isNetworkError =
+        err?.name === 'TypeError' &&
+        (err?.message === 'Failed to fetch' || /fetch|network|connection/i.test(err?.message ?? ''))
+      setError(
+        isNetworkError ? 'تحقق من الاتصال بالإنترنت وحاول مرة أخرى' : err?.message || 'فشل في تحميل الأماكن'
+      )
       setPlaces([])
     } finally {
       setLoading(false)
@@ -101,7 +107,7 @@ export function usePlace(placeId: string | null): UsePlaceReturn {
   const [error, setError] = useState<string | null>(null)
 
   const loadPlace = useCallback(async () => {
-    if (!placeId) {
+    if (!isValidPlaceId(placeId)) {
       setPlace(null)
       setLoading(false)
       return
@@ -117,7 +123,8 @@ export function usePlace(placeId: string | null): UsePlaceReturn {
     try {
       setLoading(true)
       setError(null)
-      const data = await getPlaceById(placeId)
+      const id = placeId as string
+      const data = await getPlaceById(id)
       
       // ✅ Validate data with Zod
       if (data) {

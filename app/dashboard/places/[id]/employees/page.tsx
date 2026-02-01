@@ -355,7 +355,6 @@ export default function PlaceEmployeesPage() {
                       variant="filled"
                       size="sm"
                       onClick={() => handleAcceptRequest(request.id, 'messages_posts')}
-                      style={{ backgroundColor: colors.success, color: colors.onPrimary }}
                     >
                       <MessageSquare size={16} />
                       قبول ورد على العملاء ومنشورات
@@ -364,17 +363,11 @@ export default function PlaceEmployeesPage() {
                       variant="filled"
                       size="sm"
                       onClick={() => handleAcceptRequest(request.id, 'full')}
-                      style={{ backgroundColor: colors.secondary, color: colors.onPrimary }}
                     >
                       <Shield size={16} />
                       قبول ورد على العملاء وإضافة/حذف منتجات ومنشورات
                     </Button>
-                    <Button
-                      variant="filled"
-                      size="sm"
-                      onClick={() => handleRejectRequest(request.id)}
-                      style={{ backgroundColor: colors.error, color: colors.onPrimary }}
-                    >
+                    <Button variant="danger" size="sm" onClick={() => handleRejectRequest(request.id)}>
                       <X size={16} />
                       رفض
                     </Button>
@@ -449,12 +442,7 @@ export default function PlaceEmployeesPage() {
                         })}
                       </p>
                     </div>
-                    <Button
-                      variant="filled"
-                      size="sm"
-                      onClick={() => handleRemoveEmployee(employee.id)}
-                      style={{ backgroundColor: colors.error, color: colors.onPrimary }}
-                    >
+                    <Button variant="danger" size="sm" onClick={() => handleRemoveEmployee(employee.id)}>
                       <X size={16} />
                       إزالة
                     </Button>

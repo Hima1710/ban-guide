@@ -69,25 +69,28 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-/** Primary: Royal Gold #D4AF37 — onPrimary dark (#1c1c1e) for WCAG contrast on gold */
-const M3_PRIMARY = '#D4AF37'
-const M3_PRIMARY_RGB = '212, 175, 55'
-const M3_ON_PRIMARY = '#1c1c1e'
+/** Light: primary مرئي فوق الخلفيات الفاتحة (ذهبي غني، تشبع كافٍ). Dark: ذهبي ملكي. */
+const M3_PRIMARY_LIGHT = '#B8942E'   /* ذهبي غني — تشبع كافٍ فوق الأبيض، ليس أصفر فاقع */
+const M3_PRIMARY_LIGHT_RGB = '184, 148, 46'
+const M3_PRIMARY_DARK = '#D4AF37'    /* ذهبي ملكي — الوضع الليلي */
+const M3_PRIMARY_DARK_RGB = '212, 175, 55'
+/** onPrimary أسود دائماً لضمان وضوح النص فوق primary (WCAG) */
+const M3_ON_PRIMARY = '#0d0d0e'
 
-const roleColors: Record<UserRole, { primary: string; primaryRgb: string; secondary: string }> = {
-  admin: { primary: M3_PRIMARY, primaryRgb: M3_PRIMARY_RGB, secondary: '#10b981' },
-  affiliate: { primary: M3_PRIMARY, primaryRgb: M3_PRIMARY_RGB, secondary: '#10b981' },
-  user: { primary: M3_PRIMARY, primaryRgb: M3_PRIMARY_RGB, secondary: '#ec4899' },
-  guest: { primary: '#9ca3af', primaryRgb: '156, 163, 175', secondary: '#6b7280' },
+const roleColors: Record<UserRole, { primaryLight: string; primaryLightRgb: string; primaryDark: string; primaryDarkRgb: string; secondary: string }> = {
+  admin: { primaryLight: M3_PRIMARY_LIGHT, primaryLightRgb: M3_PRIMARY_LIGHT_RGB, primaryDark: M3_PRIMARY_DARK, primaryDarkRgb: M3_PRIMARY_DARK_RGB, secondary: '#10b981' },
+  affiliate: { primaryLight: M3_PRIMARY_LIGHT, primaryLightRgb: M3_PRIMARY_LIGHT_RGB, primaryDark: M3_PRIMARY_DARK, primaryDarkRgb: M3_PRIMARY_DARK_RGB, secondary: '#10b981' },
+  user: { primaryLight: M3_PRIMARY_LIGHT, primaryLightRgb: M3_PRIMARY_LIGHT_RGB, primaryDark: M3_PRIMARY_DARK, primaryDarkRgb: M3_PRIMARY_DARK_RGB, secondary: '#ec4899' },
+  guest: { primaryLight: '#9ca3af', primaryLightRgb: '156, 163, 175', primaryDark: '#9ca3af', primaryDarkRgb: '156, 163, 175', secondary: '#6b7280' },
 }
 
-/** M3 light palette — single source for contrast */
+/** M3 light palette — primary بتشبع كافٍ فوق الخلفيات الفاتحة (بدون أصفر فاقع) */
 function getLightColors(role: UserRole): ThemeColors {
   const roleColor = roleColors[role]
   return {
-    primary: roleColor.primary,
-    primaryRgb: roleColor.primaryRgb,
-    primaryDark: '#b8942e',
+    primary: roleColor.primaryLight,
+    primaryRgb: roleColor.primaryLightRgb,
+    primaryDark: '#9a7b26',
     secondary: roleColor.secondary,
     secondaryRgb: '16, 185, 129',
     background: '#ffffff',
@@ -113,23 +116,23 @@ function getLightColors(role: UserRole): ThemeColors {
   }
 }
 
-/** M3 dark palette — aligned with globals dark, proper contrast */
+/** M3 dark palette — ذهبي ملكي، سطح فحمي داكن، on-primary أسود للوضوح */
 function getDarkColors(role: UserRole): ThemeColors {
   const roleColor = roleColors[role]
   return {
-    primary: roleColor.primary,
-    primaryRgb: roleColor.primaryRgb,
+    primary: roleColor.primaryDark,
+    primaryRgb: roleColor.primaryDarkRgb,
     primaryDark: '#e5c558',
     secondary: roleColor.secondary,
     secondaryRgb: '52, 211, 153',
-    background: '#1c1c1e',
-    surface: '#2d2d2d',
+    background: '#121214',
+    surface: '#1a1a1c',   /* فحمي داكن */
     surfaceVariant: '#252527',
-    surfaceContainer: '#38383a',
+    surfaceContainer: '#2d2d30',
     onPrimary: M3_ON_PRIMARY,
     onSecondary: '#000000',
-    onBackground: '#f5f5f5',
-    onSurface: '#f5f5f5',
+    onBackground: '#f0f0f2',
+    onSurface: '#f0f0f2',
     onSurfaceVariant: '#a1a1a3',
     success: '#34d399',
     successContainer: '#064e3b',
@@ -139,8 +142,8 @@ function getDarkColors(role: UserRole): ThemeColors {
     errorContainer: '#7f1d1d',
     info: '#60a5fa',
     infoContainer: '#1e3a8a',
-    outline: '#48484a',
-    outlineVariant: '#636366',
+    outline: '#3d3d40',
+    outlineVariant: '#525255',
     overlay: 'rgba(0, 0, 0, 0.5)',
   }
 }
@@ -187,7 +190,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.setProperty('--color-outline', c.outline)
     root.style.setProperty('--color-outline-variant', c.outlineVariant)
     root.style.setProperty('--color-surface-dim', c.surfaceVariant)
-    root.style.setProperty('--color-surface-bright', isDark ? '#38383a' : '#fafafa')
+    root.style.setProperty('--color-surface-bright', isDark ? '#2d2d30' : '#fafafa')
     root.style.setProperty('--color-error', c.error)
     root.style.setProperty('--color-success', c.success)
     root.style.setProperty('--color-warning', c.warning)
@@ -212,9 +215,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.style.setProperty('--text-muted', `rgba(${c.onBackground === '#1c1c1e' ? '28, 28, 30' : '245, 245, 245'}, 0.7)`)
     root.style.setProperty('--text-subtle', `rgba(${c.onBackground === '#1c1c1e' ? '28, 28, 30' : '245, 245, 245'}, 0.6)`)
 
-    /* Chameleon – خلفية خفيفة مع ضبابية قوية؛ على الموبايل عتامة أعلى قليلاً لو الـ blur ضعيف */
-    root.style.setProperty('--surface-chameleon', isDark ? 'rgba(45, 45, 45, 0.88)' : 'rgba(245, 245, 245, 0.88)')
-    root.style.setProperty('--surface-chameleon-glass', isDark ? 'rgba(45, 45, 45, 0.42)' : 'rgba(255, 255, 255, 0.4)')
+    /* Chameleon – يتكيّف بسلاسة مع الثيم (فحمي في الليل، فاتح في النهار) */
+    root.style.setProperty('--surface-chameleon', isDark ? 'rgba(26, 26, 28, 0.88)' : 'rgba(245, 245, 245, 0.88)')
+    root.style.setProperty('--surface-chameleon-glass', isDark ? 'rgba(26, 26, 28, 0.42)' : 'rgba(255, 255, 255, 0.4)')
 
     localStorage.setItem('ban-theme', isDark ? 'dark' : 'light')
   }, [isDark, role, mounted])

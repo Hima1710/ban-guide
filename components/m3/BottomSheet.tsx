@@ -92,19 +92,18 @@ export default function BottomSheet({
   }, [])
 
   useEffect(() => {
-    if (!open) {
-      openedAtRef.current = 0
-      return
-    }
-    openedAtRef.current = Date.now()
+    if (open) openedAtRef.current = Date.now()
+    else openedAtRef.current = 0
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
     const onEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onEscape)
-    document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onEscape)
-      document.body.style.overflow = ''
       removeMouseListeners()
     }
   }, [open, onClose, removeMouseListeners])
@@ -152,11 +151,15 @@ export default function BottomSheet({
       aria-modal="true"
       aria-label={typeof title === 'string' ? title : 'نافذة'}
     >
-      {/* Backdrop – M3 overlay؛ تجاهل أول click بعد الفتح (ماوس الضغطة اللي فتحت الشيت) */}
+      {/* Backdrop – M3 overlay؛ touch-action يمنع تمرير الخلفية بدون تعديل body */}
       <button
         type="button"
-        className="absolute inset-0 z-0"
-        style={{ backgroundColor: colors.overlay }}
+        className="absolute inset-0 z-0 touch-none overscroll-none"
+        style={{
+          backgroundColor: colors.overlay,
+          touchAction: 'none',
+          overscrollBehavior: 'contain',
+        }}
         onClick={handleBackdropClick}
         aria-label="إغلاق"
       />

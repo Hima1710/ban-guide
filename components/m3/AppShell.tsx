@@ -13,6 +13,7 @@ import ConversationsSidebar from '@/components/ConversationsSidebar'
 import ConversationDrawer from '@/components/ConversationDrawer'
 import { ConversationProvider } from '@/contexts/ConversationContext'
 import { AddStoryProvider } from '@/contexts/AddStoryContext'
+import { CommentsProvider } from '@/contexts/CommentsContext'
 
 const BOTTOM_NAV_HEIGHT = 64
 
@@ -46,6 +47,7 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
 
   return (
     <ConversationProvider>
+      <CommentsProvider>
       <AddStoryProvider>
       <div
         className={`min-h-screen ${isWebView ? 'webview-optimized' : ''}`}
@@ -87,6 +89,7 @@ export default function AppShell({ children, hideHeader, hideNav }: AppShellProp
 
       </div>
       </AddStoryProvider>
+      </CommentsProvider>
 
       {process.env.NODE_ENV === 'development' && isWebView && (
         <div

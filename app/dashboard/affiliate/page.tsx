@@ -132,7 +132,6 @@ export default function AffiliateDashboardPage() {
             variant={activeTab === 'earnings' ? 'filled' : 'outlined'}
             size="sm"
             className="whitespace-nowrap rounded-full"
-            style={activeTab === 'earnings' ? {} : { borderColor: colors.outline, color: colors.onSurface }}
           >
             💰 أرباحي
           </Button>
@@ -141,7 +140,6 @@ export default function AffiliateDashboardPage() {
             variant={activeTab === 'places' ? 'filled' : 'outlined'}
             size="sm"
             className="whitespace-nowrap rounded-full"
-            style={activeTab === 'places' ? {} : { borderColor: colors.outline, color: colors.onSurface }}
           >
             🏪 أماكني
           </Button>

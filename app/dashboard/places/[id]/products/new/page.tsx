@@ -436,10 +436,9 @@ export default function NewProductPage() {
                   <Button
                     type="button"
                     onClick={() => removeImage(index)}
-                    variant="filled"
+                    variant="danger"
                     size="sm"
                     className="absolute top-2 left-2 !min-h-0 !p-1.5"
-                    style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                   >
                     <X size={16} />
                   </Button>
@@ -498,10 +497,9 @@ export default function NewProductPage() {
                 <Button
                   type="button"
                   onClick={() => removeVideo(index)}
-                  variant="text"
+                  variant="danger"
                   size="sm"
                   className="!min-h-0 !p-2"
-                  style={{ color: colors.error }}
                 >
                   <Trash2 size={20} />
                 </Button>
@@ -547,10 +545,9 @@ export default function NewProductPage() {
                   <Button
                     type="button"
                     onClick={() => removeVariant(index)}
-                    variant="text"
+                    variant="danger"
                     size="sm"
                     className="!min-h-0 !p-1"
-                    style={{ color: colors.error }}
                   >
                     <Trash2 size={18} />
                   </Button>

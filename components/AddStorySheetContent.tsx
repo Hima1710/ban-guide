@@ -117,7 +117,7 @@ export default function AddStorySheetContent({ placeId, onSuccess, onCancel }: A
         />
       )}
 
-      <Button variant="text" size="md" onClick={onCancel} className="w-full">
+      <Button variant="outlined" size="md" onClick={onCancel} className="w-full">
         إلغاء
       </Button>
     </div>

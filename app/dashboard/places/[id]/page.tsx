@@ -11,7 +11,6 @@ import { usePlaceStories } from '@/hooks/useStories'
 import { useUploadImage } from '@/hooks/useUploadImage'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
 import { MapPin, Phone, Edit, Trash2, Plus, Package, Eye, Video, Save, X, Upload, Image as ImageIcon, Users, FileText, CircleDot } from 'lucide-react'
-import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import YouTubeUpload from '@/components/YouTubeUpload'
 import { useTheme } from '@/contexts/ThemeContext'
@@ -338,63 +337,51 @@ export default function PlaceDetailsPage() {
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-6 flex justify-between items-center">
-          <Link
-            href="/dashboard"
-            className="hover:underline flex items-center gap-2"
-            style={{ color: colors.primary }}
+          <Button
+            variant="outlined"
+            size="sm"
+            onClick={() => router.push('/dashboard')}
+            className="flex items-center gap-2 shrink-0"
           >
             ← العودة للوحة التحكم
-          </Link>
+          </Button>
           <div className="flex gap-2 flex-wrap">
             {!isEditing ? (
               <>
-                <Link
-                  href={`/dashboard/places/${placeId}/employees`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: colors.primary, color: colors.onPrimary }}
+                <Button
+                  variant="outlined"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/places/${placeId}/employees`)}
+                  className="flex items-center gap-2"
                 >
                   <Users size={18} />
                   إدارة الموظفين
-                </Link>
-                <Link
-                  href={`/dashboard/places/${placeId}/posts`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: colors.secondary, color: colors.onSecondary }}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/places/${placeId}/posts`)}
+                  className="flex items-center gap-2"
                 >
                   <FileText size={18} />
                   إدارة المنشورات
-                </Link>
-                <Button variant="filled"  onClick={handleStartEdit} className="flex items-center gap-2">
+                </Button>
+                <Button variant="filled" size="sm" onClick={handleStartEdit} className="flex items-center gap-2">
                   <Edit size={18} />
                   تعديل المعلومات
                 </Button>
-                <Button
-                  variant="filled"
-                  onClick={handleDelete}
-                  className="flex items-center gap-2"
-                  style={{ backgroundColor: colors.error, color: colors.onPrimary }}
-                >
+                <Button variant="danger" size="sm" onClick={handleDelete} className="flex items-center gap-2">
                   <Trash2 size={18} />
                   حذف المكان
                 </Button>
               </>
             ) : (
               <>
-                <Button
-                  variant="filled"
-                  onClick={handleSave}
-                  className="flex items-center gap-2"
-                  style={{ backgroundColor: colors.secondary, color: colors.onSecondary }}
-                >
+                <Button variant="filled" size="sm" onClick={handleSave} className="flex items-center gap-2">
                   <Save size={18} />
                   حفظ التعديلات
                 </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleCancelEdit}
-                  className="flex items-center gap-2"
-                  style={{ backgroundColor: colors.surfaceVariant, color: colors.onSurfaceVariant }}
-                >
+                <Button variant="outlined" size="sm" onClick={handleCancelEdit} className="flex items-center gap-2">
                   <X size={18} />
                   إلغاء
                 </Button>
@@ -666,15 +653,17 @@ export default function PlaceDetailsPage() {
             >
               <div className="flex gap-2 mb-4">
                 <Button
+                  type="button"
                   variant={storyMediaType === 'image' ? 'filled' : 'outlined'}
-                  size="md"
+                  size="sm"
                   onClick={() => setStoryMediaType('image')}
                 >
                   صورة
                 </Button>
                 <Button
+                  type="button"
                   variant={storyMediaType === 'video' ? 'filled' : 'outlined'}
-                  size="md"
+                  size="sm"
                   onClick={() => setStoryMediaType('video')}
                 >
                   فيديو (يوتيوب)
@@ -706,7 +695,7 @@ export default function PlaceDetailsPage() {
                 />
               )}
               <Button
-                variant="text"
+                variant="outlined"
                 size="sm"
                 onClick={() => setAddingStory(false)}
                 className="mt-2"
@@ -752,11 +741,10 @@ export default function PlaceDetailsPage() {
                     {new Date(story.expires_at).toLocaleDateString('ar-SA')}
                   </div>
                   <Button
-                    variant="filled"
+                    variant="danger"
                     size="sm"
                     onClick={() => handleDeleteStory(story.id)}
                     className="absolute top-1 left-1 !min-h-0 !p-0 w-8 h-8 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: colors.error, color: colors.onPrimary }}
                     aria-label="حذف الحالة"
                   >
                     <Trash2 size={16} aria-hidden />
@@ -774,17 +762,15 @@ export default function PlaceDetailsPage() {
         >
           <div className="flex justify-between items-center mb-4">
             <TitleLarge style={{ color: colors.onSurface }}>المنتجات والخدمات ({products.length})</TitleLarge>
-            <Link
-              href={`/dashboard/places/${placeId}/products/new`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:scale-105 active:scale-95"
-              style={{
-                backgroundColor: colors.primary,
-                color: colors.onPrimary,
-              }}
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => router.push(`/dashboard/places/${placeId}/products/new`)}
+              className="flex items-center gap-2"
             >
               <Plus size={20} />
               إضافة منتج جديد
-            </Link>
+            </Button>
           </div>
 
           {products.length > 0 ? (
@@ -832,13 +818,14 @@ export default function PlaceDetailsPage() {
             <div className="text-center py-8">
               <Package size={48} className="mx-auto mb-4" style={{ color: colors.onSurfaceVariant }} />
               <BodyMedium color="onSurfaceVariant">لا توجد منتجات بعد</BodyMedium>
-              <Link
-                href={`/dashboard/places/${placeId}/products/new`}
-                className="inline-block mt-4 hover:underline"
-                style={{ color: colors.primary }}
+              <Button
+                variant="outlined"
+                size="sm"
+                onClick={() => router.push(`/dashboard/places/${placeId}/products/new`)}
+                className="mt-4"
               >
                 إضافة منتج جديد
-              </Link>
+              </Button>
             </div>
           )}
         </div>

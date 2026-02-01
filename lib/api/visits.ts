@@ -1,6 +1,7 @@
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 export async function recordSiteVisit(visitorIp?: string): Promise<void> {
+  if (!isSupabaseConfigured()) return
   const { error } = await supabase.from('site_visits').insert({
     visitor_ip: visitorIp,
   } as never)
@@ -10,26 +11,25 @@ export async function recordSiteVisit(visitorIp?: string): Promise<void> {
   }
 }
 
-export async function getSiteStats() {
+export async function getSiteStats(): Promise<{ today: number; total: number }> {
+  if (!isSupabaseConfigured()) return { today: 0, total: 0 }
   const today = new Date().toISOString().split('T')[0]
 
-  // Get today's visits
-  const { data: todayVisits, error: todayError } = await supabase
+  const { count: todayCount, error: todayError } = await supabase
     .from('site_visits')
-    .select('id', { count: 'exact' })
+    .select('id', { count: 'exact', head: true })
     .eq('visit_date', today)
 
-  // Get total visits
-  const { data: totalVisits, error: totalError } = await supabase
+  const { count: totalCount, error: totalError } = await supabase
     .from('site_visits')
-    .select('id', { count: 'exact' })
+    .select('id', { count: 'exact', head: true })
 
   if (todayError || totalError) {
-    throw new Error('Error fetching site stats')
+    return { today: 0, total: 0 }
   }
 
   return {
-    today: todayVisits?.length || 0,
-    total: totalVisits?.length || 0,
+    today: todayCount ?? 0,
+    total: totalCount ?? 0,
   }
 }

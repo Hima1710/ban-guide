@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useUnifiedFeed, type EntityType } from '@/hooks/useUnifiedFeed'
+import { useEntityCounts } from '@/hooks/useEntityCounts'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { useStoriesForFollowedPlaces, type PlaceWithStories } from '@/hooks/useStories'
-import { BanCard, BanSkeleton } from '@/components/common'
+import { BanCard, BanSkeleton, PostSkeleton } from '@/components/common'
 import { BodySmall, BodyMedium, TitleSmall, LabelSmall, Button } from '@/components/m3'
 import { Plus } from 'lucide-react'
 import StoryViewer from '@/components/StoryViewer'
@@ -42,9 +43,15 @@ export default function HomePage() {
   const placesToShowInStrip = [...ownedPlaces, ...followedPlaces.filter((f) => !ownedPlaces.some((o) => o.id === f.id))]
 
   const { user } = useAuthContext()
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const { openAddStorySheet } = useAddStorySheet()
   const { items, fetchNextPage, hasNextPage, loading, error } = useUnifiedFeed({ entityType: activeTab })
+
+  const postIdsForCounts = activeTab === 'posts' ? items.map((i) => i.id) : []
+  const { commentCountByEntityId, likeCountByEntityId } = useEntityCounts({
+    entityIds: postIdsForCounts,
+    entityType: 'post',
+  })
 
   useEffect(() => {
     if (!user?.id || !isSupabaseConfigured()) {
@@ -238,7 +245,9 @@ export default function HomePage() {
                 style={{
                   color: activeTab === tab.key ? colors.primary : colors.onSurface,
                   backgroundColor:
-                    activeTab === tab.key ? `rgba(${colors.primaryRgb}, 0.1)` : 'transparent',
+                    activeTab === tab.key
+                      ? `rgba(${colors.primaryRgb}, ${isDark ? 0.1 : 0.22})`
+                      : 'transparent',
                 }}
               >
                 <TitleSmall as="span" color={activeTab === tab.key ? 'primary' : 'onSurface'}>
@@ -266,22 +275,40 @@ export default function HomePage() {
         ) : null}
 
         {loading && items.length === 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-busy="true">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <BanSkeleton key={`card-skeleton-${i}`} variant="card" lines={3} />
-            ))}
-          </div>
+          activeTab === 'posts' ? (
+            <div className="flex flex-col gap-4 w-full" aria-busy="true">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <PostSkeleton key={`post-skeleton-${i}`} showImage showTextLines />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-busy="true">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <BanSkeleton key={`card-skeleton-${i}`} variant="card" lines={3} />
+              ))}
+            </div>
+          )
         ) : !loading && items.length === 0 && !error ? (
           <BodyMedium color="onSurfaceVariant" className="text-center py-12">
             لا يوجد {activeTab === 'places' ? 'أماكن' : activeTab === 'posts' ? 'منشورات' : 'منتجات'} لعرضها.
           </BodyMedium>
-        ) : error && items.length === 0 ? null : (
+        ) : error && items.length === 0 ? null : activeTab === 'posts' ? (
+          <div className="flex flex-col gap-4 w-full">
+            {items.map((item) => (
+              <BanCard
+                key={item.id}
+                layout="posts"
+                item={item as PostFeedItem}
+                commentCountByEntityId={commentCountByEntityId}
+                likeCountByEntityId={likeCountByEntityId}
+              />
+            ))}
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {items.map((item) =>
               activeTab === 'places' ? (
                 <BanCard key={item.id} layout="places" item={item as PlaceFeedItem} />
-              ) : activeTab === 'posts' ? (
-                <BanCard key={item.id} layout="posts" item={item as PostFeedItem} />
               ) : (
                 <BanCard key={item.id} layout="products" item={item as ProductFeedItem} />
               )
@@ -290,11 +317,17 @@ export default function HomePage() {
         )}
 
         {loading && items.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" aria-busy="true">
-            <BanSkeleton variant="card" lines={3} />
-            <BanSkeleton variant="card" lines={3} className="hidden md:block" />
-            <BanSkeleton variant="card" lines={3} className="hidden md:block" />
-          </div>
+          activeTab === 'posts' ? (
+            <div className="flex flex-col gap-4 mt-4 w-full" aria-busy="true">
+              <PostSkeleton showImage showTextLines />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" aria-busy="true">
+              <BanSkeleton variant="card" lines={3} />
+              <BanSkeleton variant="card" lines={3} className="hidden md:block" />
+              <BanSkeleton variant="card" lines={3} className="hidden md:block" />
+            </div>
+          )
         )}
 
         <div ref={sentinelRef} className="h-4 w-full" aria-hidden />

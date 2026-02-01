@@ -28,5 +28,11 @@ export {
   LabelSmall,
 } from './Typography'
 
-// Re-export Button from common (it's already M3 compliant)
+// Re-export Button, Post, PostSkeleton from common (M3 compliant)
 export { default as Button } from '../common/Button'
+export { default as Post } from '../common/Post'
+export type { PostProps } from '../common/Post'
+export { default as PostSkeleton } from '../common/PostSkeleton'
+export type { PostSkeletonProps } from '../common/PostSkeleton'
+export { default as Comments } from '../common/Comments'
+export type { CommentsProps } from '../common/Comments'

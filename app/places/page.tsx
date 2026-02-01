@@ -13,7 +13,7 @@ import { Button } from '@/components/m3'
 export default function PlacesPage() {
   const router = useRouter()
   const { colors } = useTheme()
-  const { places, loading } = usePlaces({ autoLoad: true })
+  const { places, loading, error, refresh } = usePlaces({ autoLoad: true })
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
 
@@ -91,6 +91,21 @@ export default function PlacesPage() {
             {Array.from({ length: 6 }).map((_, i) => (
               <BanSkeleton key={`place-skeleton-${i}`} variant="card" lines={2} showImage={true} />
             ))}
+          </div>
+        ) : error ? (
+          <div
+            className="text-center py-20 rounded-3xl border"
+            style={{ backgroundColor: colors.surface, borderColor: colors.outline }}
+          >
+            <HeadlineMedium className="mb-2" style={{ color: colors.error }}>
+              فشل التحميل
+            </HeadlineMedium>
+            <BodyMedium color="onSurfaceVariant" className="mb-6">
+              {error}
+            </BodyMedium>
+            <Button variant="outlined" size="md" onClick={() => refresh()}>
+              إعادة المحاولة
+            </Button>
           </div>
         ) : filteredPlaces.length === 0 ? (
           <div 

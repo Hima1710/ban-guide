@@ -46,10 +46,9 @@ function CallbackContent() {
         if (ranRef.current) return
         ranRef.current = true
 
-        // إن لم يوجد code_verifier في التخزين لا نستدعي التبادل (نمنع طلب 400)
+        // إن لم يوجد code_verifier — نوجّه لصفحة الدخول دون إظهار رسالة خطأ (نبقي على «جاري إكمال...» حتى التوجيه)
         if (!getCodeVerifierFromStorage()) {
-          setStatus('error')
-          router.replace('/auth/login?session_expired=1')
+          router.replace('/auth/login')
           return
         }
 
@@ -59,13 +58,11 @@ function CallbackContent() {
             const isVerifierMissing =
               error.message?.includes('code verifier') || error.message?.includes('non-empty')
             if (isVerifierMissing) {
-              // انتهت جلسة PKCE (مثلاً فتح من جهاز آخر أو مسح التخزين) — نوجّه لتسجيل الدخول من جديد
-              router.replace('/auth/login?session_expired=1')
+              router.replace('/auth/login')
             } else {
               console.error('[auth/callback] exchangeCodeForSession error:', error)
               router.replace('/?auth_error=1')
             }
-            setStatus('error')
             return
           }
           const user = data?.user
@@ -109,7 +106,6 @@ function CallbackContent() {
           router.replace('/?_=' + Date.now())
         } catch (err) {
           console.error('[auth/callback] Unexpected error:', err)
-          setStatus('error')
           router.replace('/?auth_error=1')
         }
         return
