@@ -60,8 +60,11 @@ export default function NewPlacePage() {
       .eq('is_active', true)
       .maybeSingle()
     const subData = subRow as { package?: { max_places: number }; [key: string]: unknown } | null
-    // عند عدم وجود اشتراك نسمح بإضافة أماكن بحد افتراضي
-    const effectiveSub = subData ?? { package: { max_places: 999 } }
+
+    if (!subData) {
+      router.push('/dashboard/packages?from=add_place')
+      return
+    }
 
     // Check if user can add more places
     const { data: placesRow } = await supabase
@@ -70,14 +73,14 @@ export default function NewPlacePage() {
       .eq('user_id', user.id)
     const placesData = (placesRow ?? []) as { id: string }[]
 
-    const maxPlaces = (effectiveSub.package as { max_places: number })?.max_places ?? 999
+    const maxPlaces = (subData.package as { max_places: number })?.max_places ?? 0
     if ((placesData?.length || 0) >= maxPlaces) {
       showError(`لقد وصلت للحد الأقصى من الأماكن المسموحة في باقاتك (${maxPlaces})`)
       router.push('/dashboard')
       return
     }
 
-    setSubscription(effectiveSub)
+    setSubscription(subData)
     setLoading(false)
   }
 

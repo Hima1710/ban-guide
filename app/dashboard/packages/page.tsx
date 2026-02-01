@@ -362,6 +362,21 @@ export default function PackagesPage() {
           <BodyMedium color="onSurfaceVariant">اختر الباقة المناسبة لك</BodyMedium>
         </div>
 
+        {!loading && !currentSubscription && (
+          <div
+            className="rounded-2xl p-4 mb-6 border-[0.5px]"
+            style={{
+              backgroundColor: colors.surfaceContainer,
+              borderColor: colors.primary,
+              color: colors.onSurface,
+            }}
+          >
+            <BodyMedium className="font-medium">
+              لابد من الاشتراك في باقة لإضافة أماكن إذا لم تكن مشتركاً.
+            </BodyMedium>
+          </div>
+        )}
+
         {currentSubscription && (
           <div
             className="rounded-3xl p-4 mb-6 border"
