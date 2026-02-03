@@ -388,7 +388,7 @@ export default function AdminYouTubePage() {
                         >.env.local</code> في مجلد <code 
                           className="px-2 py-1 rounded"
                           style={{ backgroundColor: colors.surface }}
-                        >web</code>
+                        >web</code>. إذا كانت القيم موجودة مسبقاً في .env.local، فبعد إعادة ربط الحساب حدّثها بهذه القيم الجديدة أو احذفها لاستخدام قاعدة البيانات — وإلا قد يستمر رفع الفيديو بصلاحية قديمة ويظهر خطأ 500.
                       </p>
                     </div>
                   </div>
