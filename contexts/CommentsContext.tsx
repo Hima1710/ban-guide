@@ -10,17 +10,28 @@ import {
 import { createPortal } from 'react-dom'
 import { BottomSheet, TitleLarge } from '@/components/m3'
 import Comments from '@/components/common/Comments'
+import type { CommentEntityType } from '@/lib/api/comments'
 
 export type OpenCommentsSheetFn = (postId: string, placeId?: string | null) => void
 
+export type OpenCommentsSheetForEntityFn = (
+  entityId: string,
+  entityType: CommentEntityType,
+  placeId?: string | null
+) => void
+
 type CommentsContextValue = {
   openCommentsSheet: OpenCommentsSheetFn
+  /** فتح شيت التعليقات لأي entity (منشور، منتج، مكان) — للنظام الموحد (مثل تاب الفيديوهات) */
+  openCommentsSheetForEntity: OpenCommentsSheetForEntityFn
   closeCommentsSheet: () => void
   isCommentsSheetOpen: boolean
   /** المعرّف الحالي للمنشور المعروضة تعليقاته */
   postId: string | null
   /** معرّف المكان (للتوجيه أو جلب التعليقات لاحقاً) */
   placeId: string | null
+  /** نوع الـ entity المعروضة تعليقاته */
+  entityType: CommentEntityType | null
 }
 
 const CommentsContext = createContext<CommentsContextValue | null>(null)
@@ -28,13 +39,21 @@ const CommentsContext = createContext<CommentsContextValue | null>(null)
 export function CommentsProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<{
     open: boolean
-    postId: string | null
+    entityId: string | null
+    entityType: CommentEntityType | null
     placeId: string | null
-  }>({ open: false, postId: null, placeId: null })
+  }>({ open: false, entityId: null, entityType: null, placeId: null })
+
+  const openCommentsSheetForEntity = useCallback(
+    (entityId: string, entityType: CommentEntityType, placeId?: string | null) => {
+      setState({ open: true, entityId, entityType, placeId: placeId ?? null })
+    },
+    []
+  )
 
   const openCommentsSheet = useCallback((postId: string, placeId?: string | null) => {
-    setState({ open: true, postId, placeId: placeId ?? null })
-  }, [])
+    openCommentsSheetForEntity(postId, 'post', placeId ?? null)
+  }, [openCommentsSheetForEntity])
 
   const closeCommentsSheet = useCallback(() => {
     setState((prev) => ({ ...prev, open: false }))
@@ -42,24 +61,26 @@ export function CommentsProvider({ children }: { children: ReactNode }) {
 
   const value: CommentsContextValue = {
     openCommentsSheet,
+    openCommentsSheetForEntity,
     closeCommentsSheet,
     isCommentsSheetOpen: state.open,
-    postId: state.postId,
+    postId: state.entityType === 'post' ? state.entityId : null,
     placeId: state.placeId,
+    entityType: state.entityType,
   }
 
   const sheetNode =
-    state.open && state.postId && typeof document !== 'undefined' ? (
+    state.open && state.entityId && state.entityType && typeof document !== 'undefined' ? (
       <BottomSheet
-        key={`comments-${state.postId}`}
+        key={`comments-${state.entityType}-${state.entityId}`}
         open={true}
         onClose={closeCommentsSheet}
         title={<TitleLarge as="span">التعليقات</TitleLarge>}
         maxHeightRatio={0.65}
       >
         <Comments
-          entityId={state.postId}
-          entityType="post"
+          entityId={state.entityId}
+          entityType={state.entityType}
           maxHeight="45vh"
         />
       </BottomSheet>

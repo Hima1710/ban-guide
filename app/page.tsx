@@ -1,21 +1,23 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useUnifiedFeed, type EntityType } from '@/hooks/useUnifiedFeed'
+import { useUnifiedFeed } from '@/hooks/useUnifiedFeed'
 import { useEntityCounts } from '@/hooks/useEntityCounts'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { useStoriesForFollowedPlaces, type PlaceWithStories } from '@/hooks/useStories'
-import { BanCard, BanSkeleton, PostSkeleton } from '@/components/common'
+import { BanCard, BanSkeleton, PostSkeleton, VideoShortsFeed } from '@/components/common'
 import { BodySmall, BodyMedium, TitleSmall, LabelSmall, Button } from '@/components/m3'
 import { Plus } from 'lucide-react'
 import StoryViewer from '@/components/StoryViewer'
 import { useAddStorySheet } from '@/contexts/AddStoryContext'
-import type { PlaceFeedItem, PostFeedItem, ProductFeedItem } from '@/hooks/useUnifiedFeed'
+import type { PostFeedItem, ProductFeedItem } from '@/hooks/useUnifiedFeed'
 
-const TABS: { key: EntityType; label: string }[] = [
-  { key: 'places', label: 'الأماكن' },
+export type HomeTab = 'videos' | 'posts' | 'products'
+
+const TABS: { key: HomeTab; label: string }[] = [
+  { key: 'videos', label: 'الفيديوهات' },
   { key: 'posts', label: 'المنشورات' },
   { key: 'products', label: 'المنتجات' },
 ]
@@ -27,13 +29,106 @@ interface FollowedPlace {
   logo_url: string | null
 }
 
+function FeedPanel({ entityType }: { entityType: 'posts' | 'products' }) {
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const { items, fetchNextPage, hasNextPage, loading, error } = useUnifiedFeed({ entityType })
+  const postIdsForCounts = entityType === 'posts' ? items.map((i) => i.id) : []
+  const { commentCountByEntityId, likeCountByEntityId } = useEntityCounts({
+    entityIds: postIdsForCounts,
+    entityType: 'post',
+  })
+
+  useEffect(() => {
+    if (!hasNextPage || loading) return
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) fetchNextPage()
+      },
+      { rootMargin: '200px', threshold: 0 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [hasNextPage, loading, fetchNextPage])
+
+  if (error != null) {
+    return (
+      <BodyMedium color="error" className="text-center py-6" role="alert">
+        حدث خطأ في التحميل. حاول مرة أخرى.
+      </BodyMedium>
+    )
+  }
+
+  if (loading && items.length === 0) {
+    return entityType === 'posts' ? (
+      <div className="flex flex-col gap-4 w-full" aria-busy="true">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <PostSkeleton key={`post-skeleton-${i}`} showImage showTextLines />
+        ))}
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-busy="true">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <BanSkeleton key={`card-skeleton-${i}`} variant="card" lines={3} />
+        ))}
+      </div>
+    )
+  }
+
+  if (!loading && items.length === 0) {
+    return (
+      <BodyMedium color="onSurfaceVariant" className="text-center py-12">
+        لا يوجد {entityType === 'posts' ? 'منشورات' : 'منتجات'} لعرضها.
+      </BodyMedium>
+    )
+  }
+
+  return (
+    <>
+      {entityType === 'posts' ? (
+        <div className="flex flex-col gap-4 w-full">
+          {items.map((item) => (
+            <BanCard
+              key={item.id}
+              layout="posts"
+              item={item as PostFeedItem}
+              commentCountByEntityId={commentCountByEntityId}
+              likeCountByEntityId={likeCountByEntityId}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {items.map((item) => (
+            <BanCard key={item.id} layout="products" item={item as ProductFeedItem} />
+          ))}
+        </div>
+      )}
+      {loading && items.length > 0 && (
+        entityType === 'posts' ? (
+          <div className="flex flex-col gap-4 mt-4 w-full" aria-busy="true">
+            <PostSkeleton showImage showTextLines />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" aria-busy="true">
+            <BanSkeleton variant="card" lines={3} />
+            <BanSkeleton variant="card" lines={3} className="hidden md:block" />
+            <BanSkeleton variant="card" lines={3} className="hidden md:block" />
+          </div>
+        )
+      )}
+      <div ref={sentinelRef} className="h-4 w-full" aria-hidden />
+    </>
+  )
+}
+
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<EntityType>('places')
+  const [activeTab, setActiveTab] = useState<HomeTab>('videos')
   const [followedPlaces, setFollowedPlaces] = useState<FollowedPlace[]>([])
   const [ownedPlaces, setOwnedPlaces] = useState<FollowedPlace[]>([])
   const [followedPlacesLoading, setFollowedPlacesLoading] = useState(true)
   const [storyViewerPlace, setStoryViewerPlace] = useState<PlaceWithStories | null>(null)
-  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const placeIds = [...new Set([...ownedPlaces.map((p) => p.id), ...followedPlaces.map((p) => p.id)])]
   const { placesWithStories, loading: storiesLoading, refresh: refreshStories } = useStoriesForFollowedPlaces(placeIds)
@@ -45,13 +140,6 @@ export default function HomePage() {
   const { user } = useAuthContext()
   const { colors, isDark } = useTheme()
   const { openAddStorySheet } = useAddStorySheet()
-  const { items, fetchNextPage, hasNextPage, loading, error } = useUnifiedFeed({ entityType: activeTab })
-
-  const postIdsForCounts = activeTab === 'posts' ? items.map((i) => i.id) : []
-  const { commentCountByEntityId, likeCountByEntityId } = useEntityCounts({
-    entityIds: postIdsForCounts,
-    entityType: 'post',
-  })
 
   useEffect(() => {
     if (!user?.id || !isSupabaseConfigured()) {
@@ -88,20 +176,6 @@ export default function HomePage() {
     }
     void load()
   }, [user?.id])
-
-  useEffect(() => {
-    if (!hasNextPage || loading) return
-    const el = sentinelRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) fetchNextPage()
-      },
-      { rootMargin: '200px', threshold: 0 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [hasNextPage, loading, fetchNextPage])
 
   useEffect(() => {
     const handler = () => refreshStories()
@@ -266,71 +340,14 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Feed — M3: خلفية رئيسية + 16dp أفقياً، 24dp عمودياً */}
-      <main id="feed-panel" role="tabpanel" aria-label="التغذية" className="container mx-auto px-4 py-6 max-w-6xl">
-        {error != null ? (
-          <BodyMedium color="error" className="text-center py-6" role="alert">
-            حدث خطأ في التحميل. حاول مرة أخرى.
-          </BodyMedium>
-        ) : null}
-
-        {loading && items.length === 0 ? (
-          activeTab === 'posts' ? (
-            <div className="flex flex-col gap-4 w-full" aria-busy="true">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <PostSkeleton key={`post-skeleton-${i}`} showImage showTextLines />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" aria-busy="true">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <BanSkeleton key={`card-skeleton-${i}`} variant="card" lines={3} />
-              ))}
-            </div>
-          )
-        ) : !loading && items.length === 0 && !error ? (
-          <BodyMedium color="onSurfaceVariant" className="text-center py-12">
-            لا يوجد {activeTab === 'places' ? 'أماكن' : activeTab === 'posts' ? 'منشورات' : 'منتجات'} لعرضها.
-          </BodyMedium>
-        ) : error && items.length === 0 ? null : activeTab === 'posts' ? (
-          <div className="flex flex-col gap-4 w-full">
-            {items.map((item) => (
-              <BanCard
-                key={item.id}
-                layout="posts"
-                item={item as PostFeedItem}
-                commentCountByEntityId={commentCountByEntityId}
-                likeCountByEntityId={likeCountByEntityId}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {items.map((item) =>
-              activeTab === 'places' ? (
-                <BanCard key={item.id} layout="places" item={item as PlaceFeedItem} />
-              ) : (
-                <BanCard key={item.id} layout="products" item={item as ProductFeedItem} />
-              )
-            )}
-          </div>
-        )}
-
-        {loading && items.length > 0 && (
-          activeTab === 'posts' ? (
-            <div className="flex flex-col gap-4 mt-4 w-full" aria-busy="true">
-              <PostSkeleton showImage showTextLines />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" aria-busy="true">
-              <BanSkeleton variant="card" lines={3} />
-              <BanSkeleton variant="card" lines={3} className="hidden md:block" />
-              <BanSkeleton variant="card" lines={3} className="hidden md:block" />
-            </div>
-          )
-        )}
-
-        <div ref={sentinelRef} className="h-4 w-full" aria-hidden />
+      {/* Feed — تاب الفيديوهات: Shorts-style؛ تاب المنشورات/المنتجات: شبكة */}
+      <main
+        id="feed-panel"
+        role="tabpanel"
+        aria-label="التغذية"
+        className={activeTab === 'videos' ? 'w-full' : 'container mx-auto px-4 py-6 max-w-6xl'}
+      >
+        {activeTab === 'videos' ? <VideoShortsFeed /> : <FeedPanel entityType={activeTab} />}
       </main>
     </div>
   )

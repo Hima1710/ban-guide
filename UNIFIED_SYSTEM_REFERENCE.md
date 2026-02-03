@@ -39,6 +39,8 @@
 | إضافة حالة (شيت) | `useAddStorySheet()` من `@/contexts/AddStoryContext` → `openAddStorySheet(placeId, placeName?)` لفتح شيت إضافة الحالة من أي صفحة دون الانتقال |
 | الظلال | `var(--shadow-sm)`, `var(--shadow-md)`, أو كلاسات من `globals.css` (مثل `shadow-elev-*`)—لا `boxShadow` بـ rgba ثابت |
 | **Chameleon (سطح متكيّف)** | للهيدر العائم أو الكروت فوق المحتوى: أضف الصنف `surface-chameleon` (شفاف) أو `surface-chameleon-glass` (زجاج + `backdrop-filter`). الألوان تُحدَّث تلقائياً مع الثيم الفاتح/الداكن. |
+| **تاب الفيديوهات (الرئيسية)** | تاب «الفيديوهات» يعرض كل الفيديوهات (منشورات، منتجات، أماكن، ستوريز) بتدفق متتالي (Shorts-style). المكوّن: `VideoShortsFeed` من `@/components/common`؛ الهوك: `useUnifiedVideoFeed` من `@/hooks/useUnifiedVideoFeed`؛ الـ API: `getUnifiedVideos` من `@/lib/api/videos`. شريط التفاعل: لايك (مع العدد) + تعليق (يفتح Bottom Sheet مع العدد) باستخدام `useEntityCounts` و `openCommentsSheetForEntity` من `CommentsContext`. |
+| **تعليقات حسب الـ entity** | `CommentsContext` يدعم `openCommentsSheetForEntity(entityId, entityType, placeId?)` لفتح شيت التعليقات لأي entity (post/product/place). استخدمه في تاب الفيديوهات أو أي واجهة تحتاج تعليقات على منتج/مكان. |
 
 **المراجع:** `UNIFIED_UI_SYSTEM.md`, `GLOBAL_UI_UNIFICATION.md`, `M3_IMPLEMENTATION_GUIDE.md`
 
@@ -61,6 +63,7 @@
 | البند | القاعدة |
 |--------|---------|
 | استدعاء الـ RPC | من التطبيق استخدم دوال `lib/api/` (مثل `notifyPlaceFollowers`, `sendNotification`)؛ أسماء المعاملات تطابق الداتابيز (`p_place_id`, `p_title_ar`, …) |
+| الفيديوهات الموحدة | `getUnifiedVideos(offset, limit)` من `@/lib/api/videos` — تجمع فيديوهات المنشورات (post_type=video)، منتجات (product_videos)، أماكن (video_url)، ستوريز (media_type=video) وترتّبها حسب التاريخ. النوع: `UnifiedVideoItem` (id, videoUrl, source, entityId, entityType, placeId, title, created_at). |
 | الأنواع | أنواع الإشعارات وغيرها في `lib/types/database.ts` (مثل `NotificationType`) مطابقة لـ CHECK في الجداول |
 | دوال الداتابيز | تسمية `snake_case`؛ معاملات بـ `p_`؛ قيم الـ type من نفس مجموعة `notifications.type` |
 
