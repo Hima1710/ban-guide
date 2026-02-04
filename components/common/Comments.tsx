@@ -15,6 +15,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { fetchComments, addComment, type Comment, type CommentEntityType } from '@/lib/api/comments'
 import Button from '@/components/common/Button'
+import VirtualList from '@/components/common/VirtualList'
 import { BodyMedium, BodySmall, LabelSmall } from '@/components/m3'
 
 const PLACEHOLDER = 'اكتب تعليقاً...'
@@ -46,8 +47,11 @@ function CommentItem({
 }) {
   return (
     <div
-      className={`flex gap-3 items-start rounded-xl p-2 bg-surface border-[0.5px] border-outline transition-opacity duration-300 ${isReply ? 'mr-6 border-r-2 border-r-primary/40' : ''}`}
-      style={isOptimistic ? { opacity: OPTIMISTIC_OPACITY } : undefined}
+      className={`flex gap-3 items-start rounded-section bg-surface border-[0.5px] border-outline transition-opacity duration-300 ${isReply ? 'mr-6 border-r-2 border-r-primary/40' : ''}`}
+      style={{
+        padding: 'var(--main-padding)',
+        ...(isOptimistic ? { opacity: OPTIMISTIC_OPACITY } : {}),
+      }}
     >
       <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-outline bg-surface">
         {comment.author?.avatar_url ? (
@@ -103,7 +107,7 @@ function RepliesList({
   canReply: boolean
 }) {
   return (
-    <ul className="space-y-2 list-none p-0 m-0 mr-2">
+    <ul className="flex flex-col gap-element list-none p-0 m-0 mr-2">
       {replies.map((r) => (
         <li key={r.id} className="space-y-2">
           <CommentItem
@@ -143,6 +147,7 @@ export default function Comments({
   /** تعليق متفائل (Optimistic) — يظهر فوراً بـ opacity خفيفة حتى التأكيد من الخادم */
   const [optimisticComment, setOptimisticComment] = useState<Comment | null>(null)
   const loadingRef = useRef(false)
+  const commentsListRef = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async (silent = false) => {
     if (!entityId) return
@@ -241,15 +246,16 @@ export default function Comments({
       style={{ color: colors.onSurface }}
       dir="rtl"
     >
-      {/* قائمة التعليقات + الردود */}
+      {/* قائمة التعليقات + الردود — VirtualList عند وجود تعليقات؛ مسافات MD3 */}
       <div
+        ref={commentsListRef}
         className="flex-1 overflow-y-auto overscroll-contain"
         style={{ maxHeight }}
       >
         {loading ? (
-          <ul className="space-y-3 py-2 list-none p-0 m-0" aria-hidden>
+          <ul className="space-y-3 py-2 list-none p-0 m-0 gap-element" aria-hidden style={{ padding: 'var(--main-padding)' }}>
             {[1, 2, 3].map((i) => (
-              <li key={i} className="flex gap-3 items-start rounded-xl p-2 bg-surface border border-outline/50">
+              <li key={i} className="flex gap-3 items-start rounded-section p-main bg-surface border border-outline/50">
                 <div
                   className="skeleton-shimmer w-8 h-8 rounded-full flex-shrink-0 bg-on-surface-variant/20"
                   style={{ minWidth: 32, minHeight: 32 }}
@@ -278,45 +284,56 @@ export default function Comments({
             ))}
           </ul>
         ) : error ? (
-          <div className="py-4">
+          <div className="py-4 p-main">
             <BodySmall color="error">{error}</BodySmall>
           </div>
         ) : comments.length === 0 && !optimisticComment ? (
-          <div className="py-6 text-center">
+          <div className="py-6 text-center p-main">
             <BodyMedium color="onSurfaceVariant">لا تعليقات بعد. كن أول من يعلق.</BodyMedium>
           </div>
         ) : (
-          <ul className="space-y-3 py-2 list-none p-0 m-0">
-            {comments.map((c) => (
-              <li key={c.id} className="space-y-2">
-                <CommentItem
-                  comment={c}
-                  isOptimistic={c.optimistic}
-                  onReply={handleReplyClick}
-                  canReply={!!user}
-                />
-                {c.replies && c.replies.length > 0 && (
-                  <RepliesList
-                    replies={c.replies}
+          <>
+            <VirtualList<Comment>
+              items={comments}
+              scrollElementRef={commentsListRef}
+              estimateSize={100}
+              getItemKey={(c) => c.id}
+              className="py-2 list-none p-0 m-0"
+              renderItem={(c) => (
+                <div style={{ paddingBottom: 'var(--element-gap)' }}>
+                  <div className="space-y-2">
+                    <CommentItem
+                      comment={c}
+                      isOptimistic={c.optimistic}
+                      onReply={handleReplyClick}
+                      canReply={!!user}
+                    />
+                    {c.replies && c.replies.length > 0 && (
+                      <RepliesList
+                        replies={c.replies}
+                        onReply={handleReplyClick}
+                        canReply={!!user}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            />
+            {/* تعليق متفائل (Optimistic) — يظهر فور الإرسال حتى التأكيد من الخادم */}
+            {optimisticComment && (
+              <div className="p-main" style={{ paddingTop: 0 }}>
+                <div className="space-y-2">
+                  <CommentItem
+                    comment={optimisticComment}
+                    isReply={!!optimisticComment.parent_id}
+                    isOptimistic
                     onReply={handleReplyClick}
                     canReply={!!user}
                   />
-                )}
-              </li>
-            ))}
-            {/* تعليق متفائل (Optimistic) — يظهر فور الإرسال حتى التأكيد من الخادم */}
-            {optimisticComment && (
-              <li key={optimisticComment.id} className="space-y-2">
-                <CommentItem
-                  comment={optimisticComment}
-                  isReply={!!optimisticComment.parent_id}
-                  isOptimistic
-                  onReply={handleReplyClick}
-                  canReply={!!user}
-                />
-              </li>
+                </div>
+              </div>
             )}
-          </ul>
+          </>
         )}
       </div>
 

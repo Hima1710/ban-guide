@@ -41,6 +41,9 @@
 | **Chameleon (سطح متكيّف)** | للهيدر العائم أو الكروت فوق المحتوى: أضف الصنف `surface-chameleon` (شفاف) أو `surface-chameleon-glass` (زجاج + `backdrop-filter`). الألوان تُحدَّث تلقائياً مع الثيم الفاتح/الداكن. |
 | **تاب الفيديوهات (الرئيسية)** | تاب «الفيديوهات» يعرض كل الفيديوهات (منشورات، منتجات، أماكن، ستوريز) بتدفق متتالي (Shorts-style). المكوّن: `VideoShortsFeed` من `@/components/common`؛ الهوك: `useUnifiedVideoFeed` من `@/hooks/useUnifiedVideoFeed`؛ الـ API: `getUnifiedVideos` من `@/lib/api/videos`. شريط التفاعل: لايك (مع العدد) + تعليق (يفتح Bottom Sheet مع العدد) باستخدام `useEntityCounts` و `openCommentsSheetForEntity` من `CommentsContext`. |
 | **تعليقات حسب الـ entity** | `CommentsContext` يدعم `openCommentsSheetForEntity(entityId, entityType, placeId?)` لفتح شيت التعليقات لأي entity (post/product/place). استخدمه في تاب الفيديوهات أو أي واجهة تحتاج تعليقات على منتج/مكان. |
+| **المحادثة الجانبية (Drawer + Sidebar)** | تظهر **فقط في صفحة المكان** (`/places/[id]`) عند الضغط على «إرسال رسالة». في AppShell يُعرض `ConversationsSidebar` و `ConversationDrawer` فقط عندما `pathname.startsWith('/places/')` ويكون المسار مكاناً واحداً. في غير صفحة المكان لا يظهر زر المحادثات العائم ولا الدرج. |
+| **صفحة المحادثات (/messages)** | فلتر حسب الدور: **أماكني** (مالك)، **أماكن أعمل فيها** (موظف)، **أماكن أتابعها** (متابع). الهوك: `usePlacesForMessages` من `@/hooks/usePlacesForMessages`؛ الـ API: `getEmployedPlaces`, `getFollowedPlaces`, `getPlaceEmployees`, `getPlaceFollowers` من `@/lib/api/messagesPlaces`. عند اختيار مكان: عرض الموظفين (للمالك/الموظف)، العملاء (من كلم المكان)، المتابعين. المحادثة تُعرض inline بمكوّن `MessagesInlineChat` من `@/components/MessagesInlineChat` باستخدام `ConversationContext` و `selectConversation`. |
+| **قوائم افتراضية (VirtualList)** | للقوائم الطويلة أو العناصر الثقيلة (فيديوهات، كروت، صور): استخدم مكوّن `VirtualList` من `@/components/common` مع `@tanstack/react-virtual`. الخصائص: `items`, `renderItem`, `getItemKey`, `estimateSize`, `scrollElementRef` (مرجع الحاوية ذات `overflow-y: auto`)، واختياريًا `overscan`. لا تكتب منطق virtualization يدويًا في الصفحات — استخدم هذا المكوّن فقط. **حاوية التمرير:** استخدم `useScrollContainer()` من `@/contexts/ScrollContainerContext` لمرجع عنصر التمرير الرئيسي (main في AppShell). **الاستخدامات:** (1) `VideoShortsFeed` — شبكة فيديوهات (صفوف × 2)، (2) `FeedPanel` في الصفحة الرئيسية — منشورات (قائمة) ومنتجات (صفوف × 3)، (3) صفحة الأماكن — قائمة أماكن، (4) صفحة تفاصيل المكان — تاب المنشورات (قائمة) وتاب المنتجات (صفوف × 3)، (5) صفحة المحادثات — قائمة المحادثات وشبكة الأماكن (صفوف × 2)، (6) داخل المحادثة (`MessagesInlineChat`) — قائمة الرسائل وقائمة اختيار المنتج (حاوية تمرير محلية)، (7) التعليقات (`Comments`) — قائمة التعليقات (تعليق + ردود) بحاوية تمرير محلية (`maxHeight`). المسافات من `globals.css`: `gap-element`, `rounded-section`, `p-main`, `paddingBottom: var(--element-gap)` للصفوف. التفاصيل: `docs/VIRTUALIZATION_STRATEGY.md`. |
 
 **المراجع:** `UNIFIED_UI_SYSTEM.md`, `GLOBAL_UI_UNIFICATION.md`, `M3_IMPLEMENTATION_GUIDE.md`
 
@@ -64,6 +67,7 @@
 |--------|---------|
 | استدعاء الـ RPC | من التطبيق استخدم دوال `lib/api/` (مثل `notifyPlaceFollowers`, `sendNotification`)؛ أسماء المعاملات تطابق الداتابيز (`p_place_id`, `p_title_ar`, …) |
 | الفيديوهات الموحدة | `getUnifiedVideos(offset, limit)` من `@/lib/api/videos` — تجمع فيديوهات المنشورات (post_type=video)، منتجات (product_videos)، أماكن (video_url)، ستوريز (media_type=video) وترتّبها حسب التاريخ. النوع: `UnifiedVideoItem` (id, videoUrl, source, entityId, entityType, placeId, title, created_at). |
+| أماكن المحادثات | `getEmployedPlaces(userId)`, `getFollowedPlaces(userId)` من `@/lib/api/messagesPlaces` — أماكن المستخدم كموظف أو كمتابع. `getPlaceEmployees(placeId)`, `getPlaceFollowers(placeId)` — موظفو ومتابعو مكان معيّن (لصفحة المحادثات). الهوك الموحد: `usePlacesForMessages()` من `@/hooks/usePlacesForMessages` يعيد `ownedPlaces`, `employedPlaces`, `followedPlaces`, `placesWithRole`, `loading`, `refresh`. |
 | الأنواع | أنواع الإشعارات وغيرها في `lib/types/database.ts` (مثل `NotificationType`) مطابقة لـ CHECK في الجداول |
 | دوال الداتابيز | تسمية `snake_case`؛ معاملات بـ `p_`؛ قيم الـ type من نفس مجموعة `notifications.type` |
 
@@ -73,7 +77,7 @@
 
 - **الداتابيز:** README في `supabase_migrations/` + RLS + COMMENT + `SET search_path` للدوال.
 - **الألوان:** `useTheme()` و `colors.*` ومتغيرات `globals.css` فقط؛ لا ألوان ثابتة للبراند/الدلالات.
-- **الواجهة:** مكونات M3 (Button, Typography, …) وظلال من متغيرات CSS.
+- **الواجهة:** مكونات M3 (Button, Typography, …) وظلال من متغيرات CSS؛ قوائم طويلة/ثقيلة → `VirtualList` من `@/components/common`.
 - **التحميل:** صفحة كاملة → `LoadingSpinner`؛ قوائم/شبكات → `BanSkeleton` (card/avatar/text).
 - **الدوال:** استخدام `lib/api/` وتطابق المعاملات والأنواع مع الداتابيز و TypeScript.
 

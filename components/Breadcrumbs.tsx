@@ -17,6 +17,7 @@ export default function Breadcrumbs() {
   const breadcrumbMap: Record<string, string> = {
     'dashboard': 'لوحة التحكم',
     'admin': 'لوحة الإدارة',
+    'messages': 'المحادثات',
     'places': 'الأماكن',
     'auth': 'المصادقة',
     'login': 'تسجيل الدخول',

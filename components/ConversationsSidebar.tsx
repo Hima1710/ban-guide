@@ -49,53 +49,6 @@ export default function ConversationsSidebar() {
 
   return (
     <>
-      {/* زر المحادثات (ديسكتوب) — MD3 الموحد: حدود ذهبية فقط، بدون خلفية مصمتة */}
-      <Button
-        onClick={() => (isOpen ? closeSidebar() : openSidebar())}
-        variant="filled"
-        size="sm"
-        className="conversations-fab hidden lg:flex fixed w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-[70] items-center justify-center relative"
-        style={{ top: '5.5rem', left: '1rem' }}
-        aria-label="فتح/إغلاق المحادثات"
-      >
-        <MessageCircle size={24} />
-        {allConversations.filter((c) => c.unreadCount > 0).length > 0 && (
-          <span
-            className="absolute -top-1 -left-1 w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center border-2"
-            style={{
-              backgroundColor: colors.error,
-              color: colors.onPrimary,
-              borderColor: colors.surface,
-            }}
-          >
-            {allConversations.reduce((sum, c) => sum + c.unreadCount, 0)}
-          </span>
-        )}
-      </Button>
-
-      {/* زر المحادثات (موبايل) — MD3 الموحد: حدود ذهبية فقط، بدون خلفية مصمتة */}
-      <Button
-        onClick={() => (isOpen ? closeSidebar() : openSidebar())}
-        variant="filled"
-        size="sm"
-        className="conversations-fab lg:hidden fixed bottom-4 right-4 w-14 h-14 !min-h-0 !p-0 rounded-full shadow-lg z-50 flex items-center justify-center relative"
-        aria-label="فتح/إغلاق المحادثات"
-      >
-        <MessageCircle size={24} />
-        {allConversations.filter((c) => c.unreadCount > 0).length > 0 && (
-          <span
-            className="absolute -top-1 -left-1 w-6 h-6 text-xs font-bold rounded-full flex items-center justify-center border-2"
-            style={{
-              backgroundColor: colors.error,
-              color: colors.onPrimary,
-              borderColor: colors.surface,
-            }}
-          >
-            {allConversations.reduce((sum, c) => sum + c.unreadCount, 0)}
-          </span>
-        )}
-      </Button>
-
       {/* Backdrop for Desktop */}
       {isOpen && (
         <div

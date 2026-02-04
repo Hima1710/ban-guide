@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, Suspense } from 'react'
+import { useEffect, useState, useRef, Suspense, useMemo } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { Place, Product } from '@/lib/types'
 import { incrementPlaceView } from '@/lib/api/places'
@@ -10,12 +10,59 @@ import { supabase } from '@/lib/supabase'
 import { extractYouTubeId, getYouTubeEmbedUrl } from '@/lib/youtube'
 import { MapPin, Phone, MessageCircle, Image as ImageIcon, X, Package, UserPlus, CheckCircle, Plus, Trash2, Video, Upload } from 'lucide-react'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
-import { LoadingSpinner, Input, PageSkeleton } from '@/components/common'
+import { LoadingSpinner, Input, PageSkeleton, VirtualList } from '@/components/common'
+import { useScrollContainer } from '@/contexts/ScrollContainerContext'
+import { useHeaderContext } from '@/contexts/HeaderContext'
 import { notifyPlaceFollowers } from '@/lib/api/notifications'
 import { NotificationType } from '@/lib/types/database'
 import { useConversationContextOptional } from '@/contexts/ConversationContext'
 import { TitleLarge, TitleMedium, BodyMedium, BodySmall, LabelMedium, LabelLarge, Button } from '@/components/m3'
 import { isValidPlaceId } from '@/lib/validation'
+
+/** ارتفاع شريط التابات المثبت في صفحة تفاصيل المكان — يطابق --place-detail-tabs-height في globals.css؛ يُستخدم في contentPaddingTop للـ VirtualList */
+const PLACE_DETAIL_TABS_HEIGHT_PX = 56
+
+/** محتوى الشريط الفرعي لتفاصيل المكان: اسم + صورة مصغرة (يختفي عند التمرير؛ التابات تبقى Pinned في المحتوى) */
+function PlaceDetailSubHeader({
+  placeName,
+  logoUrl,
+  colors,
+}: {
+  placeName: string | null
+  logoUrl: string | null
+  colors: ReturnType<typeof useTheme>['colors']
+}) {
+  return (
+    <section
+      aria-label="معلومات المكان"
+      className="flex items-center gap-3 px-4 py-2 border-t border-opacity-50"
+      style={{ borderColor: colors.outline }}
+    >
+      {logoUrl ? (
+        <img
+          src={logoUrl}
+          alt=""
+          className="w-10 h-10 rounded-lg border-2 shrink-0 object-cover"
+          style={{ borderColor: colors.outline }}
+        />
+      ) : (
+        <div
+          className="w-10 h-10 rounded-lg border-2 flex items-center justify-center shrink-0 text-lg font-bold"
+          style={{
+            borderColor: colors.outline,
+            background: `linear-gradient(to bottom right, ${colors.primary}, ${colors.primaryDark})`,
+            color: colors.onPrimary,
+          }}
+        >
+          {placeName?.[0]?.toUpperCase() ?? '?'}
+        </div>
+      )}
+      <TitleMedium as="h2" className="truncate flex-1 min-w-0" style={{ color: colors.onSurface }}>
+        {placeName ?? 'المكان'}
+      </TitleMedium>
+    </section>
+  )
+}
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function ProductIdHandler({ children }: { children: (productId: string | null) => React.ReactNode }) {
@@ -45,7 +92,7 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const [isEmployee, setIsEmployee] = useState(false)
   const [employeePermissions, setEmployeePermissions] = useState<'basic' | 'messages_posts' | 'full' | null>(null)
   const [hasPendingRequest, setHasPendingRequest] = useState(false)
-  const [activeTab, setActiveTab] = useState<'posts' | 'products'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'products' | 'services'>('posts')
   const [posts, setPosts] = useState<any[]>([])
   const [showAddPostModal, setShowAddPostModal] = useState(false)
   const [postData, setPostData] = useState({
@@ -62,6 +109,14 @@ function PlacePageContent({ productId }: { productId: string | null }) {
   const [isFollowing, setIsFollowing] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
   const lastCountedPlaceIdRef = useRef<string | null>(null)
+  const scrollRef = useScrollContainer()
+  const headerCtx = useHeaderContext()
+  /** صفوف المنتجات — كل صف 4 عناصر لاستخدام VirtualList (شبكة: 2 صغير، 3/4 كبير) */
+  const productGridRows = useMemo(() => {
+    const rows: (typeof products)[] = []
+    for (let i = 0; i < products.length; i += 4) rows.push(products.slice(i, i + 4))
+    return rows
+  }, [products])
 
   /* عدّ المشاهدة فور دخول الصفحة (مرة واحدة لكل placeId) دون انتظار تحميل place */
   useEffect(() => {
@@ -255,6 +310,24 @@ function PlacePageContent({ productId }: { productId: string | null }) {
     window.history.replaceState({}, '', newUrl)
   }, [conversationContext, place, placeId, user, searchParams])
 
+  /* ربط الشريط الفرعي (اسم المكان + صورة مصغرة) بالهيدر الموحد — يختفي عند التمرير؛ التابات تبقى Pinned في المحتوى */
+  useEffect(() => {
+    const setSubHeader = headerCtx?.setSubHeader
+    if (!setSubHeader) return
+    if (!place) {
+      setSubHeader(null)
+      return
+    }
+    setSubHeader(
+      <PlaceDetailSubHeader
+        placeName={place.name_ar}
+        logoUrl={place.logo_url}
+        colors={colors}
+      />
+    )
+    return () => setSubHeader(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- قيم مستقرة؛ colors مرجع يتغير كل render
+  }, [headerCtx?.setSubHeader, place?.id, place?.name_ar ?? '', place?.logo_url ?? ''])
 
   if (loading) {
     return <PageSkeleton variant="default" />
@@ -720,78 +793,75 @@ function PlacePageContent({ productId }: { productId: string | null }) {
           </div>
         )}
 
-        {/* Posts and Products Tabs */}
+        {/* Sticky Tabs — تابات ثابتة تحت الهيدر عند التمرير (منشورات، منتجات، خدمات) */}
         <div
-          className="shadow-elev-4 p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl"
-          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+          className="sticky top-0 z-10 border-b shrink-0"
+          style={{
+            backgroundColor: colors.surface,
+            borderColor: colors.outline,
+            boxShadow: 'var(--shadow-sm)',
+          }}
         >
-          {/* Tabs */}
-          <div
-            className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b"
-            style={{ borderColor: colors.outline }}
-          >
-            <div className="flex gap-1 sm:gap-2">
-              <button
-                type="button"
+          <div className="flex flex-wrap justify-between items-center gap-3 px-2 sm:px-4 py-2">
+            <div role="tablist" aria-label="محتوى المكان" className="flex gap-1 sm:gap-2">
+              <Button
+                variant="text"
+                size="md"
                 onClick={() => setActiveTab('posts')}
-                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0 border"
+                role="tab"
+                aria-selected={activeTab === 'posts'}
+                aria-controls="place-tabpanel"
+                id="tab-posts"
+                className="!min-h-[44px] rounded-extra-large !shadow-none shrink-0"
                 style={{
-                  color: activeTab === 'posts' ? colors.primary : colors.onSurfaceVariant,
+                  color: activeTab === 'posts' ? colors.primary : colors.onSurface,
                   backgroundColor:
-                    activeTab === 'posts' && !isDark
-                      ? `rgba(${colors.primaryRgb}, 0.2)`
-                      : activeTab === 'posts'
-                        ? 'transparent'
-                        : 'transparent',
-                  borderColor: activeTab === 'posts' ? colors.primary : colors.outline,
-                  borderWidth: activeTab === 'posts' ? 2 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'posts') e.currentTarget.style.backgroundColor = colors.surfaceContainer
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    activeTab === 'posts' && !isDark
-                      ? `rgba(${colors.primaryRgb}, 0.2)`
-                      : activeTab === 'posts'
-                        ? 'transparent'
-                        : 'transparent'
+                    activeTab === 'posts'
+                      ? `rgba(${colors.primaryRgb}, ${isDark ? 0.1 : 0.22})`
+                      : 'transparent',
                 }}
               >
                 <span className="font-semibold text-sm">المنشورات ({posts.length})</span>
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="text"
+                size="md"
                 onClick={() => setActiveTab('products')}
-                className="px-3 sm:px-4 py-2.5 transition-colors rounded-extra-large min-w-0 border"
+                role="tab"
+                aria-selected={activeTab === 'products'}
+                aria-controls="place-tabpanel"
+                id="tab-products"
+                className="!min-h-[44px] rounded-extra-large !shadow-none shrink-0"
                 style={{
-                  color: activeTab === 'products' ? colors.primary : colors.onSurfaceVariant,
+                  color: activeTab === 'products' ? colors.primary : colors.onSurface,
                   backgroundColor:
-                    activeTab === 'products' && !isDark
-                      ? `rgba(${colors.primaryRgb}, 0.2)`
-                      : activeTab === 'products'
-                        ? 'transparent'
-                        : 'transparent',
-                  borderColor: activeTab === 'products' ? colors.primary : colors.outline,
-                  borderWidth: activeTab === 'products' ? 2 : 1,
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'products') e.currentTarget.style.backgroundColor = colors.surfaceContainer
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    activeTab === 'products' && !isDark
-                      ? `rgba(${colors.primaryRgb}, 0.2)`
-                      : activeTab === 'products'
-                        ? 'transparent'
-                        : 'transparent'
+                    activeTab === 'products'
+                      ? `rgba(${colors.primaryRgb}, ${isDark ? 0.1 : 0.22})`
+                      : 'transparent',
                 }}
               >
                 <span className="font-semibold text-sm">المنتجات ({products.length})</span>
-              </button>
+              </Button>
+              <Button
+                variant="text"
+                size="md"
+                onClick={() => setActiveTab('services')}
+                role="tab"
+                aria-selected={activeTab === 'services'}
+                aria-controls="place-tabpanel"
+                id="tab-services"
+                className="!min-h-[44px] rounded-extra-large !shadow-none shrink-0"
+                style={{
+                  color: activeTab === 'services' ? colors.primary : colors.onSurface,
+                  backgroundColor:
+                    activeTab === 'services'
+                      ? `rgba(${colors.primaryRgb}, ${isDark ? 0.1 : 0.22})`
+                      : 'transparent',
+                }}
+              >
+                <span className="font-semibold text-sm">الخدمات</span>
+              </Button>
             </div>
-            
-            {/* Add Buttons */}
             {canManagePosts && activeTab === 'posts' && (
               <Button
                 variant="filled"
@@ -815,56 +885,117 @@ function PlacePageContent({ productId }: { productId: string | null }) {
               </Button>
             )}
           </div>
+        </div>
 
-          {/* Posts Tab Content */}
+        {/* Tab content */}
+        <div
+          id="place-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`tab-${activeTab}`}
+          className="shadow-elev-4 p-4 sm:p-6 mb-4 sm:mb-6 rounded-3xl"
+          style={{ backgroundColor: colors.surface, border: `1px solid ${colors.outline}` }}
+        >
+          {/* Posts Tab Content — VirtualList عند توفر حاوية التمرير؛ مسافات MD3 */}
           {activeTab === 'posts' && (
             <div>
               {posts.length === 0 ? (
                 <BodyMedium color="onSurfaceVariant" className="text-center py-8">
                   لا توجد منشورات حالياً
                 </BodyMedium>
+              ) : scrollRef ? (
+                <VirtualList<typeof posts[0]>
+                  items={posts}
+                  scrollElementRef={scrollRef}
+                  estimateSize={320}
+                  contentPaddingTop={PLACE_DETAIL_TABS_HEIGHT_PX}
+                  getItemKey={(post) => post.id}
+                  renderItem={(post) => (
+                    <div style={{ paddingBottom: 'var(--element-gap)' }}>
+                      <div
+                        className="border rounded-section p-main relative transition-colors"
+                        style={{ borderColor: colors.outline }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                      >
+                        {canManagePosts && (
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeletePost(post.id)}
+                            className="absolute top-2 left-2 !min-h-0 !p-1.5 rounded-lg"
+                            title="حذف المنشور"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        )}
+                        <BodySmall style={{ color: colors.onSurface }} className="mb-3 whitespace-pre-wrap">
+                          {post.content}
+                        </BodySmall>
+                        {post.post_type === 'image' && post.image_url && (
+                          <div className="mb-3">
+                            <img src={post.image_url} alt="منشور" className="w-full max-w-xl mx-auto rounded-lg" />
+                          </div>
+                        )}
+                        {post.post_type === 'video' && post.video_url && (
+                          <div className="mb-3">
+                            <div className="aspect-video rounded-lg overflow-hidden max-w-xl mx-auto">
+                              {extractYouTubeId(post.video_url) ? (
+                                <iframe
+                                  src={getYouTubeEmbedUrl(extractYouTubeId(post.video_url)!)}
+                                  className="w-full h-full"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              ) : (
+                                <video src={post.video_url} controls className="w-full h-full" />
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        <BodySmall color="onSurfaceVariant" className="mt-2">
+                          {new Date(post.created_at).toLocaleDateString('ar-EG', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </BodySmall>
+                      </div>
+                    </div>
+                  )}
+                />
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col gap-element">
                   {posts.map((post) => (
                     <div
                       key={post.id}
-                      className="border rounded-2xl p-3 sm:p-4 relative transition-colors"
+                      className="border rounded-section p-main relative transition-colors"
                       style={{ borderColor: colors.outline }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      {/* Delete Button */}
                       {canManagePosts && (
-                        <button
+                        <Button
+                          type="button"
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleDeletePost(post.id)}
-                          className="absolute top-2 left-2 p-1.5 rounded-lg transition-all hover:scale-110"
-                          style={{
-                            backgroundColor: colors.error,
-                            color: 'var(--color-on-error)',
-                          }}
+                          className="absolute top-2 left-2 !min-h-0 !p-1.5 rounded-lg"
                           title="حذف المنشور"
                         >
                           <Trash2 size={14} />
-                        </button>
+                        </Button>
                       )}
-                      
-                      {/* Post Content */}
                       <BodySmall style={{ color: colors.onSurface }} className="mb-3 whitespace-pre-wrap">
                         {post.content}
                       </BodySmall>
-
-                      {/* Post Image */}
                       {post.post_type === 'image' && post.image_url && (
                         <div className="mb-3">
-                          <img
-                            src={post.image_url}
-                            alt="منشور"
-                            className="w-full max-w-xl mx-auto rounded-lg"
-                          />
+                          <img src={post.image_url} alt="منشور" className="w-full max-w-xl mx-auto rounded-lg" />
                         </div>
                       )}
-
-                      {/* Post Video */}
                       {post.post_type === 'video' && post.video_url && (
                         <div className="mb-3">
                           <div className="aspect-video rounded-lg overflow-hidden max-w-xl mx-auto">
@@ -876,17 +1007,11 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                                 allowFullScreen
                               />
                             ) : (
-                              <video
-                                src={post.video_url}
-                                controls
-                                className="w-full h-full"
-                              />
+                              <video src={post.video_url} controls className="w-full h-full" />
                             )}
                           </div>
                         </div>
                       )}
-
-                      {/* Post Date */}
                       <BodySmall color="onSurfaceVariant" className="mt-2">
                         {new Date(post.created_at).toLocaleDateString('ar-EG', {
                           year: 'numeric',
@@ -903,19 +1028,91 @@ function PlacePageContent({ productId }: { productId: string | null }) {
             </div>
           )}
 
-          {/* Products Tab Content */}
+          {/* Products Tab Content — VirtualList عند توفر حاوية التمرير؛ مسافات MD3 */}
           {activeTab === 'products' && (
             <div>
               {products.length === 0 ? (
                 <BodyMedium color="onSurfaceVariant" className="text-center py-8">
                   لا توجد منتجات حالياً
                 </BodyMedium>
+              ) : scrollRef ? (
+                <VirtualList<(typeof products)[0][]>
+                  items={productGridRows}
+                  scrollElementRef={scrollRef}
+                  estimateSize={280}
+                  contentPaddingTop={PLACE_DETAIL_TABS_HEIGHT_PX}
+                  getItemKey={(_row, rowIndex) => rowIndex}
+                  renderItem={(row) => (
+                    <div
+                      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-element"
+                      style={{ paddingBottom: 'var(--element-gap)' }}
+                    >
+                      {row.map((product) => (
+                        <div
+                          key={product.id}
+                          className="border rounded-section p-main transition-all relative"
+                          style={{
+                            borderColor: colors.outline,
+                            ...(productId === product.id ? { boxShadow: `0 0 0 2px ${colors.primary}` } : {}),
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                        >
+                          {canManageProducts && (
+                            <Button
+                              type="button"
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleDeleteProduct(product.id)}
+                              className="absolute top-2 left-2 !min-h-0 !p-2 rounded-lg z-10"
+                              title="حذف المنتج"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
+                          {product.images && product.images.length > 0 && (
+                            <img
+                              src={product.images[0].image_url}
+                              alt={product.name_ar}
+                              className="w-full h-40 sm:h-48 object-cover rounded-lg mb-2 sm:mb-3"
+                            />
+                          )}
+                          <TitleMedium style={{ color: colors.onSurface }} className="mb-1.5 sm:mb-2">
+                            {product.name_ar}
+                          </TitleMedium>
+                          <BodySmall color="onSurfaceVariant" className="mb-2 line-clamp-2">{product.description_ar}</BodySmall>
+                          {product.price && (
+                            <BodyMedium style={{ color: colors.primary }} className="font-semibold">
+                              {product.price} {product.currency}
+                            </BodyMedium>
+                          )}
+                          {product.variants && product.variants.length > 0 && (
+                            <div className="mt-2">
+                              <BodySmall color="onSurfaceVariant" className="mb-1">المتغيرات المتاحة:</BodySmall>
+                              <div className="flex flex-wrap gap-2">
+                                {product.variants.map((variant) => (
+                                  <span
+                                    key={variant.id}
+                                    className="px-2 py-1 rounded text-xs"
+                                    style={{ backgroundColor: colors.surfaceContainer, color: colors.onSurface }}
+                                  >
+                                    {variant.variant_name_ar}: {variant.variant_value}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                />
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-element">
                   {products.map((product) => (
                     <div
                       key={product.id}
-                      className="border rounded-2xl p-4 transition-all relative"
+                      className="border rounded-section p-main transition-all relative"
                       style={{
                         borderColor: colors.outline,
                         ...(productId === product.id ? { boxShadow: `0 0 0 2px ${colors.primary}` } : {}),
@@ -923,19 +1120,17 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = colors.surfaceContainer }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
                     >
-                      {/* Delete Button */}
                       {canManageProducts && (
-                        <button
+                        <Button
+                          type="button"
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleDeleteProduct(product.id)}
-                          className="absolute top-2 left-2 p-2 rounded-lg transition-all hover:scale-110 z-10"
-                          style={{
-                            backgroundColor: colors.error,
-                            color: 'var(--color-on-error)',
-                          }}
+                          className="absolute top-2 left-2 !min-h-0 !p-2 rounded-lg z-10"
                           title="حذف المنتج"
                         >
                           <Trash2 size={14} />
-                        </button>
+                        </Button>
                       )}
                       {product.images && product.images.length > 0 && (
                         <img
@@ -973,6 +1168,17 @@ function PlacePageContent({ productId }: { productId: string | null }) {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+          {/* Services Tab Content — placeholder حتى تفعيل الخدمات */}
+          {activeTab === 'services' && (
+            <div className="py-12 text-center">
+              <BodyMedium color="onSurfaceVariant" className="mb-2">
+                الخدمات قريباً
+              </BodyMedium>
+              <BodySmall color="onSurfaceVariant">
+                سنعرض هنا قائمة الخدمات التي يقدمها المكان
+              </BodySmall>
             </div>
           )}
         </div>

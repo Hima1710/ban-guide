@@ -15,7 +15,7 @@ import { useUnifiedVideoFeed } from '@/hooks/useUnifiedVideoFeed'
 import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { extractYouTubeId, getYouTubeEmbedUrl, getYouTubeThumbnail } from '@/lib/youtube'
 import { Button, LabelSmall } from '@/components/m3'
-import { BanSkeleton } from '@/components/common'
+import { BanSkeleton, VirtualList } from '@/components/common'
 import type { UnifiedVideoItem } from '@/lib/api/videos'
 import type { CommentEntityType } from '@/lib/api/comments'
 
@@ -27,7 +27,7 @@ function isYouTubeUrl(url: string): boolean {
   return /youtube\.com|youtu\.be/i.test(url)
 }
 
-/** بطاقة فيديو في الشبكة — ثامبنيل + أيقونة تشغيل + أعداد التفاعل */
+/** بطاقة فيديو في الشبكة — ثامبنيل + أيقونة تشغيل + أعداد التفاعل (M3 + النظام الموحد) */
 function VideoGridCard({
   item,
   likeCount,
@@ -45,14 +45,15 @@ function VideoGridCard({
   const thumbSrc = isYt && ytId ? getYouTubeThumbnail(ytId) : null
 
   return (
-    <button
+    <Button
       type="button"
+      variant="text"
+      size="sm"
       onClick={onClick}
-      className="w-full rounded-xl overflow-hidden border-0 p-0 block text-start focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      className="w-full rounded-section overflow-hidden !p-0 !min-h-0 block text-start shadow-elev-1"
       style={{
         backgroundColor: colors.surfaceContainer,
         borderColor: colors.outline,
-        boxShadow: 'var(--shadow-sm)',
       }}
       aria-label={`تشغيل فيديو ${item.title || 'فيديو'}`}
     >
@@ -75,7 +76,7 @@ function VideoGridCard({
         ) : null}
         <div
           className="absolute inset-0 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
+          style={{ backgroundColor: 'var(--overlay-bg-light)' }}
         >
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -85,7 +86,10 @@ function VideoGridCard({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2 px-2 py-2" style={{ color: colors.onSurfaceVariant }}>
+      <div
+        className="flex items-center gap-2"
+        style={{ color: colors.onSurfaceVariant, padding: 'var(--main-padding)' }}
+      >
         <span className="flex items-center gap-0.5">
           <Heart size={14} className={ICON_CLASS} />
           <LabelSmall>{likeCount}</LabelSmall>
@@ -95,7 +99,7 @@ function VideoGridCard({
           <LabelSmall>{commentCount}</LabelSmall>
         </span>
       </div>
-    </button>
+    </Button>
   )
 }
 
@@ -179,7 +183,7 @@ function VideoShortsSlide({
         className="absolute top-3 right-3 z-20 !min-h-0 !p-2 rounded-full"
         style={{
           color: colors.onSurface,
-          backgroundColor: 'rgba(0,0,0,0.4)',
+          backgroundColor: 'var(--overlay-bg)',
         }}
         aria-label="إغلاق والعودة للشبكة"
       >
@@ -268,6 +272,15 @@ export default function VideoShortsFeed() {
   const postCounts = useEntityCounts({ entityIds: postIds, entityType: 'post' })
   const productCounts = useEntityCounts({ entityIds: productIds, entityType: 'product' })
   const placeCounts = useEntityCounts({ entityIds: placeIds, entityType: 'place' })
+
+  /** صفوف الشبكة — كل صف = عنصران (2 أعمدة) لاستخدام VirtualList */
+  const gridRows = useMemo(() => {
+    const rows: UnifiedVideoItem[][] = []
+    for (let i = 0; i < items.length; i += 2) {
+      rows.push(items.slice(i, i + 2))
+    }
+    return rows
+  }, [items])
 
   const getCounts = useCallback(
     (item: UnifiedVideoItem): { likeCount: number; commentCount: number } => {
@@ -456,30 +469,45 @@ export default function VideoShortsFeed() {
     )
   }
 
-  // الشبكة — 2 فيديو في كل صف، الأحدث أولاً
+  // الشبكة — 2 فيديو في كل صف، افتراضيًا (VirtualList) — مسافات MD3 من globals.css
   return (
     <div
       ref={gridContainerRef}
-      className="overflow-y-auto w-full px-2 py-4"
+      className="overflow-y-auto w-full p-main"
       style={{
         minHeight: '50vh',
         backgroundColor: colors.background,
       }}
     >
-      <div className="grid grid-cols-2 gap-3 max-w-6xl mx-auto">
-        {items.map((item, index) => (
-          <VideoGridCard
-            key={item.id}
-            item={item}
-            likeCount={getCounts(item).likeCount}
-            commentCount={getCounts(item).commentCount}
-            onClick={() => {
-              setSelectedIndex(index)
-              setActiveIndex(index)
-            }}
-          />
-        ))}
-      </div>
+      <VirtualList<UnifiedVideoItem[]>
+        items={gridRows}
+        scrollElementRef={gridContainerRef}
+        estimateSize={220}
+        overscan={5}
+        getItemKey={(_row, rowIndex) => rowIndex}
+        renderItem={(row, rowIndex) => (
+          <div
+            className="grid grid-cols-2 gap-element max-w-6xl mx-auto"
+            style={{ paddingBottom: 'var(--element-gap)' }}
+          >
+            {row.map((item, colIndex) => {
+              const index = rowIndex * 2 + colIndex
+              return (
+                <VideoGridCard
+                  key={item.id}
+                  item={item}
+                  likeCount={getCounts(item).likeCount}
+                  commentCount={getCounts(item).commentCount}
+                  onClick={() => {
+                    setSelectedIndex(index)
+                    setActiveIndex(index)
+                  }}
+                />
+              )
+            })}
+          </div>
+        )}
+      />
       <div data-video-sentinel className="h-4 w-full" aria-hidden />
       {loading && items.length > 0 && (
         <div className="flex justify-center py-4">

@@ -28,7 +28,7 @@ export function usePlaces(options: UsePlacesOptions = {}): UsePlacesReturn {
   const [error, setError] = useState<string | null>(null)
 
   const loadPlaces = useCallback(async () => {
-    // If filtering by userId and userId is not provided yet, skip loading
+    // If filtering by userId and userId is not provided yet, skip loading (نقرأ options.userId عند الاستدعاء فقط)
     if (options.userId !== undefined && !userId) {
       setLoading(false)
       return
@@ -75,7 +75,8 @@ export function usePlaces(options: UsePlacesOptions = {}): UsePlacesReturn {
     } finally {
       setLoading(false)
     }
-  }, [featured, userId, options.userId])
+    // لا نضع options أو options.userId في التبعيات — options كائن جديد كل render ويسبب حلقة تحديث
+  }, [featured, userId])
 
   useEffect(() => {
     if (autoLoad) {

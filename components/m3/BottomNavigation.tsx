@@ -95,22 +95,22 @@ export default function BottomNavigation() {
             triggerHapticFeedback()
           }
 
-          if (isMessages && convCtx) {
+          if (isMessages) {
             return (
-              <button
+              <Link
                 key={item.id}
-                type="button"
+                href="/messages"
+                prefetch={true}
+                className={className}
+                style={activeStyle}
                 onClick={() => {
                   handleTap()
                   startNavigation('messages')
-                  convCtx.openSidebar()
                 }}
-                className={className}
-                style={activeStyle}
                 aria-label={item.label}
               >
                 {content}
-              </button>
+              </Link>
             )
           }
 

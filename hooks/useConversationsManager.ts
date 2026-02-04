@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 import { AudioRecorder } from '@/lib/audio-recorder'
 import { showError, showSuccess, showLoading, closeLoading } from '@/components/SweetAlert'
 import { uploadImageFile } from '@/lib/api/upload'
@@ -127,15 +127,24 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
   }, [userId])
 
   const loadAllMessages = useCallback(async () => {
-    if (!userId) {
-      return
+    if (process.env.NODE_ENV === 'development') {
+      if (!userId) {
+        console.log('[Conversations] تخطي تحميل الرسائل: لا يوجد مستخدم مسجّل')
+        return
+      }
+      if (!isSupabaseConfigured()) {
+        console.log('[Conversations] تخطي تحميل الرسائل: Supabase غير مضبوط (تحقق من .env.local)')
+        return
+      }
+      console.log('[Conversations] جاري تحميل الرسائل من الداتابيز...')
+    } else {
+      if (!userId || !isSupabaseConfigured()) return
     }
 
     try {
       const placeIds = userPlaces.map(p => p.id)
-      
       let allMessages: ConversationMessage[] = []
-      
+
       if (placeIds.length > 0) {
         const { data: ownerRows, error: ownerError } = await supabase
           .from('messages')
@@ -208,8 +217,17 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
       }
 
       setMessages(data || [])
+      if (process.env.NODE_ENV === 'development') {
+        const count = (data || []).length
+        console.log(count > 0
+          ? `[Conversations] تم تحميل ${count} رسالة من الداتابيز ✓`
+          : '[Conversations] لا توجد رسائل في الداتابيز (الاتصال يعمل) ✓')
+      }
     } catch (error) {
       console.error('Error loading messages:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[Conversations] فشل تحميل الرسائل:', error)
+      }
     }
   }, [userId, userPlaces])
 
@@ -626,9 +644,9 @@ export function useConversationsManager({ userId, userPlaces }: UseConversations
   // ==================== EFFECTS ====================
 
   useEffect(() => {
-    if (userId && userPlaces.length > 0) {
-      loadPlaceEmployees()
+    if (userId) {
       loadAllMessages()
+      if (userPlaces.length > 0) loadPlaceEmployees()
     }
   }, [userId, userPlaces, loadPlaceEmployees, loadAllMessages])
 

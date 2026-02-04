@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { ChevronRight, Moon, Sun, User, LogOut } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useHeaderContext } from '@/contexts/HeaderContext'
 import { useNotifications } from '@/hooks/useNotifications'
 import { usePlacesViewsStats } from '@/hooks/usePlacesViewsStats'
 import { supabase } from '@/lib/supabase'
@@ -93,16 +94,23 @@ export default function SmartTopBar() {
   }
 
   const headerTitle = getHeaderTitle()
+  const headerCtx = useHeaderContext()
+  const subHeader = headerCtx?.subHeader ?? null
+  const showSubHeader = headerCtx?.showSubHeader ?? true
 
   return (
     <header
-      className="sticky top-0 z-50 border-b min-h-[56px] flex items-center safe-area-top surface-chameleon-glass"
+      className="sticky top-0 z-50 border-b shrink-0 safe-area-top surface-chameleon-glass"
       style={{
-        height: HEADER_HEIGHT,
         borderColor: colors.outline,
         boxShadow: 'var(--shadow-sm)',
       }}
     >
+      {/* الشريط الرئيسي: اللوجو، العنوان، الإجراءات */}
+      <div
+        className="min-h-[56px] flex items-center"
+        style={{ height: HEADER_HEIGHT }}
+      >
       <div className="flex items-center justify-between w-full h-full px-3 sm:px-4">
         {/* أقصى اليمين (RTL): اللوجو */}
         <Link
@@ -198,6 +206,22 @@ export default function SmartTopBar() {
           )}
         </div>
       </div>
+      </div>
+
+      {/* الشريط الفرعي الموحد (ستوريز، فلاتر، تابات) — يختفي عند التمرير لأسفل */}
+      {subHeader != null && (
+        <div
+          className="overflow-hidden transition-all duration-300 ease-out border-t border-opacity-50"
+          style={{
+            borderColor: colors.outline,
+            maxHeight: showSubHeader ? 400 : 0,
+            opacity: showSubHeader ? 1 : 0,
+          }}
+          aria-hidden={!showSubHeader}
+        >
+          {subHeader}
+        </div>
+      )}
     </header>
   )
 }

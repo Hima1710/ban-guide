@@ -81,6 +81,12 @@
   --main-padding: 16px;
   --section-padding: 24px;
   --element-gap: 12px;
+  /** ارتفاع الشريط الفرعي للصفحة الرئيسية (ستوريز + تابات) — يُستخدم في padding-top لمحتوى VirtualList */
+  --home-subheader-height: 154px;
+  /** ارتفاع الشريط الفرعي لصفحة الأماكن (بحث + عنوان + فلاتر) — يُستخدم في padding-top لمحتوى VirtualList */
+  --places-subheader-height: 180px;
+  /** ارتفاع شريط التابات في صفحة تفاصيل المكان (Pinned Tabs) — يُستخدم في contentPaddingTop للـ VirtualList */
+  --place-detail-tabs-height: 56px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -754,6 +760,16 @@ p {
 .rounded-main { border-radius: var(--border-radius) !important; }
 .rounded-section { border-radius: var(--border-radius-lg) !important; }
 .rounded-extra-large { border-radius: var(--radius-extra-large) !important; }
+
+/* Virtual list & scroll — تحسين التمرير وعرض العناصر في الرئيسية */
+.virtual-list-item {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.scroll-area-main {
+  -webkit-overflow-scrolling: touch;
+  overflow-anchor: auto;
+}
 
 /* M3 elevation (ظلال من الثيم) */
 .shadow-elev-0 { box-shadow: none !important; }
