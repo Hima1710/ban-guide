@@ -23,8 +23,10 @@ function isTopLevel(pathname: string): boolean {
 }
 
 const HEADER_HEIGHT = 56
+/** ارتفاع منطقة الشريط الفرعي (ثابت) لتفادي Layout Shift — الإخفاء بـ translateY + opacity فقط */
+const SUBHEADER_AREA_HEIGHT = 220
 
-export { HEADER_HEIGHT }
+export { HEADER_HEIGHT, SUBHEADER_AREA_HEIGHT }
 
 export default function SmartTopBar() {
   const pathname = usePathname()
@@ -208,18 +210,26 @@ export default function SmartTopBar() {
       </div>
       </div>
 
-      {/* الشريط الفرعي الموحد (ستوريز، فلاتر، تابات) — يختفي عند التمرير لأسفل */}
+      {/* الشريط الفرعي: مساحة ثابتة (لا Layout Shift)؛ الإخفاء بـ translateY(-100%) + opacity فقط */}
       {subHeader != null && (
         <div
-          className="overflow-hidden transition-all duration-300 ease-out border-t border-opacity-50"
+          className="overflow-hidden border-t border-opacity-50"
           style={{
             borderColor: colors.outline,
-            maxHeight: showSubHeader ? 400 : 0,
-            opacity: showSubHeader ? 1 : 0,
+            height: SUBHEADER_AREA_HEIGHT,
+            flexShrink: 0,
           }}
-          aria-hidden={!showSubHeader}
         >
-          {subHeader}
+          <div
+            className="h-full w-full transition-[transform,opacity] duration-300 ease-out"
+            style={{
+              transform: showSubHeader ? 'translateY(0)' : 'translateY(-100%)',
+              opacity: showSubHeader ? 1 : 0,
+            }}
+            aria-hidden={!showSubHeader}
+          >
+            {subHeader}
+          </div>
         </div>
       )}
     </header>

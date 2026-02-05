@@ -95,12 +95,20 @@ export default function DashboardPage() {
       const msg = err instanceof Error ? err.message : 'تم رفض الإذن أو حدث خطأ'
       setMicStatus('denied')
       const isDenied = msg.includes('Permission') || msg.includes('NotAllowed') || msg.includes('denied')
-      const webViewHint = isWebView && platform === 'android'
-        ? ' في تطبيق أندرويد: منح إذن الميكروفون من إعدادات الجهاز: الإعدادات ← التطبيقات ← بان ← الصلاحيات.'
-        : ''
-      showError(isDenied
-        ? 'لم يتم منح إذن الميكروفون. يمكنك تفعيله لاحقاً من إعدادات المتصفح.' + webViewHint
-        : 'فشل في الوصول إلى الميكروفون. تأكد من إعدادات الجهاز والمتصفح.' + webViewHint)
+      const inWebViewAndroid = isWebView && platform === 'android'
+      let errorText: string
+      if (inWebViewAndroid && !isDenied) {
+        errorText =
+          'التطبيق قد يملك إذن الميكروفون في الإعدادات، لكن الوصول من داخل الصفحة غير مفعّل. جرّب فتح بان من متصفح Chrome، أو تواصل مع مطوّر التطبيق لتفعيل التسجيل الصوتي داخل التطبيق (WebView).'
+      } else if (isDenied && inWebViewAndroid) {
+        errorText =
+          'لم يتم منح إذن الميكروفون. من إعدادات الجهاز: الإعدادات ← التطبيقات ← [التطبيق الحالي] ← الصلاحيات ← الميكروفون.'
+      } else if (isDenied) {
+        errorText = 'لم يتم منح إذن الميكروفون. يمكنك تفعيله لاحقاً من إعدادات المتصفح.'
+      } else {
+        errorText = 'فشل في الوصول إلى الميكروفون. تأكد من إعدادات الجهاز والمتصفح.'
+      }
+      showError(errorText)
     } finally {
       setMicRequesting(false)
     }
