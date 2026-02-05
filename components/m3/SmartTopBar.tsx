@@ -210,13 +210,13 @@ export default function SmartTopBar() {
       </div>
       </div>
 
-      {/* الشريط الفرعي: مساحة ثابتة (لا Layout Shift)؛ الإخفاء بـ translateY(-100%) + opacity فقط */}
+      {/* الشريط الفرعي: ارتفاع ديناميكي + translateY — عند الإخفاء تتقلص المساحة والمحتوى يصعد بنعومة */}
       {subHeader != null && (
         <div
-          className="overflow-hidden border-t border-opacity-50"
+          className="overflow-hidden border-t border-opacity-50 transition-[height] duration-300 ease-out"
           style={{
             borderColor: colors.outline,
-            height: SUBHEADER_AREA_HEIGHT,
+            height: showSubHeader ? SUBHEADER_AREA_HEIGHT : 0,
             flexShrink: 0,
           }}
         >
