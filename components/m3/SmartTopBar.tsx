@@ -102,7 +102,7 @@ export default function SmartTopBar() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b shrink-0 safe-area-top surface-chameleon-glass"
+      className="sticky top-0 z-50 border-b shrink-0 safe-area-top surface-chameleon-glass w-full lg:max-w-[calc(100%-280px)] lg:mr-[280px]"
       style={{
         borderColor: colors.outline,
         boxShadow: 'var(--shadow-sm)',
@@ -210,19 +210,18 @@ export default function SmartTopBar() {
       </div>
       </div>
 
-      {/* الشريط الفرعي: ارتفاع ديناميكي + translateY — عند الإخفاء تتقلص المساحة والمحتوى يصعد بنعومة */}
+      {/* الشريط الفرعي: خارج التدفق — زجاج M3 (شفافية + blur) + ظل خفيف لفصله عن المحتوى */}
       {subHeader != null && (
         <div
-          className="overflow-hidden border-t border-opacity-50 transition-[height] duration-300 ease-out"
-          style={{
-            borderColor: colors.outline,
-            height: showSubHeader ? SUBHEADER_AREA_HEIGHT : 0,
-            flexShrink: 0,
-          }}
+          className="relative shrink-0 overflow-visible"
+          style={{ height: 0 }}
         >
           <div
-            className="h-full w-full transition-[transform,opacity] duration-300 ease-out"
+            className="absolute left-0 top-0 w-full border-t border-opacity-50 backdrop-blur-md transition-[transform,opacity,box-shadow] duration-300 ease-out"
             style={{
+              borderColor: colors.outline,
+              background: 'var(--surface-chameleon-glass)',
+              boxShadow: showSubHeader ? 'var(--shadow-sm)' : 'none',
               transform: showSubHeader ? 'translateY(0)' : 'translateY(-100%)',
               opacity: showSubHeader ? 1 : 0,
             }}
